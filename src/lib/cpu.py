@@ -706,6 +706,8 @@ class ZCpu:
         else: # Long 2OP
             ops = self._read_operands_long_2op()
         print ops
+        if ops[0]==0: # store should not add new value to stack
+            self.stack.pop() # so we pop the top value
         self._zstore(ops[1], ops[0])
 
     def _insert_obj(self):
@@ -1372,7 +1374,8 @@ class ZCpu:
         ops = self._read_operands_short_1op()
         print ops
         if ops[0] == 0:
-            data = self.stack.pop()
+            data = self.stack.pop() # load shouldn't lose the top value of stack
+            self.stack.push(data)
         elif ops[0] < 16:
             data = self.stack.local_vars[ops[0] - 1]
         elif ops[0] < 256:
