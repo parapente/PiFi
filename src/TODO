@@ -1,0 +1,46 @@
+o Z-Machine Debugger
+o Ops:
+  -- 2op --
+  * throw
+  * catch
+
+  -- 0op --
+  * save
+  * restore
+
+  -- var --
+  * erase_line
+  * get_cursor
+  * input_stream
+  * sound_effect (ignored for now)
+  * read_char (timed input)
+  * scan_table
+  * tokenise (custom dict, flags)
+  * encode_text
+  * copy_table
+  * print_table
+
+  -- ext --
+  * save
+  * restore
+  * set_font
+  * draw_picture (6)
+  * picture_data (6)
+  * erase_picture (6)
+  * set_margins (6)
+  * save_undo (for now it always fails)
+  * restore_undo
+  * print_unicode
+  * move_window (6)
+  * window_size (6)
+  * window_style (6)
+  * get_wind_prop (6)
+  * scroll_window (6)
+  * pop_stack (6)
+  * read_mouse (6)
+  * mouse_window (6)
+  * push_stack (6)
+  * put_wind_prop (6)
+  * print_form (6)
+  * make_menu (6)
+  * picture_table (6)
