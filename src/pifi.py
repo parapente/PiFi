@@ -6,6 +6,7 @@
 from lib.machine import ZMachine
 from plugins.qtplugin import QtPlugin
 import sys
+import types
 import argparse
 
 __author__="oscar"
@@ -16,7 +17,7 @@ if __name__ == "__main__":
     # @type f file
     # @type parser argparse.ArgumentParser
     parser = argparse.ArgumentParser(description='PiFi - Python Interactive Fiction Interpreter')
-    parser.add_argument('-p', '--plugin', help='specify the ouput plugin to use; use QtPlugin for now')
+    parser.add_argument('-p', '--plugin', help='specify the ouput plugin to use; use QtPlugin for now', default='QtPlugin')
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('-l', '--log-level', type=int, default=0, help='debug log level (0-2); default: %(default)s')
     parser.add_argument('-V', '--version', action='version', version='%(prog)s 0.1')
@@ -32,7 +33,11 @@ if __name__ == "__main__":
 
     reload(sys)
     sys.setdefaultencoding("utf-8")
-    plugin = QtPlugin()
+    if args.plugin in globals() and isinstance(globals()[args.plugin], types.ClassType):
+        plugin = globals()[args.plugin]()
+    else:
+        print "Plugin " + args.plugin + " not found!"
+        sys.exit(3)
     m = ZMachine(plugin)
     plugin.set_zversion(m.zver)
     m.load_story(f)
