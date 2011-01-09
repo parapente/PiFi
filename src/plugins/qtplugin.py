@@ -5,14 +5,12 @@
 from plugins.qtztextwidget import ZTextWidget
 from PyQt4 import QtGui
 from PyQt4 import QtCore
+from plugskel import PlugSkel
 
-__author__="oscar"
+__author__="Theofilos Intzoglou"
 __date__ ="$20 Σεπ 2009 2:39:20 μμ$"
 
-if __name__ == "__main__":
-    print "Hello World";
-
-class QtPlugin:
+class QtPlugin(PlugSkel):
     a = QtGui.QApplication([])
     widget = None
     win = None

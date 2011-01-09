@@ -47,12 +47,12 @@ class ZMachine:
             self.handle_intr()
 
     def get_text(self,text):
-        print "Enter!"
+        self.plugin.debugprint("Enter!", 2)
         self.input.disconnect_input(self.get_text)
         self.input.hide_cursor()
         paddr = self.cpu.intr_data[1]
         taddr = self.cpu.intr_data[0]
-        print "gt -> '",text,"'"
+        self.plugin.debugprint("gt -> '"+text+"'", 2)
         if self.zver < 5:
             for i in range(len(text)):
                 if (i == (len(text) - 1)) and text[i] == '\n':
@@ -85,7 +85,7 @@ class ZMachine:
             for i in range(self.mem.mem[text + 1]):
                 txt += unichr(self.mem.mem[text + 2 + i])
         l = len(txt)
-        print "txt='", txt, "' Len:", l
+        self.plugin.debugprint("txt='"+txt+"' Len:"+l, 2)
         words = []
         w = ""
         i = 0
@@ -121,13 +121,13 @@ class ZMachine:
                     w1 += words[i][j]
             else:
                 w1 = words[i]
-            print w1, "- len -", len(w1)
+            self.plugin.debugprint(w1+"- len -"+len(w1), 2)
             if self.cpu.intr_data[1] <> 0: # No parsing is required
                 # Find the data for the record
                 addr = self.dict.find_word(w1)
                 l = len(words[i])
                 pos = words[i + 1]
-                print "word:", w1, "Addr:", addr, "Pos:", pos
+                self.plugin.debugprint("word:"+w1+"Addr:"+addr+"Pos:"+pos, 2)
                 # Write the record in parse buffer
                 self.mem.mem[parse] = addr >> 8
                 self.mem.mem[parse + 1] = addr & 0xff
@@ -138,7 +138,7 @@ class ZMachine:
 
     def get_char(self,char):
         self.input.disconnect_input(self.get_char)
-        print "Character read!"
+        self.plugin.debugprint("Character read!", 2)
         self.cpu.got_char(char)
         self.cpu.intr = 0
         self.cpu.start()
@@ -173,8 +173,8 @@ class ZMachine:
         self.cpu = ZCpu(self.mem.mem,self.header,self.output)
         self.cpu.file = f
         self.dict = ZDictionary(self.mem.mem, self.header)
-        print 'Version of story file:', self.zver
-        print 'Length of file: ', self.header.length_of_file()
+        self.plugin.debugprint('Version of story file: {0}'.format(self.zver), 1)
+        self.plugin.debugprint('Length of file: {0}'.format(self.header.length_of_file()), 1)
 
     def init(self):
         # Set the default options

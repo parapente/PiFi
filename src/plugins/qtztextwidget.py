@@ -14,10 +14,9 @@ from PyQt4.QtCore import SIGNAL
 from PyQt4.QtCore import QSize
 from PyQt4.QtCore import QString
 from PyQt4.QtCore import pyqtSignal
-from PyQt4.uic.Compiler.qtproxies import QtGui
 from lib.stream import ZStream
 
-__author__="oscar"
+__author__="Theofilos Intzoglou"
 __date__ ="$15 Αυγ 2009 10:46:38 μμ$"
 
 class ZTextWidget(QWidget):
@@ -51,7 +50,7 @@ class ZTextWidget(QWidget):
         sp = QSizePolicy()
         sp.setHorizontalPolicy(QSizePolicy.Fixed)
         sp.setVerticalPolicy(QSizePolicy.Fixed)
-        self.set_fixed_font("DeJa Vu Sans Mono", 8)
+        self.set_fixed_font("DeJa Vu Sans Mono", 9)
         self.setSizePolicy(sp)
         self.setFocusPolicy(Qt.StrongFocus)
         self._ostream = [ZStream(), ZStream(), ZStream(), ZStream()]
@@ -187,7 +186,7 @@ class ZTextWidget(QWidget):
         if w < 2:
             self.cur_win = w
         else:
-            sys.exit("Unknown windowb {0}!?!".args(w))
+            sys.exit("Unknown window {0}!?!".args(w))
 
     def prints(self,str):
         if self._ostream[0].selected:
