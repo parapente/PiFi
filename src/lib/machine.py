@@ -9,7 +9,7 @@ from ztext import *
 from dictionary import ZDictionary
 import sys
 
-__author__="oscar"
+__author__="Theofilos Intzoglou"
 __date__ ="$1 Ιουλ 2009 4:39:00 μμ$"
 
 class ZMachine:
@@ -170,7 +170,7 @@ class ZMachine:
         self.input = ZInput(self.plugin)
         self.zver = self.header.version()
         self.output = ZOutput(self.zver, self.mem.mem, self.plugin)
-        self.cpu = ZCpu(self.mem.mem,self.header,self.output)
+        self.cpu = ZCpu(self.mem.mem,self.header,self.output,self.plugin)
         self.cpu.file = f
         self.dict = ZDictionary(self.mem.mem, self.header)
         self.plugin.debugprint('Version of story file: {0}'.format(self.zver), 1)
