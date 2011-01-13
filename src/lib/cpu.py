@@ -235,9 +235,9 @@ class ZCpu:
                     j += 1
                 if r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse()
+                        self._rfalse2()
                     elif offset == 1: # Return true
-                        self._rtrue()
+                        self._rtrue2()
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -255,9 +255,9 @@ class ZCpu:
                     j += 1
                 if not r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse()
+                        self._rfalse2()
                     elif offset == 1: # Return true
-                        self._rtrue()
+                        self._rtrue2()
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -292,9 +292,9 @@ class ZCpu:
                     j += 1
                 if r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse()
+                        self._rfalse2()
                     elif offset == 1: # Return true
-                        self._rtrue()
+                        self._rtrue2()
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -312,9 +312,9 @@ class ZCpu:
                     j += 1
                 if not r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse()
+                        self._rfalse2()
                     elif offset == 1: # Return true
-                        self._rtrue()
+                        self._rtrue2()
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -349,9 +349,9 @@ class ZCpu:
                     j += 1
                 if r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse()
+                        self._rfalse2()
                     elif offset == 1: # Return true
-                        self._rtrue()
+                        self._rtrue2()
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -369,9 +369,9 @@ class ZCpu:
                     j += 1
                 if not r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse()
+                        self._rfalse2()
                     elif offset == 1: # Return true
-                        self._rtrue()
+                        self._rtrue2()
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -407,9 +407,9 @@ class ZCpu:
                     j += 1
                 if r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse()
+                        self._rfalse2()
                     elif offset == 1: # Return true
-                        self._rtrue()
+                        self._rtrue2()
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -427,9 +427,9 @@ class ZCpu:
                     j += 1
                 if not r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse()
+                        self._rfalse2()
                     elif offset == 1: # Return true
-                        self._rtrue()
+                        self._rtrue2()
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -465,9 +465,9 @@ class ZCpu:
                     j += 1
                 if r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse()
+                        self._rfalse2()
                     elif offset == 1: # Return true
-                        self._rtrue()
+                        self._rtrue2()
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -485,9 +485,9 @@ class ZCpu:
                     j += 1
                 if not r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse()
+                        self._rfalse2()
                     elif offset == 1: # Return true
-                        self._rtrue()
+                        self._rtrue2()
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -518,9 +518,9 @@ class ZCpu:
                 b = (self.mem[obj+6] << 8) + self.mem[obj+7]
             if b == ops[1]:
                 if offset == 0: # Return false
-                    self._rfalse()
+                    self._rfalse2()
                 elif offset == 1: # Return true
-                    self._rtrue()
+                    self._rtrue2()
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
@@ -533,9 +533,9 @@ class ZCpu:
                 b = (self.mem[obj+6] << 8) + self.mem[obj+7]
             if b <> ops[1]:
                 if offset == 0: # Return false
-                    self._rfalse()
+                    self._rfalse2()
                 elif offset == 1: # Return true
-                    self._rtrue()
+                    self._rtrue2()
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
@@ -566,9 +566,9 @@ class ZCpu:
                 r = ((ops[0] & ops[1]) == ops[1])
                 if r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse()
+                        self._rfalse2()
                     elif offset == 1: # Return true
-                        self._rtrue()
+                        self._rtrue2()
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -582,9 +582,9 @@ class ZCpu:
                 r = ((ops[0] & ops[1]) == ops[1])
                 if not r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse()
+                        self._rfalse2()
                     elif offset == 1: # Return true
-                        self._rtrue()
+                        self._rtrue2()
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -644,9 +644,9 @@ class ZCpu:
         if (self.mem[self.pc] & 128) == 128: # Jump if true
             if (b & mask) == mask: # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse()
+                    self._rfalse2()
                 elif offset == 1: # Return true
-                    self._rtrue()
+                    self._rtrue2()
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
@@ -655,9 +655,9 @@ class ZCpu:
             jif = 'False'
             if (b & mask) == 0: # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse()
+                    self._rfalse2()
                 elif offset == 1: # Return true
-                    self._rtrue()
+                    self._rtrue2()
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
@@ -732,11 +732,11 @@ class ZCpu:
         self.plugin.debugprint( '{0}: store {1}'.format(format(pc,'X'),ops), 2 )
 
     def _insert_obj(self):
+        pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
             ops = self._read_operands_var_2op()
         else: # Long 2OP
             ops = self._read_operands_long_2op()
-        print ops
         d = self._find_object(ops[1])
         o = self._find_object(ops[0])
         if self.zver < 4:
@@ -746,19 +746,19 @@ class ZCpu:
                 f = self._find_object(self.mem[o+4]) # Find the addr of parent
                 if self.mem[f+6] == ops[0]: # If the object to move is the first child
                     self.mem[f+6] = self.mem[o+5]
-                    print "Father", self.mem[o+4], "now has as child", self.mem[o+5]
+                    #print "Father", self.mem[o+4], "now has as child", self.mem[o+5]
                 else:
                     t = self._find_object(self.mem[f+6]) # Get the first child of the father
-                    print "^^", self.mem[t+5], "^^"
+                    #print "^^", self.mem[t+5], "^^"
                     tn = self.mem[f+6]
                     while (self.mem[t+5] <> ops[0]): # While the object t isn't a sibling of o
                         tn = self.mem[t+5]
                         t = self._find_object(self.mem[t+5])
-                    print "Got ", self.mem[o+5], "as sibling of", tn
+                    #print "Got ", self.mem[o+5], "as sibling of", tn
                     self.mem[t+5] = self.mem[o+5]
             self.mem[o+4] = ops[1] # Set father of o
             self.mem[o+5] = dchild # Set sibling of o
-            print "Sibling of", ops[0], "is", dchild
+            #print "Sibling of", ops[0], "is", dchild
         else:
             dchild_p1 = self.mem[d+10]
             dchild_p2 = self.mem[d+11]
@@ -771,56 +771,57 @@ class ZCpu:
                 if cn == ops[0]: # If the object to move is the first child
                     self.mem[f+10] = self.mem[o+8]
                     self.mem[f+11] = self.mem[o+9]
-                    print "Father", n, "now has as child", ((self.mem[o+8] << 8) + self.mem[o+9])
+                    #print "Father", n, "now has as child", ((self.mem[o+8] << 8) + self.mem[o+9])
                 else:
                     t = self._find_object(cn) # Get the first child of the father
                     sn = (self.mem[t+8] << 8) + self.mem[t+9]
-                    print "^^", sn, "^^"
+                    #print "^^", sn, "^^"
                     tn = cn
                     while (sn <> ops[0]): # While the object t isn't a sibling of o
                         tn = sn
                         t = self._find_object(sn)
                         sn = (self.mem[t+8] << 8) + self.mem[t+9]
-                    print "Got ", ((self.mem[o+8] << 8) + self.mem[o+9]), "as sibling of", tn
+                    #print "Got ", ((self.mem[o+8] << 8) + self.mem[o+9]), "as sibling of", tn
                     self.mem[t+8] = self.mem[o+8]
                     self.mem[t+9] = self.mem[o+9]
             self.mem[o+6] = ops[1] >> 8 # Set father of o
             self.mem[o+7] = ops[1] & 0xff
             self.mem[o+8] = dchild_p1 # Set sibling of o
             self.mem[o+9] = dchild_p2
+        self.plugin.debugprint( '{0}: insert_obj {1}'.format(format(pc,'X'),ops), 2 )
 
     def _loadw(self):
+        pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
             ops = self._read_operands_var_2op()
         else: # Long 2OP
             ops = self._read_operands_long_2op()
-        print ops
         return_var = self.mem[self.pc]
         self.pc += 1
         addr = ops[0] + 2 * ops[1]
-        print addr
         data = (self.mem[addr] << 8) + self.mem[addr + 1]
-        print data
         self._zstore(data, return_var)
+        self.plugin.debugprint( '{0}: loadw {1}'.format(format(pc,'X'),ops), 2 )
 
     def _loadb(self):
+        pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
             ops = self._read_operands_var_2op()
         else: # Long 2OP
             ops = self._read_operands_long_2op()
-        print ops
         return_var = self.mem[self.pc]
         self.pc += 1
         addr = ops[0] + ops[1]
         data = self.mem[addr]
         self._zstore(data, return_var)
+        self.plugin.debugprint( '{0}: loadb {1}'.format(format(pc,'X'),ops), 2 )
 
     def _get_prop(self):
+        pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
             ops = self._read_operands_var_2op()
         else: # Long 2OP
             ops = self._read_operands_long_2op()
-        print ops
         if ops[0] == 0:
             sys.exit("Can't get property of nothing!")
         obj = self._find_object(ops[0])
@@ -836,7 +837,7 @@ class ZCpu:
             if self.zver < 4:
                 size = self.mem[prop]
                 nob = ((size - ops[1]) / 32) + 1
-                print "Number of bytes:", nob
+                #print "Number of bytes:", nob
                 if nob == 1:
                     data = self.mem[prop + 1]
                 else:
@@ -856,20 +857,21 @@ class ZCpu:
                     data = self.mem[prop + 1]
         self._zstore(data, self.mem[self.pc])
         self.pc += 1
+        self.plugin.debugprint( '{0}: get_prop {1}'.format(format(pc,'X'),ops), 2 )
 
     def _get_prop_addr(self):
+        pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
             ops = self._read_operands_var_2op()
         else: # Long 2OP
             ops = self._read_operands_long_2op()
-        print ops
         if ops[0] == 0:
             self.output.prints("** get_prop_addr got 0 as object! **")
             prop = 0
             #sys.exit("Can't get property of nothing!")
         else:
             obj = self._find_object(ops[0])
-            print "Obj addr:", obj
+            #print "Obj addr:", obj
             if self.zver < 4:
                 addr = (self.mem[obj + 7] << 8) + self.mem[obj + 8]
                 prop = self._find_prop(addr, ops[1])
@@ -885,17 +887,18 @@ class ZCpu:
                         prop += 1
         self._zstore(prop, self.mem[self.pc])
         self.pc += 1
+        self.plugin.debugprint( '{0}: get_prop_addr {1}'.format(format(pc,'X'),ops), 2 )
 
     def _get_next_prop(self):
+        pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
             ops = self._read_operands_var_2op()
         else: # Long 2OP
             ops = self._read_operands_long_2op()
-        print ops
         if ops[0] == 0:
             sys.exit("Can't get property of nothing!")
         obj = self._find_object(ops[0])
-        print "Obj addr:", obj
+        #print "Obj addr:", obj
         if ops[1] == 0:
             find_first_value = True
         else:
@@ -924,7 +927,7 @@ class ZCpu:
                 prop_addr = self._find_prop(addr, ops[1])
                 if prop_addr <> 0: # Property found!
                     if (self.mem[prop_addr] & 0x80) <> 0: # Top bit is 1 so there is a second byte
-                        print "There is a second byte!"
+                        #print "There is a second byte!"
                         prop_addr += 1
                         num = self.mem[prop_addr] & 0x3f
                         if num == 0:
@@ -939,108 +942,120 @@ class ZCpu:
                     sys.exit("No such property!")
         self._zstore(prop, self.mem[self.pc])
         self.pc += 1
+        self.plugin.debugprint( '{0}: get_next_prop {1}'.format(format(pc,'X'),ops), 2 )
 
     def _add(self):
+        pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
             ops = self._read_operands_var_2op()
         else: # Long 2OP
             ops = self._read_operands_long_2op()
-        print ops
         result = self._i2s(self._s2i(ops[0]) + self._s2i(ops[1]))
-        print "Result:", result
+        #print "Result:", result
         self._zstore(result, self.mem[self.pc])
         self.pc = self.pc + 1
+        self.plugin.debugprint( '{0}: add {1}'.format(format(pc,'X'),ops), 2 )
 
     def _sub(self):
+        pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
             ops = self._read_operands_var_2op()
         else: # Long 2OP
             ops = self._read_operands_long_2op()
-        print ops
         result = self._i2s(self._s2i(ops[0]) - self._s2i(ops[1]))
-        print "Result:", result
+        #print "Result:", result
         self._zstore(result, self.mem[self.pc])
         self.pc = self.pc + 1
+        self.plugin.debugprint( '{0}: sub {1}'.format(format(pc,'X'),ops), 2 )
 
     def _mul(self):
+        pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
             ops = self._read_operands_var_2op()
         else: # Long 2OP
             ops = self._read_operands_long_2op()
-        print ops
         result = self._i2s(self._s2i(ops[0]) * self._s2i(ops[1]))
-        print "Result:", result
+        #print "Result:", result
         self._zstore(result, self.mem[self.pc])
         self.pc = self.pc + 1
+        self.plugin.debugprint( '{0}: mul {1}'.format(format(pc,'X'),ops), 2 )
 
     def _div(self):
+        pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
             ops = self._read_operands_var_2op()
         else: # Long 2OP
             ops = self._read_operands_long_2op()
-        print ops
         if ops[1] == 0: # Division by zero
             print "Divide by zero!"
             exit(20)
         result = self._i2s(self._s2i(ops[0]) // self._s2i(ops[1]))
-        print "Result:", result
+        #print "Result:", result
         self._zstore(result, self.mem[self.pc])
         self.pc = self.pc + 1
+        self.plugin.debugprint( '{0}: div {1}'.format(format(pc,'X'),ops), 2 )
 
     def _mod(self):
+        pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
             ops = self._read_operands_var_2op()
         else: # Long 2OP
             ops = self._read_operands_long_2op()
-        print ops
         if ops[1] == 0: # Division by zero
             print "Divide by zero!"
             exit(20)
         result = self._i2s(self._s2i(ops[0]) % self._s2i(ops[1]))
-        print "Result:", result
+        #print "Result:", result
         self._zstore(result, self.mem[self.pc])
         self.pc = self.pc + 1
+        self.plugin.debugprint( '{0}: mod {1}'.format(format(pc,'X'),ops), 2 )
 
     def _call_2s(self):
+        pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
             ops = self._read_operands_var_2op()
         else: # Long 2OP
             ops = self._read_operands_long_2op()
-        print ops
         argv = [ops[1]]
         return_addr = self.mem[self.pc]
         self.pc += 1
         self._routine(ops[0],argv,return_addr)
+        self.plugin.debugprint( '{0}: call_2s {1}'.format(format(pc,'X'),ops), 2 )
+        self.plugin.debugprint( '--v', 2 )
 
     def _call_2n(self):
+        pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
             ops = self._read_operands_var_2op()
         else: # Long 2OP
             ops = self._read_operands_long_2op()
-        print ops
         argv = [ops[1]]
         return_addr = -1
         self._routine(ops[0],argv,return_addr)
+        self.plugin.debugprint( '{0}: call_2n {1}'.format(format(pc,'X'),ops), 2 )
+        self.plugin.debugprint( '--v', 2 )
 
     def _set_colour(self):
+        pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
             ops = self._read_operands_var_2op()
         else: # Long 2OP
             ops = self._read_operands_long_2op()
-        print ops
         self.output.set_colour(ops[0],ops[1])
+        self.plugin.debugprint( '{0}: set_colour {1}'.format(format(pc,'X'),ops), 2 )
 
     def _throw(self):
+        pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
             ops = self._read_operands_var_2op()
         else: # Long 2OP
             ops = self._read_operands_long_2op()
-        print ops
+        self.plugin.debugprint( '{0}: throw {1}'.format(format(pc,'X'),ops), 2 )
         sys.exit("Not implemented yet!")
 
     def _jz(self):
+        pc = self.pc
         ops = self._read_operands_short_1op()
-        print ops
         if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
             offset = self.mem[self.pc] & 63
             gf = 1
@@ -1050,34 +1065,36 @@ class ZCpu:
             else:
                 offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
             gf = 2
-        print "Offset -", offset
+        jif = 'True'
         if (self.mem[self.pc] & 128) == 128: # Jump if true
             if ops[0] == 0: # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse()
+                    self._rfalse2()
                 elif offset == 1: # Return true
-                    self._rtrue()
+                    self._rtrue2()
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
                 self.pc = self.pc + gf
         else:
+            jif = 'False'
             if ops[0] <> 0: # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse()
+                    self._rfalse2()
                 elif offset == 1: # Return true
-                    self._rtrue()
+                    self._rtrue2()
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
                 self.pc = self.pc + gf
+        self.plugin.debugprint( '{0}: jz {1} [{2}] {3}'.format(format(pc,'X'),ops,jif,offset), 2 )
 
     def _get_sibling(self):
+        pc = self.pc
         ops = self._read_operands_short_1op()
-        print ops
         return_var = self.mem[self.pc]
         self.pc += 1
-        print self.mem[self.pc]
+        #print self.mem[self.pc]
         if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
             offset = self.mem[self.pc] & 63
             gf = 1
@@ -1087,40 +1104,43 @@ class ZCpu:
             else:
                 offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
             gf = 2
-        print "Offset -", offset, " Gf -", gf
+        #print "Offset -", offset, " Gf -", gf
         obj = self._find_object(ops[0])
         if self.zver < 4:
             sibl = self.mem[obj + 5]
         else:
             sibl = (self.mem[obj + 8] << 8) + self.mem[obj + 9]
-        print "Sibli -", sibl
+        #print "Sibli -", sibl
+        jif = 'True'
         if (self.mem[self.pc] & 128) == 128: # Jump if true
             if sibl <> 0: # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse()
+                    self._rfalse2()
                 elif offset == 1: # Return true
-                    self._rtrue()
+                    self._rtrue2()
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
                 self.pc += gf
         else:
+            jif = 'False'
             if sibl == 0: # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse()
+                    self._rfalse2()
                 elif offset == 1: # Return true
-                    self._rtrue()
+                    self._rtrue2()
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
                 self.pc += gf
         self._zstore(sibl, return_var)
-        print self.pc
-        print self.mem[self.pc]
+        #print self.pc
+        #print self.mem[self.pc]
+        self.plugin.debugprint( '{0}: get_sibling {1} [{2}] {3}'.format(format(pc,'X'),ops,jif,offset), 2 )
 
     def _get_child(self):
+        pc = self.pc
         ops = self._read_operands_short_1op()
-        print ops
         return_var = self.mem[self.pc]
         self.pc += 1
         if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
@@ -1132,53 +1152,57 @@ class ZCpu:
             else:
                 offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
             gf = 2
-        print "Offset -", offset, " Gf -", gf
+        #print "Offset -", offset, " Gf -", gf
         obj = self._find_object(ops[0])
         if self.zver < 4:
             child = self.mem[obj + 6]
         else:
             child = (self.mem[obj + 10] << 8) + self.mem[obj + 11]
-        print "Child:", child
+        #print "Child:", child
+        jif = 'True'
         if (self.mem[self.pc] & 128) == 128: # Jump if true
             if child <> 0: # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse()
+                    self._rfalse2()
                 elif offset == 1: # Return true
-                    self._rtrue()
+                    self._rtrue2()
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
                 self.pc += gf
         else:
+            jif = 'False'
             if child == 0: # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse()
+                    self._rfalse2()
                 elif offset == 1: # Return true
-                    self._rtrue()
+                    self._rtrue2()
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
                 self.pc += gf
         self._zstore(child, return_var)
-        print self.pc
-        print self.mem[self.pc]
+        #print self.pc
+        #print self.mem[self.pc]
+        self.plugin.debugprint( '{0}: get_child {1} [{2}] {3}'.format(format(pc,'X'),ops,jif,offset), 2 )
 
     def _get_parent(self):
+        pc = self.pc
         ops = self._read_operands_short_1op()
-        print ops
         obj = self._find_object(ops[0])
         if self.zver < 4:
             self._zstore(self.mem[obj+4], self.mem[self.pc])
-            print "Parent:", self.mem[obj+4]
+            #print "Parent:", self.mem[obj+4]
         else:
             parent = (self.mem[obj+6] << 8) + self.mem[obj+7]
             self._zstore(parent, self.mem[self.pc])
-            print "Parent:", parent
+            #print "Parent:", parent
         self.pc += 1
+        self.plugin.debugprint( '{0}: get_parent {1}'.format(format(pc,'X'),ops), 2 )
 
     def _get_prop_len(self):
+        pc = self.pc
         ops = self._read_operands_short_1op()
-        print ops
         ops[0] = ops[0] - 1
         if self.zver < 4:
             prop_num = self.mem[ops[0]] % 32
@@ -1194,11 +1218,13 @@ class ZCpu:
                 nob = 1
         self._zstore(nob, self.mem[self.pc])
         self.pc += 1
+        self.plugin.debugprint( '{0}: get_prop_len {1}'.format(format(pc,'X'),ops), 2 )
 
     def _inc(self):
+        pc = self.pc
         ops = self._read_operands_short_1op()
-        print ops
         self._inc2(ops[0])
+        self.plugin.debugprint( '{0}: inc {1}'.format(format(pc,'X'),ops), 2 )
 
     def _inc2(self, var):
         if var == 0:
@@ -1212,25 +1238,26 @@ class ZCpu:
             if tmp == 0x10000:
                 tmp = 0
             self.stack.local_vars[var - 1] = tmp
-            print "Inc --", tmp
+            #print "Inc --", tmp
             return tmp
         else:
             b1 = self.mem[ self.header.global_table() + (var - 16) * 2 ]
             b2 = self.mem[ self.header.global_table() + (var - 16) * 2 + 1]
-            print "Before:", (b1 << 8) + b2
+            #print "Before:", (b1 << 8) + b2
             tmp = (b1 << 8) + b2 + 1
             if tmp == 0x10000:
                 tmp = 0
-            print "After:", tmp
+            #print "After:", tmp
             self.mem[ self.header.global_table() + (var - 16) * 2 ] = tmp >> 8
             self.mem[ self.header.global_table() + (var - 16) * 2 + 1] = tmp & 0xff
-            print "Global var", var - 15, "has now value", tmp
+            #print "Global var", var - 15, "has now value", tmp
             return tmp
 
     def _dec(self):
+        pc = self.pc
         ops = self._read_operands_short_1op()
-        print ops
         self._dec2(ops[0])
+        self.plugin.debugprint( '{0}: dec {1}'.format(format(pc,'X'),ops), 2 )
 
     def _dec2(self, var):
         if var == 0:
@@ -1244,26 +1271,26 @@ class ZCpu:
             if tmp == -1:
                 tmp = 0xffff
             self.stack.local_vars[var - 1] = tmp
-            print "Dec --", tmp
+            #print "Dec --", tmp
             return tmp
         else:
             b1 = self.mem[ self.header.global_table() + (var - 16) * 2 ]
             b2 = self.mem[ self.header.global_table() + (var - 16) * 2 + 1]
-            print "Before:", (b1 << 8) + b2
+            #print "Before:", (b1 << 8) + b2
             tmp = (b1 << 8) + b2 - 1
             if tmp == -1:
                 tmp = 0xffff
-            print "After:", tmp
+            #print "After:", tmp
             self.mem[ self.header.global_table() + (var - 16) * 2 ] = tmp >> 8
             self.mem[ self.header.global_table() + (var - 16) * 2 + 1] = tmp & 0xff
-            print "Global var", var - 15, "has now value", tmp
+            #print "Global var", var - 15, "has now value", tmp
             return tmp
 
     def _print_addr(self):
+        pc = self.pc
         ops = self._read_operands_short_1op()
-        print ops
         uaddr = ops[0]
-        print uaddr
+        #print uaddr
         buf = []
         eot = False
         i = 0
@@ -1276,32 +1303,34 @@ class ZCpu:
         text = decode_text(buf, self.zver, self.mem, self.header.abbrev_table(), False, self.header.alphabet_table(), 0)
         self.output.prints(text)
         #print text
+        self.plugin.debugprint( '{0}: print_addr {1}'.format(format(pc,'X'),ops), 2 )
 
     def _call_1s(self):
+        pc = self.pc
         ops = self._read_operands_short_1op()
-        print ops
         argv = []
         return_addr = self.mem[self.pc]
         self.pc += 1
         self._routine(ops[0],argv,return_addr)
+        self.plugin.debugprint( '{0}: call_1s {1}'.format(format(pc,'X'),ops), 2 )
 
     def _remove_obj(self):
+        pc = self.pc
         ops = self._read_operands_short_1op()
-        print ops
         obj = self._find_object(ops[0])
         if self.zver < 4:
             f = self._find_object(self.mem[obj+4]) # Find the addr of parent
             if self.mem[f+6] == ops[0]: # If the object to move is the first child
                 self.mem[f+6] = self.mem[obj+5]
-                print "Father", self.mem[obj+4], "now has as child", self.mem[obj+5]
+                #print "Father", self.mem[obj+4], "now has as child", self.mem[obj+5]
             else:
                 t = self._find_object(self.mem[f+6]) # Get the first child of the father
-                print "^^", self.mem[t+5], "^^"
+                #print "^^", self.mem[t+5], "^^"
                 tn = self.mem[f+6]
                 while (self.mem[t+5] <> ops[0]): # While the object t isn't a sibling of o
                     tn = self.mem[t+5]
                     t = self._find_object(self.mem[t+5])
-                print "Got ", self.mem[obj+5], "as sibling of", tn
+                #print "Got ", self.mem[obj+5], "as sibling of", tn
                 self.mem[t+5] = self.mem[obj+5]
             self.mem[obj+4] = 0 # Father of obj
             self.mem[obj+5] = 0 # Sibling of obj
@@ -1312,28 +1341,29 @@ class ZCpu:
             if cn == ops[0]: # If the object to move is the first child
                 self.mem[f+10] = self.mem[obj+8]
                 self.mem[f+11] = self.mem[obj+9]
-                print "Father", (self.mem[obj+6] << 8) + self.mem[obj+7], "now has as child", (self.mem[obj+8] << 8) + self.mem[obj+9]
+                #print "Father", (self.mem[obj+6] << 8) + self.mem[obj+7], "now has as child", (self.mem[obj+8] << 8) + self.mem[obj+9]
             else:
                 cn = (self.mem[f+10] << 8) + self.mem[f+11]
                 t = self._find_object(cn) # Get the first child of the father
-                print "^^", (self.mem[t+8] << 8) + self.mem[t+9], "^^"
+                #print "^^", (self.mem[t+8] << 8) + self.mem[t+9], "^^"
                 tn = (self.mem[f+10] << 8) + self.mem[f+11]
                 sn = (self.mem[t+8] << 8) + self.mem[t+9]
                 while (sn <> ops[0]): # While the object t isn't a sibling of o
                     tn = sn
                     t = self._find_object(sn)
                     sn = (self.mem[t+8] << 8) + self.mem[t+9]
-                print "Got ", (self.mem[obj+8] << 8) + self.mem[obj+9], "as sibling of", tn
+                #print "Got ", (self.mem[obj+8] << 8) + self.mem[obj+9], "as sibling of", tn
                 self.mem[t+8] = self.mem[obj+8]
                 self.mem[t+9] = self.mem[obj+9]
             self.mem[obj+6] = 0 # Father of obj
             self.mem[obj+7] = 0
             self.mem[obj+8] = 0 # Sibling of obj
             self.mem[obj+9] = 0
+        self.plugin.debugprint( '{0}: remove_obj {1}'.format(format(pc,'X'),ops), 2 )
 
     def _print_obj(self):
+        pc = self.pc
         ops = self._read_operands_short_1op()
-        print ops
         if (ops[0] < 1) or ((self.zver < 4) and (ops[0] > 255)) or ((self.zver > 3) and (ops[0] > 65535)):
             sys.exit("Invalid object number")
         obj = self._find_object(ops[0])
@@ -1342,20 +1372,21 @@ class ZCpu:
         else:
             addr = (self.mem[obj + 12] << 8) + self.mem[obj + 13]
         length = self.mem[addr]
-        print "Addr:", format(addr, "X"), "Length:", length
+        #print "Addr:", format(addr, "X"), "Length:", length
         buf = []
         i = 1
         while i < (2 * length):
             buf.append(self.mem[addr + i])
             buf.append(self.mem[addr + i + 1])
             i += 2
-        print buf
+        #print buf
         text = decode_text(buf, self.zver, self.mem, self.header.abbrev_table(), False, self.header.alphabet_table(), 0)
         self.output.prints(text)
+        self.plugin.debugprint( '{0}: print_obj {1}'.format(format(pc,'X'),ops), 2 )
 
     def _ret(self):
+        pc = self.pc
         ops = self._read_operands_short_1op()
-        print ops
         self.stack.pop_frame() # We don't need the number of args
         return_var = self.stack.pop_frame()
         prev_pc = self.stack.pop_frame()
@@ -1363,21 +1394,23 @@ class ZCpu:
         if return_var <> -1: # If we want the returned value...
             self._zstore(ops[0],return_var)
         self.pc = prev_pc
+        self.plugin.debugprint( '{0}: ret {1}'.format(format(pc,'X'),ops), 2 )
 
     def _jump(self):
+        pc = self.pc
         ops = self._read_operands_short_1op()
-        print ops
         offset = ops[0] - 2
         if offset > 0x7fff:
             offset = offset - 0x10000
-        print "Jump to offset", offset
+        #print "Jump to offset", offset
         self.pc = self.pc + offset
- 
+        self.plugin.debugprint( '{0}: jump {1}'.format(format(pc,'X'),ops), 2 )
+
     def _print_paddr(self):
+        pc = self.pc
         ops = self._read_operands_short_1op()
-        print ops
         uaddr = self._unpack_addr(ops[0])
-        print uaddr
+        #print uaddr
         buf = []
         eot = False
         i = 0
@@ -1389,11 +1422,12 @@ class ZCpu:
             i += 2
         text = decode_text(buf, self.zver, self.mem, self.header.abbrev_table(), False, self.header.alphabet_table(), 0)
         self.output.prints(text)
-        print text
+        #print text
+        self.plugin.debugprint( '{0}: print_paddr {1}'.format(format(pc,'X'),ops), 2 )
 
     def _load(self):
+        pc = self.pc
         ops = self._read_operands_short_1op()
-        print ops
         if ops[0] == 0:
             data = self.stack.pop() # load shouldn't lose the top value of stack
             self.stack.push(data)
@@ -1406,24 +1440,33 @@ class ZCpu:
             sys.exit("No such variable!!!")
         self._zstore(data, self.pc)
         self.pc += 1
+        self.plugin.debugprint( '{0}: load {1}'.format(format(pc,'X'),ops), 2 )
 
     def _not(self):
+        pc = self.pc
         ops = self._read_operands_short_1op()
-        print ops
         if self.zver == 5:
-            print "This is truly a call_1n"
-            self._call_1n(ops[0])
+            #print "This is truly a call_1n"
+            self._call_1n(pc,ops)
         else:
             r = ops[0] ^ 0xffff
             self._zstore(r,self.mem[self.pc])
             self.pc += 1
+            self.plugin.debugprint( '{0}: not {1}'.format(format(pc,'X'),ops), 2 )
 
-    def _call_1n(self,addr):
+    def _call_1n(self,pc,ops):
         argv = []
+        addr = ops[0]
         return_addr = -1
         self._routine(addr,argv,return_addr)
+        self.plugin.debugprint( '{0}: call_1n {1}'.format(format(pc,'X'),ops), 2 )
 
     def _rtrue(self):
+        pc = self.pc
+        self._rtrue2()
+        self.plugin.debugprint( '{0}: rtrue'.format(format(pc,'X')), 2 )
+
+    def _rtrue2(self):
         self.stack.pop_frame() # We don't need the number of args
         return_var = self.stack.pop_frame()
         prev_pc = self.stack.pop_frame()
@@ -1433,6 +1476,11 @@ class ZCpu:
         self.pc = prev_pc
 
     def _rfalse(self):
+        pc = self.pc
+        self._rfalse2()
+        self.plugin.debugprint( '{0}: rfalse'.format(format(pc,'X')), 2 )
+
+    def _rfalse2(self):
         self.stack.pop_frame() # We don't need the number of args
         return_var = self.stack.pop_frame()
         prev_pc = self.stack.pop_frame()
@@ -1442,6 +1490,7 @@ class ZCpu:
         self.pc = prev_pc
 
     def _print(self):
+        pc = self.pc
         uaddr = self.pc + 1
         buf = []
         eot = False
@@ -1452,14 +1501,15 @@ class ZCpu:
             buf.append(self.mem[uaddr + i])
             buf.append(self.mem[uaddr + i + 1])
             i += 2
-        print buf
+        #print buf
         text = decode_text(buf, self.zver, self.mem, self.header.abbrev_table(), False, self.header.alphabet_table(), 0)
-        print text
-        self.output.prints(text)
         #print text
+        self.output.prints(text)
         self.pc += i + 1
+        self.plugin.debugprint( '{0}: print "{1}"'.format(format(pc,'X'),text), 2 )
 
     def _print_ret(self):
+        pc = self.pc
         uaddr = self.pc + 1
         buf = []
         eot = False
@@ -1470,15 +1520,18 @@ class ZCpu:
             buf.append(self.mem[uaddr + i])
             buf.append(self.mem[uaddr + i + 1])
             i += 2
-        print buf
+        #print buf
         text = decode_text(buf, self.zver, self.mem, self.header.abbrev_table(), False, self.header.alphabet_table(), 0)
         self.output.prints(text + "\n")
-        print text
+        #print text
         self.pc += i + 1
-        self._rtrue()
+        self._rtrue2()
+        self.plugin.debugprint( '{0}: print_ret "{1}"'.format(format(pc,'X'),text), 2 )
 
     def _nop(self):
+        pc = self.pc
         self.pc += 1
+        self.plugin.debugprint( '{0}: nop'.format(format(pc,'X')), 2 )
 
     def _save(self):
         sys.exit("Not implemented yet!")
@@ -1487,24 +1540,31 @@ class ZCpu:
         sys.exit("Not implemented yet!")
 
     def _restart(self):
+        pc = self.pc
         self.intr = 3
+        self.plugin.debugprint( '{0}: restart'.format(format(pc,'X')), 2 )
 
     def _ret_popped(self):
+        pc = self.pc
         data = self.stack.pop()
         self.stack.pop_frame() # We don't need the number of args
         return_var = self.stack.pop_frame()
         prev_pc = self.stack.pop_frame()
         self.stack.pop_local_vars()
-        print "Returned", data
+        #print "Returned", data
         self._zstore(data, return_var)
         self.pc = prev_pc
+        self.plugin.debugprint( '{0}: ret_popped'.format(format(pc,'X')), 2 )
 
     def _pop(self):
+        pc = self.pc
         if self.zver < 5:
             self.stack.pop()
             self.pc += 1
+            self.plugin.debugprint( '{0}: pop'.format(format(pc,'X')), 2 )
         else:
-            print "actually catch is used!"
+            #print "actually catch is used!"
+            self.plugin.debugprint( '{0}: catch'.format(format(pc,'X')), 2 )
             self._catch()
 
     def _catch(self):
@@ -1514,17 +1574,24 @@ class ZCpu:
         sys.exit()
 
     def _quit(self):
+        pc = self.pc
+        self.plugin.debugprint( '{0}: quit'.format(format(pc,'X')), 2 )
         sys.exit("Quit")
 
     def _new_line(self):
+        pc = self.pc
         self.output.new_line()
         self.pc += 1
+        self.plugin.debugprint( '{0}: new_line'.format(format(pc,'X')), 2 )
 
     def _show_status(self):
+        pc = self.pc
         self._show_status2()
         self.pc += 1
+        self.plugin.debugprint( '{0}: show_status'.format(format(pc,'X')), 2 )
 
     def _verify(self):
+        pc = self.pc
         # Read file
         self.file.seek(0x40)
         if (self.zver < 4):
@@ -1555,29 +1622,32 @@ class ZCpu:
             else:
                 offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
             gf = 2
-        print "Offset -", offset
+        jif = 'True'
         if (self.mem[self.pc] & 128) == 128: # Jump if true
             if sum == self.header.checksum(): # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse()
+                    self._rfalse2()
                 elif offset == 1: # Return true
-                    self._rtrue()
+                    self._rtrue2()
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
                 self.pc = self.pc + gf
         else:
+            jif = 'False'
             if not (sum == self.header.checksum()): # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse()
+                    self._rfalse2()
                 elif offset == 1: # Return true
-                    self._rtrue()
+                    self._rtrue2()
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
                 self.pc = self.pc + gf
+        self.plugin.debugprint( '{0}: verify {1} [{2}] {3}'.format(format(pc,'X'),ops,jif,offset), 2 )
 
     def _piracy(self):
+        pc = self.pc
         if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
             offset = self.mem[self.pc] & 63
             gf = 1
@@ -1587,20 +1657,22 @@ class ZCpu:
             else:
                 offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
             gf = 2
-        print "Offset -", offset
+        jif = 'True'
         if (self.mem[self.pc] & 128) == 128: # Jump if true
             if offset == 0: # Return false
-                self._rfalse()
+                self._rfalse2()
             elif offset == 1: # Return true
-                self._rtrue()
+                self._rtrue2()
             else:
                 self.pc = self.pc + gf + offset - 2
         else:
+            jif = 'False'
             self.pc = self.pc + gf
+        self.plugin.debugprint( '{0}: piracy {1} [{2}] {3}'.format(format(pc,'X'),ops,jif,offset), 2 )
 
     def _call(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         i = 1
         argv = []
         while i < len(ops):
@@ -1609,10 +1681,11 @@ class ZCpu:
         return_addr = self.mem[self.pc]
         self.pc = self.pc + 1
         self._routine(ops[0],argv,return_addr)
+        self.plugin.debugprint( '{0}: call {1}'.format(format(pc,'X'),ops), 2 )
 
     def _call_vs(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         ret = self.mem[self.pc]
         self.pc += 1
         argv = []
@@ -1621,37 +1694,40 @@ class ZCpu:
             argv.append(ops[i])
             i += 1
         self._routine(ops[0], argv, ret)
+        self.plugin.debugprint( '{0}: call_vs {1}'.format(format(pc,'X'),ops), 2 )
 
     def _storew(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         addr = ops[0] + (2 * ops[1])
         self.mem[addr] = ops[2] >> 8
         self.mem[addr + 1] = ops[2] & 0xff
+        self.plugin.debugprint( '{0}: storew {1}'.format(format(pc,'X'),ops), 2 )
 
     def _storeb(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         addr = ops[0] + ops[1]
         self.mem[addr] = ops[2]
+        self.plugin.debugprint( '{0}: storeb {1}'.format(format(pc,'X'),ops), 2 )
 
     def _put_prop(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         if ops[0] == 0:
             exit("Can't put prop to nothing!")
         d = self._find_object(ops[0])
-        print d
+        #print d
         if self.zver < 4:
             # Get the property table address
             prop_addr = (self.mem[d+7] << 8) + self.mem[d+8]
-            print prop_addr
+            #print prop_addr
             prop = self._find_prop(prop_addr,ops[1])
             if prop == 0: # Property not found!
                 print "Property ",ops[1]," not found for object ",ops[0]
                 sys.exit()
             else:
-                print self.mem[prop] / 32
+                #print self.mem[prop] / 32
                 if (self.mem[prop] / 32) == 0: # Only 1 byte
                     self.mem[prop+1] = ops[2] & 0xff
                 else:
@@ -1660,7 +1736,7 @@ class ZCpu:
         else:
             # Get the property table address
             prop_addr = (self.mem[d+12] << 8) + self.mem[d+13]
-            print prop_addr
+            #print prop_addr
             prop = self._find_prop(prop_addr,ops[1])
             if prop == 0: # Property not found!
                 print "Property ",ops[1]," not found for object ",ops[0]
@@ -1674,14 +1750,15 @@ class ZCpu:
                 else:
                     self.mem[prop+2] = ops[2] >> 8
                     self.mem[prop+3] = ops[2] & 0xff
+        self.plugin.debugprint( '{0}: put_prop {1}'.format(format(pc,'X'),ops), 2 )
 
     def _sread(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         self.intr = 1
         self.intr_data = [ops[0], ops[1]]
-        print "Max read:", self.mem[ops[0]]
-        print "Max parse:", self.mem[ops[1]]
+        #print "Max read:", self.mem[ops[0]]
+        #print "Max parse:", self.mem[ops[1]]
         #if (self.mem[ops[0]] < 7):
         #    exit("Input buffer too small")
         if self.zver < 4:
@@ -1691,27 +1768,30 @@ class ZCpu:
             pass
         elif self.zver == 5:
             pass
+        self.plugin.debugprint( '{0}: sread {1}'.format(format(pc,'X'),ops), 2 )
 
     def _print_char(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         text = convert_from_zscii(ops[0], self.mem, 0)
         self.output.prints(text)
         #print text
+        self.plugin.debugprint( '{0}: print_char {1}'.format(format(pc,'X'),ops), 2 )
 
     def _print_num(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         if ops[0] > 0x7fff:
             self.output.prints("{0}".format(ops[0] - 65536))
             #print (ops[0] - 65536)
         else:
             self.output.prints("{0}".format(ops[0]))
             #print ops[0]
+        self.plugin.debugprint( '{0}: print_num {1}'.format(format(pc,'X'),ops), 2 )
 
     def _random(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         if ops[0] > 0x7fff: # Change seed
             self.random.set_seed(0x10000 - ops[0])
             r = 0
@@ -1721,37 +1801,42 @@ class ZCpu:
         else: # Get random seed
             self.random.set_mode(0)
             r = 0
-        print "Returns:", r
+        #print "Returns:", r
         self._zstore(r,self.mem[self.pc])
         self.pc += 1
+        self.plugin.debugprint( '{0}: random {1}'.format(format(pc,'X'),ops), 2 )
 
     def _push(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         self.stack.push(ops[0])
+        self.plugin.debugprint( '{0}: push {1}'.format(format(pc,'X'),ops), 2 )
 
     def _pull(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         if self.zver <> 6:
             n = self.stack.pop()
             self._zstore(n, ops[0])
         else:
             pass # TODO: Add support for ver 6
+        self.plugin.debugprint( '{0}: pull {1}'.format(format(pc,'X'),ops), 2 )
 
     def _split_window(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         self.output.show_upper_window(ops[0])
+        self.plugin.debugprint( '{0}: split_window {1}'.format(format(pc,'X'),ops), 2 )
 
     def _set_window(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         self.output.set_window(ops[0])
+        self.plugin.debugprint( '{0}: set_window {1}'.format(format(pc,'X'),ops), 2 )
 
     def _call_vs2(self):
+        pc = self.pc
         ops = self._read_operands_var_2op2()
-        print ops
         ret = self.mem[self.pc]
         self.pc += 1
         argv = []
@@ -1760,40 +1845,49 @@ class ZCpu:
             argv.append(ops[i])
             i += 1
         self._routine(ops[0], argv, ret)
+        self.plugin.debugprint( '{0}: call_vs2 {1}'.format(format(pc,'X'),ops), 2 )
 
     def _erase_window(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         if ops[0] == 0xffff: # Unsplit and clear screen
             # TODO: Unsplit
+            self.plugin.debugprint("TODO:Unsplit", 2)
             self.output.clear_screen()
         elif ops[0] == 0xfffe: # Just clear the screen
             pass
         else: # Erase window
             pass
+        self.plugin.debugprint( '{0}: erase_window {1}'.format(format(pc,'X'),ops), 2 )
 
     def _erase_line(self):
         sys.exit("Not implemented yet!")
 
     def _set_cursor(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         self.output.set_cursor(ops[1],ops[0])
+        self.plugin.debugprint( '{0}: set_cursor {1}'.format(format(pc,'X'),ops), 2 )
 
     def _get_cursor(self):
         sys.exit("Not implemented yet!")
 
     def _set_text_style(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
         print ops
         self.output.set_font_style(ops[0])
+        self.plugin.debugprint( '{0}: set_text_style {1}'.format(format(pc,'X'),ops), 2 )
 
     def _buffer_mode(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
         print ops
         self.output.set_buffering(ops[0])
+        self.plugin.debugprint( '{0}: buffer_mode {1}'.format(format(pc,'X'),ops), 2 )
 
     def _output_stream(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
         print ops
         if ops[0] <> 0:
@@ -1805,56 +1899,63 @@ class ZCpu:
                 self.output.deselect_stream(0x10000 - ops[0])
             else:
                 self.output.select_stream(ops[0],table)
+        self.plugin.debugprint( '{0}: output_stream {1}'.format(format(pc,'X'),ops), 2 )
 
     def _input_stream(self):
         sys.exit("Not implemented yet!")
 
     def _sound_effect(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         # TODO: Implement beeps and sounds!
+        self.plugin.debugprint( '{0}: sound_effect {1}'.format(format(pc,'X'),ops), 2 )
+        self.plugin.debugprint( 'TODO:Sound effects', 2)
 
     def _read_char(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         # TODO: Implement timed input
         if len(ops) > 1:
             sys.exit("Not implemented yet!")
         self.intr = 2
+        self.plugin.debugprint( '{0}: read_char {1}'.format(format(pc,'X'),ops), 2 )
 
     def _scan_table(self):
         sys.exit("Not implemented yet!")
 
     def _not_var(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         r = ops[0] ^ 0xffff
         self._zstore(r,self.mem[self.pc])
         self.pc += 1
+        self.plugin.debugprint( '{0}: not_var {1}'.format(format(pc,'X'),ops), 2 )
 
     def _call_vn(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         argv = []
         i = 1
         while i < len(ops):
             argv.append(ops[i])
             i += 1
         self._routine(ops[0], argv, -1)
+        self.plugin.debugprint( '{0}: call_vn {1}'.format(format(pc,'X'),ops), 2 )
 
     def _call_vn2(self):
+        pc = self.pc
         ops = self._read_operands_var_2op2()
-        print ops
         argv = []
         i = 1
         while i < len(ops):
             argv.append(ops[i])
             i += 1
         self._routine(ops[0], argv, -1)
+        self.plugin.debugprint( '{0}: call_vn2 {1}'.format(format(pc,'X'),ops), 2 )
 
     def _tokenise(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         self.intr = 4
         self.intr_data = [0,0,0,0]
         self.intr_data[0] = ops[0]
@@ -1863,6 +1964,7 @@ class ZCpu:
             self.intr_data[2] = ops[2]
         if len(ops) == 4:
             self.intr_data[3] = ops[3]
+        self.plugin.debugprint( '{0}: tokenise {1}'.format(format(pc,'X'),ops), 2 )
 
     def _encode_text(self):
         sys.exit("Not implemented yet!")
@@ -1874,10 +1976,10 @@ class ZCpu:
         sys.exit("Not implemented yet!")
 
     def _check_arg_count(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         noa = self.stack.pop_frame()
-        print "Number of args:",noa
+        #print "Number of args:",noa
         self.stack.push_frame(noa)
         r = False
         for i in range(len(ops)):
@@ -1892,27 +1994,29 @@ class ZCpu:
             else:
                 offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
             gf = 2
-        print "Offset -", offset
+        jif = 'True'
         if (self.mem[self.pc] & 128) == 128: # Jump if true
             if r: # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse()
+                    self._rfalse2()
                 elif offset == 1: # Return true
-                    self._rtrue()
+                    self._rtrue2()
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
                 self.pc = self.pc + gf
         else:
+            jif = 'False'
             if not r: # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse()
+                    self._rfalse2()
                 elif offset == 1: # Return true
-                    self._rtrue()
+                    self._rtrue2()
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
                 self.pc = self.pc + gf
+        self.plugin.debugprint( '{0}: check_arg_count {1} [{2}] {3}'.format(format(pc,'X'),ops,jif,offset), 2 )
 
     def _save_ext(self):
         sys.exit("Not implemented yet!")
