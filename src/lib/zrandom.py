@@ -2,7 +2,7 @@
 
 import random
 
-__author__="oscar"
+__author__="Theofilos Intzoglou"
 __date__ ="$22 Ιουν 2009 12:28:10 πμ$"
 
 class ZRandom:

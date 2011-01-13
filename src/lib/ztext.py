@@ -2,7 +2,7 @@
 
 from array import array
 
-__author__="oscar"
+__author__="Theofilos Intzoglou"
 __date__ ="$24 Ιουν 2009 10:28:44 μμ$"
 
 def decode_text(buffer, version, mem, abbrev, isabbrev, alpha_table, unicode_table):

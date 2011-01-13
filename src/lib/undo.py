@@ -1,6 +1,6 @@
 # -*- coding: utf-8
 
-__author__="oscar"
+__author__="Theofilos Intzoglou"
 __date__ ="$29 Σεπ 2010 10:46:21 πμ$"
 
 import Queue

@@ -5,7 +5,7 @@
 from array import array
 import sys
 
-__author__="oscar"
+__author__="Theofilos Intzoglou"
 __date__ ="$17 Ιουν 2009 1:35:47 μμ$"
 
 class ZMemory:
@@ -23,7 +23,7 @@ class ZMemory:
                 self.mem.append(0)
         self.static_beg = 256*self.mem[0x0e]+self.mem[0x0f];
         self.high_beg = 256*self.mem[0x04]+self.mem[0x05];
-        print 'Static:',self.static_beg,'High:',self.high_beg
+        #print 'Static:',self.static_beg,'High:',self.high_beg
         # TODO: Find static_end
 
     def read(self,offset):

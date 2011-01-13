@@ -3,7 +3,7 @@
 from array import array
 import Queue
 
-__author__="oscar"
+__author__="Theofilos Intzoglou"
 __date__ ="$7 Ιουλ 2009 3:35:43 μμ$"
 
 class ZStack:
@@ -40,7 +40,7 @@ class ZStack:
     def pop_local_vars(self):
         for i in range(15):
             n = self.frames.get()
-            print n
+            #print n
             self.local_vars[14 - i] = n
         #for i in range(15):
         #    print "Popped:", self.local_vars[i]

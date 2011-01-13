@@ -1,7 +1,7 @@
 import sys
 # -*- coding: utf-8
 
-__author__="oscar"
+__author__="Theofilos Intzoglou"
 __date__ ="$1 Ιουλ 2009 5:20:39 μμ$"
 
 class ZOutput:
@@ -46,14 +46,14 @@ class ZOutput:
 
     def prints(self,s):
         # TODO: Buffering
-        print "Output streams:", self.plugin.selected_ostreams()
+        #print "Output streams:", self.plugin.selected_ostreams()
         if 3 in self.plugin.selected_ostreams():
             addr = self.table_list[len(self.table_list) - 2]
             addr += 2
             l = len(s)
             chars = self.table_list[len(self.table_list) - 1] + l
             self.table_list[len(self.table_list) - 1] = chars
-            print "Printing in memory -- ", s
+            #print "Printing in memory -- ", s
             for i in range(l):
                 if ord(s[i]) == 10:
                     self.mem[addr + i] = 13

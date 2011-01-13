@@ -2025,36 +2025,40 @@ class ZCpu:
         sys.exit("Not implemented yet!")
 
     def _log_shift(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         shift = self._s2i(ops[1])
         if shift > 0:
             res = ops[0] << ops[1]
         else:
             res = ops[0] >> abs(shift)
-        print "Result:", self._i2s(res)
+        #print "Result:", self._i2s(res)
         self._zstore(self._i2s(res), self.mem[self.pc])
         self.pc += 1
+        self.plugin.debugprint( '{0}: log_shift {1}'.format(format(pc,'X'),ops), 2 )
 
     def _art_shift(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         shift = self._s2i(ops[1])
         if shift > 0:
             res = self._s2i(ops[0]) << ops[1]
         else:
             res = self._s2i(ops[0]) >> abs(shift)
-        print "Result:", self._i2s(res)
+        #print "Result:", self._i2s(res)
         self._zstore(self._i2s(res), self.mem[self.pc])
         self.pc += 1
+        self.plugin.debugprint( '{0}: art_shift {1}'.format(format(pc,'X'),ops), 2 )
 
     def _set_font(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
+        self.plugin.debugprint( 'TODO:Implement all fonts', 2)
         # TODO: Implement other fonts
         res = self.output.set_font(ops[0])
         self._zstore(res, self.mem[self.pc])
         self.pc += 1
+        self.plugin.debugprint( '{0}: set_font {1}'.format(format(pc,'X'),ops), 2 )
 
     def _draw_picture(self):
         sys.exit("Not implemented yet!")
@@ -2069,11 +2073,13 @@ class ZCpu:
         sys.exit("Not implemented yet!")
 
     def _save_undo(self):
+        pc = self.pc
+        self.plugin.debugprint( 'TODO:Implement undo', 2)
         # TODO: Implement undo!
         ops = self._read_operands_var_2op()
-        print ops
         self._zstore(65535, self.mem[self.pc]) # For now say that undo isn't available :-)
         self.pc += 1
+        self.plugin.debugprint( '{0}: save_undo {1}'.format(format(pc,'X'),ops), 2 )
 
     def _restore_undo(self):
         sys.exit("Not implemented yet!")
@@ -2082,8 +2088,8 @@ class ZCpu:
         sys.exit("Not implemented yet!")
 
     def _check_unicode(self):
+        pc = self.pc
         ops = self._read_operands_var_2op()
-        print ops
         if (ops[0] >= 0x20) and (ops[0] <= 0x7e):
             self._zstore(3, self.mem[self.pc])
         elif ops[0] == 0xa0:
@@ -2093,6 +2099,7 @@ class ZCpu:
         else:
             self._zstore(0, self.mem[self.pc])
         self.pc += 1
+        self.plugin.debugprint( '{0}: check_unicode {1}'.format(format(pc,'X'),ops), 2 )
 
     def _move_window(self):
         sys.exit("Not implemented yet!")
@@ -2136,13 +2143,13 @@ class ZCpu:
     def _read_operands_short_1op(self):
         values = []
         if (self.mem[self.pc] & 48) == 0:
-            print "Long const"
+            #print "Long const"
             self.pc += 1
             num = ( self.mem[self.pc] << 8 ) + self.mem[self.pc+1]
             values.append( num )
             self.pc += 2
         elif (self.mem[self.pc] & 48) == 16:
-            print "Small const"
+            #print "Small const"
             self.pc += 1
             num = self.mem[self.pc]
             values.append( num )
@@ -2150,13 +2157,13 @@ class ZCpu:
         else:
             self.pc += 1
             if self.mem[self.pc] == 0:
-                print "Got stack!"
+                #print "Got stack!"
                 values.append( self.stack.pop() )
             elif self.mem[self.pc] < 0x10:
-                print "Got local variable", self.mem[self.pc]
+                #print "Got local variable", self.mem[self.pc]
                 values.append( self.stack.local_vars[self.mem[self.pc] - 1] )
             else:
-                print "Got global var", (self.mem[self.pc] - 15)
+                #print "Got global var", (self.mem[self.pc] - 15)
                 b1 = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 ]
                 b2 = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 + 1]
                 values.append( (b1 << 8) + b2 )
@@ -2173,7 +2180,7 @@ class ZCpu:
         for i in range(4):
             type = ( type_byte & mask) >> (3-i)*2
             if type == 0: # Large constant (2 bytes)
-                print "PC:",hex(self.pc),"--",hex(self.mem[self.pc]),",",hex(self.mem[self.pc+1])
+                #print "PC:",hex(self.pc),"--",hex(self.mem[self.pc]),",",hex(self.mem[self.pc+1])
                 num = ( self.mem[self.pc] << 8 ) + self.mem[self.pc+1]
                 values.append( num )
                 self.pc = self.pc + 2
@@ -2205,7 +2212,7 @@ class ZCpu:
         for i in range(4):
             type = ( type_byte & mask) >> (3-i)*2
             if type == 0: # Large constant (2 bytes)
-                print "PC:",hex(self.pc),"--",hex(self.mem[self.pc]),",",hex(self.mem[self.pc+1])
+                #print "PC:",hex(self.pc),"--",hex(self.mem[self.pc]),",",hex(self.mem[self.pc+1])
                 num = ( self.mem[self.pc] << 8 ) + self.mem[self.pc+1]
                 values.append( num )
                 self.pc = self.pc + 2
@@ -2229,7 +2236,7 @@ class ZCpu:
         for i in range(4):
             type = ( type_byte2 & mask) >> (3-i)*2
             if type == 0: # Large constant (2 bytes)
-                print "PC:",hex(self.pc),"--",hex(self.mem[self.pc]),",",hex(self.mem[self.pc+1])
+                #print "PC:",hex(self.pc),"--",hex(self.mem[self.pc]),",",hex(self.mem[self.pc+1])
                 num = ( self.mem[self.pc] << 8 ) + self.mem[self.pc+1]
                 values.append( num )
                 self.pc = self.pc + 2
@@ -2302,21 +2309,21 @@ class ZCpu:
         # Check where to save the value
         if where == 0:
             self.stack.push(value)
-            print "Value",value," pushed into stack"
+            #print "Value",value," pushed into stack"
         elif where < 16:
             self.stack.local_vars[where - 1] = value
-            print "Local var", where, "has now value", value
+            #print "Local var", where, "has now value", value
         elif where < 256:
             self.mem[self.header.global_table() + (where - 16) * 2] = (value >> 8)
             self.mem[self.header.global_table() + (where - 16) * 2 + 1] = (value & 0xff)
-            print "Global var", where - 15, "has now value", value
+            #print "Global var", where - 15, "has now value", value
         else:
             self.mem[where] = value >> 8
             self.mem[where + 1] = value & 0xff
 
     def _i2s(self,value):
         """Convert value to short int"""
-        print "i2s --", value
+        #print "i2s --", value
         if value < 0:
             value = 0x10000 + value
         if value > 0xffff: # Overflow
@@ -2358,7 +2365,7 @@ class ZCpu:
                 sys.exit("Couln't find object")
 
     def _find_prop(self,table_addr,prop):
-        print "--", format(table_addr, "X"), "--", self.mem[table_addr]
+        #print "--", format(table_addr, "X"), "--", self.mem[table_addr]
         l = self.mem[table_addr]
         a = table_addr + 1
         i = 0
@@ -2370,22 +2377,22 @@ class ZCpu:
             a = a + 1
             i = i + 1
         dtext = decode_text(text, self.zver, self.mem, self.header.abbrev_table(), False, self.header.alphabet_table(), 0)
-        print dtext
+        #print dtext
         p = table_addr + self.mem[table_addr] * 2 + 1 # Skip property name
         if self.zver < 4:
-            print "++",p,"++"
+            #print "++",p,"++"
             while (self.mem[p] % 32) > prop:
                 p = p + (self.mem[p] // 32) + 2
-                print "++=",p,"=++"
+                #print "++=",p,"=++"
             if (self.mem[p] % 32) == prop:
                 return p
             else:
                 return 0
         else:
-            print "++",format(p,"X"),"++"
+            #print "++",format(p,"X"),"++"
             while (self.mem[p] & 0x3f) > prop:
                 if (self.mem[p] & 0x80) <> 0: # Top bit is 1 so there is a second byte
-                    print "There is a second byte!"
+                    #print "There is a second byte!"
                     p = p + 1
                     num = self.mem[p] & 0x3f
                     if num == 0:
@@ -2395,7 +2402,7 @@ class ZCpu:
                     p = p + 3
                 else: # Only 1 byte of data
                     p = p + 2
-                print "++=",format(p,"X"),"=++"
+                #print "++=",format(p,"X"),"=++"
             if (self.mem[p] & 0x3f) == prop:
                 return p
             else:
@@ -2447,11 +2454,11 @@ class ZCpu:
         self.stack.push_frame(len(argv))
         # Jump to routine address
         self.pc = self._unpack_addr(r)
-        print "Max:", self.header.length_of_file()
-        print self.pc
+        #print "Max:", self.header.length_of_file()
+        #print self.pc
         if self.pc > self.header.length_of_file():
             sys.exit("Call out of bounds!")
-        print self.mem[self.pc]
+        #print self.mem[self.pc]
         self.stack.local_vars_num = self.mem[self.pc]
         self.pc = self.pc + 1
         if self.stack.local_vars_num > 0:
@@ -2461,14 +2468,14 @@ class ZCpu:
                     self.stack.local_vars[i] = (self.mem[self.pc] << 8) + self.mem[self.pc + 1]
                     if i < len(argv):
                         self.stack.local_vars[i] = argv[i]
-                    print self.stack.local_vars[i]
+                    #print self.stack.local_vars[i]
                     self.pc = self.pc + 2
             else:
                 for i in range(self.stack.local_vars_num):
                     self.stack.local_vars[i] = 0
                     if i < len(argv):
                         self.stack.local_vars[i] = argv[i]
-                    print self.stack.local_vars[i]
+                    #print self.stack.local_vars[i]
 
     def got_char(self, char):
         self._zstore(char, self.mem[self.pc])

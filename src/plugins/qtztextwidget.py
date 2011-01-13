@@ -195,7 +195,7 @@ class ZTextWidget(QWidget):
                 c = self.lower_win_cursor
                 i = 0
                 total = len(str)
-                print "Total -", total
+                #print "Total -", total
                 while (i < total):
                     s = ""
                     while (i < total) and (str[i] <> '\n') and (c <= self.width):
@@ -203,7 +203,7 @@ class ZTextWidget(QWidget):
                         i += 1
                         c += 1
                     self.print_line(s)
-                    print "--> [i, c, total]", i, c, total, " ++ ", s
+                    #print "--> [i, c, total]", i, c, total, " ++ ", s
                     if c > self.width:
                         self.insert_new_line()
                         self.lower_win_cursor = 1
@@ -220,8 +220,8 @@ class ZTextWidget(QWidget):
                 i = self.upper_win_cursor[0]
                 j = 0
                 l = self.upper_win_cursor[1]
-                print "-", i, l, "-", str
-                print "len upperbuf=", len(self.upper_buf)
+                #print "-", i, l, "-", str
+                #print "len upperbuf=", len(self.upper_buf)
                 while (i <= self.width) and (j < len(str)):
                     if str[j] <> '\n':
                         self.upper_buf[(((l - 1) * self.width) + (i - 1)) * 4] = self.cur_fg
@@ -240,7 +240,7 @@ class ZTextWidget(QWidget):
 
     def print_line(self,str):
         col = self.lower_win_cursor
-        print "Column:", col, str
+        #print "Column:", col, str
         if self.cur_win == 0: # Lower win
             for i in range(len(str)):
                 self.buf[(col - 1 + i) * 4] = self.cur_fg
@@ -258,7 +258,7 @@ class ZTextWidget(QWidget):
                 self.buf[((col - 1) * 4) + 3] = c
                 self.lower_win_cursor += 1
             if self.lower_win_cursor > self.width: # If we exceed screen width
-                print "I insert a newline"
+                #print "I insert a newline"
                 self.insert_new_line()
                 self.lower_win_cursor = 1
             elif c == '\n':
@@ -321,7 +321,7 @@ class ZTextWidget(QWidget):
                 for i in range(4):
                     self.buf[col * 4 + i] = 0
                 del self.input_buf[self.cur_pos - self.start_pos]
-                print self.input_buf
+                #print self.input_buf
                 self.lower_win_cursor -= 1
                 self.update()
             # self.keyPressed.emit() # No keycode available for zscii
@@ -343,7 +343,7 @@ class ZTextWidget(QWidget):
             text = ""
             for i in range(len(self.input_buf)):
                 text += self.input_buf[i]
-            print text
+            #print text
             self.print_char('\n')
             self.hide_cursor()
             self.returnPressed.emit(text)
@@ -356,13 +356,13 @@ class ZTextWidget(QWidget):
             e.accept()
             self.keyPressed.emit(27)
         elif e.text().isEmpty() == False:
-            print self.cur_pos, self.start_pos, self.max_char
+            #print self.cur_pos, self.start_pos, self.max_char
             if (self.cur_pos - self.start_pos) < self.max_char:
                 self.cur_pos += 1
                 self.top_pos += 1
                 if (self.cur_pos - self.start_pos) <= len(self.input_buf):
                     self.input_buf.insert(self.cur_pos - self.start_pos - 1, unicode(e.text()))
-                    print "CurPos:", self.cur_pos
+                    #print "CurPos:", self.cur_pos
                     col = self.cur_pos - 2
                     self.buf[col * 4 + 3] = unicode(e.text())
                     self.buf[col * 4 + 2] = 0
@@ -372,7 +372,7 @@ class ZTextWidget(QWidget):
                 else:
                     self.input_buf.append(unicode(e.text()))
                     self.print_char(e.text())
-                print self.input_buf
+                #print self.input_buf
                 self.update()
             e.accept()
             t = ord(str(e.text()))
@@ -404,7 +404,7 @@ class ZTextWidget(QWidget):
 
     def split_window(self,lines,ver):
         if self.upper_buf_height > lines: # New upper win is smaller. I should copy the rest of the buffer to main buffer
-            print "Copying..."
+            #print "Copying..."
             l = lines + 1
             while l <= self.upper_buf_height:
                 for i in range(self.width * 4):
@@ -425,7 +425,7 @@ class ZTextWidget(QWidget):
         self._ostream[n - 1].selected = False
 
     def insert_new_line(self):
-        print "New line"
+        #print "New line"
         # TODO: Not just insert new lines but also remove old unwanted ones
         for i in range(self.width * 4):
             self.buf.insert(0, 0)

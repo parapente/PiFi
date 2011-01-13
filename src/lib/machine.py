@@ -166,7 +166,7 @@ class ZMachine:
         data = f.read(max_length)
         self.mem = ZMemory(data,max_length)
         self.header = ZHeader(self.mem.mem)
-        self.header.print_all()
+        self.header.print_all(self.plugin)
         self.input = ZInput(self.plugin)
         self.zver = self.header.version()
         self.output = ZOutput(self.zver, self.mem.mem, self.plugin)
