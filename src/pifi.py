@@ -8,11 +8,14 @@ from plugins.qtplugin import QtPlugin
 import sys
 import types
 import argparse
+import signal
 
 __author__="Theofilos Intzoglou"
 __date__ ="$17 Ιουν 2009 2:24:30 πμ$"
 
 if __name__ == "__main__":
+
+    signal.signal(signal.SIGINT, signal.SIG_DFL) # Break on control-c
 
     # @type f file
     # @type parser argparse.ArgumentParser
