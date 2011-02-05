@@ -1683,19 +1683,6 @@ class ZCpu:
         self._routine(ops[0],argv,return_addr)
         self.plugin.debugprint( '{0}: call {1}'.format(format(pc,'X'),ops), 2 )
 
-    def _call_vs(self):
-        pc = self.pc
-        ops = self._read_operands_var_2op()
-        ret = self.mem[self.pc]
-        self.pc += 1
-        argv = []
-        i = 1
-        while i < len(ops):
-            argv.append(ops[i])
-            i += 1
-        self._routine(ops[0], argv, ret)
-        self.plugin.debugprint( '{0}: call_vs {1}'.format(format(pc,'X'),ops), 2 )
-
     def _storew(self):
         pc = self.pc
         ops = self._read_operands_var_2op()
