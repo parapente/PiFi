@@ -346,9 +346,9 @@ class ZTextWidget(QWidget):
             #print text
             self.print_char('\n')
             self.hide_cursor()
+            self.keyPressed.emit(13)
             self.returnPressed.emit(text)
             e.accept()
-            self.keyPressed.emit(13)
         elif ((e.key() >= Qt.Key_F1) and (e.key() <= Qt.Key_F12)):
             e.accept()
             self.keyPressed.emit(133 + e.key() - Qt.Key_F1)
