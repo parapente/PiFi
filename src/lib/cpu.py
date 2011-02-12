@@ -670,6 +670,10 @@ class ZCpu:
             ops = self._read_operands_var_2op()
         else: # Long 2OP
             ops = self._read_operands_long_2op()
+        self.plugin.debugprint( '{0}: set_attr {1}'.format(format(pc,'X'),ops), 2 )
+        if ops[0] == 0:
+            print "set_attr: Cannot set attr of object 0!"
+            return
         obj = self._find_object(ops[0])
         if self.zver < 4:
             b = (self.mem[obj] << 24) + (self.mem[obj + 1] << 16) + (self.mem[obj + 2] << 8) + self.mem[obj + 3]
@@ -689,7 +693,6 @@ class ZCpu:
             self.mem[obj + 3] = (b & 0xff0000) >> 16
             self.mem[obj + 4] = (b & 0xff00) >> 8
             self.mem[obj + 5] = b & 0xff
-        self.plugin.debugprint( '{0}: set_attr {1}'.format(format(pc,'X'),ops), 2 )
 
     def _clear_attr(self):
         pc = self.pc
@@ -697,6 +700,10 @@ class ZCpu:
             ops = self._read_operands_var_2op()
         else: # Long 2OP
             ops = self._read_operands_long_2op()
+        self.plugin.debugprint( '{0}: clear_attr {1}'.format(format(pc,'X'),ops), 2 )
+        if ops[0] == 0:
+            print "clear_attr: Cannot clear attr of object 0!"
+            return
         obj = self._find_object(ops[0])
         if self.zver < 4:
             b = (self.mem[obj] << 24) + (self.mem[obj + 1] << 16) + (self.mem[obj + 2] << 8) + self.mem[obj + 3]
@@ -718,7 +725,6 @@ class ZCpu:
                 self.mem[obj + 3] = (b & 0xff0000) >> 16
                 self.mem[obj + 4] = (b & 0xff00) >> 8
                 self.mem[obj + 5] = b & 0xff
-        self.plugin.debugprint( '{0}: clear_attr {1}'.format(format(pc,'X'),ops), 2 )
 
     def _store(self):
         pc = self.pc
@@ -874,7 +880,7 @@ class ZCpu:
         else: # Long 2OP
             ops = self._read_operands_long_2op()
         if ops[0] == 0:
-            self.output.prints("** get_prop_addr got 0 as object! **")
+            self.output.prints("** get_prop_addr got 0 as object! **\n")
             prop = 0
             #sys.exit("Can't get property of nothing!")
         else:
