@@ -61,11 +61,13 @@ class ZMachine:
                     self.mem.mem[taddr + 1 + i] = ord(str(text[i]))
             i += 1
             self.mem.mem[taddr + 1 + i] = 0
+            self.lex(taddr,paddr,0,0)
         else:
-            for i in range(len(text)):
-                self.mem.mem[taddr + 2 + i] = ord(str(text[i]))
-            self.mem.mem[taddr + 1] = len(text)
-        self.lex(taddr,paddr,0,0)
+            if taddr != 0:
+                for i in range(len(text)):
+                    self.mem.mem[taddr + 2 + i] = ord(str(text[i]))
+                self.mem.mem[taddr + 1] = len(text)
+                self.lex(taddr,paddr,0,0)
         self.cpu.intr = 0
         if self.zver > 4:
             self.cpu.got_char(10)
@@ -85,7 +87,7 @@ class ZMachine:
             for i in range(self.mem.mem[text + 1]):
                 txt += unichr(self.mem.mem[text + 2 + i])
         l = len(txt)
-        self.plugin.debugprint("txt='"+txt+"' Len:"+l, 2)
+        self.plugin.debugprint("txt='"+txt+"' Len:"+str(l), 2)
         words = []
         w = ""
         i = 0
@@ -121,13 +123,13 @@ class ZMachine:
                     w1 += words[i][j]
             else:
                 w1 = words[i]
-            self.plugin.debugprint(w1+"- len -"+len(w1), 2)
+            self.plugin.debugprint(w1+"- len -"+str(len(w1)), 2)
             if self.cpu.intr_data[1] <> 0: # No parsing is required
                 # Find the data for the record
                 addr = self.dict.find_word(w1)
                 l = len(words[i])
                 pos = words[i + 1]
-                self.plugin.debugprint("word:"+w1+"Addr:"+addr+"Pos:"+pos, 2)
+                self.plugin.debugprint("word:"+w1+"Addr:"+str(addr)+"Pos:"+str(pos), 2)
                 # Write the record in parse buffer
                 self.mem.mem[parse] = addr >> 8
                 self.mem.mem[parse + 1] = addr & 0xff

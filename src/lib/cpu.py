@@ -737,6 +737,10 @@ class ZCpu:
             ops = self._read_operands_var_2op()
         else: # Long 2OP
             ops = self._read_operands_long_2op()
+        self.plugin.debugprint( '{0}: insert_obj {1}'.format(format(pc,'X'),ops), 2 )
+        if ops[1] == 0 or ops[0] == 0:
+            print "insert_obj: Cannot use 0 as source or destination!"
+            return
         d = self._find_object(ops[1])
         o = self._find_object(ops[0])
         if self.zver < 4:
@@ -760,35 +764,35 @@ class ZCpu:
             self.mem[o+5] = dchild # Set sibling of o
             #print "Sibling of", ops[0], "is", dchild
         else:
-            dchild_p1 = self.mem[d+10]
-            dchild_p2 = self.mem[d+11]
-            self.mem[d+10] = ops[0] >> 8 # Set child of d
-            self.mem[d+11] = ops[0] & 0xff
             n = (self.mem[o+6] << 8) + self.mem[o+7]
-            if n <> 0: # If the object to move has a parent
-                f = self._find_object(n) # Find the addr of parent
-                cn = (self.mem[f+10] << 8) + self.mem[f+11]
-                if cn == ops[0]: # If the object to move is the first child
-                    self.mem[f+10] = self.mem[o+8]
-                    self.mem[f+11] = self.mem[o+9]
-                    #print "Father", n, "now has as child", ((self.mem[o+8] << 8) + self.mem[o+9])
-                else:
-                    t = self._find_object(cn) # Get the first child of the father
-                    sn = (self.mem[t+8] << 8) + self.mem[t+9]
-                    #print "^^", sn, "^^"
-                    tn = cn
-                    while (sn <> ops[0]): # While the object t isn't a sibling of o
-                        tn = sn
-                        t = self._find_object(sn)
+            if n <> ops[1]: # If the parent of o isn't already d
+                dchild_p1 = self.mem[d+10]
+                dchild_p2 = self.mem[d+11]
+                self.mem[d+10] = ops[0] >> 8 # Set child of d
+                self.mem[d+11] = ops[0] & 0xff
+                if n <> 0: # If the object to move has a parent
+                    f = self._find_object(n) # Find the addr of parent
+                    cn = (self.mem[f+10] << 8) + self.mem[f+11]
+                    if cn == ops[0]: # If the object to move is the first child
+                        self.mem[f+10] = self.mem[o+8]
+                        self.mem[f+11] = self.mem[o+9]
+                        #print "Father", n, "now has as child", ((self.mem[o+8] << 8) + self.mem[o+9])
+                    else:
+                        t = self._find_object(cn) # Get the first child of the father
                         sn = (self.mem[t+8] << 8) + self.mem[t+9]
-                    #print "Got ", ((self.mem[o+8] << 8) + self.mem[o+9]), "as sibling of", tn
-                    self.mem[t+8] = self.mem[o+8]
-                    self.mem[t+9] = self.mem[o+9]
-            self.mem[o+6] = ops[1] >> 8 # Set father of o
-            self.mem[o+7] = ops[1] & 0xff
-            self.mem[o+8] = dchild_p1 # Set sibling of o
-            self.mem[o+9] = dchild_p2
-        self.plugin.debugprint( '{0}: insert_obj {1}'.format(format(pc,'X'),ops), 2 )
+                        #print "^^", sn, "^^"
+                        tn = cn
+                        while (sn <> ops[0]): # While the object t isn't a sibling of o
+                            tn = sn
+                            t = self._find_object(sn)
+                            sn = (self.mem[t+8] << 8) + self.mem[t+9]
+                        #print "Got ", ((self.mem[o+8] << 8) + self.mem[o+9]), "as sibling of", tn
+                        self.mem[t+8] = self.mem[o+8]
+                        self.mem[t+9] = self.mem[o+9]
+                self.mem[o+6] = ops[1] >> 8 # Set father of o
+                self.mem[o+7] = ops[1] & 0xff
+                self.mem[o+8] = dchild_p1 # Set sibling of o
+                self.mem[o+9] = dchild_p2
 
     def _loadw(self):
         pc = self.pc
@@ -823,7 +827,11 @@ class ZCpu:
         else: # Long 2OP
             ops = self._read_operands_long_2op()
         if ops[0] == 0:
-            sys.exit("Can't get property of nothing!")
+            # Failing gracefully...
+            print "get_prop: Can't get property of nothing!"
+            self._zstore(0, self.mem[self.pc])
+            self.pc += 1
+            return
         obj = self._find_object(ops[0])
         if self.zver < 4:
             addr = (self.mem[obj + 7] << 8) + self.mem[obj + 8]
@@ -989,7 +997,17 @@ class ZCpu:
         if ops[1] == 0: # Division by zero
             print "Divide by zero!"
             exit(20)
-        result = self._i2s(self._s2i(ops[0]) // self._s2i(ops[1]))
+        a = self._s2i(ops[0])
+        b = self._s2i(ops[1])
+        if a < 0:
+            s1 = -1
+        else:
+            s1 = 1
+        if b < 0:
+            s2 = -1
+        else:
+            s2 = 1
+        result = self._i2s(s1*s2*(abs(a)/abs(b)))
         #print "Result:", result
         self._zstore(result, self.mem[self.pc])
         self.pc = self.pc + 1
@@ -1004,7 +1022,14 @@ class ZCpu:
         if ops[1] == 0: # Division by zero
             print "Divide by zero!"
             exit(20)
-        result = self._i2s(self._s2i(ops[0]) % self._s2i(ops[1]))
+        a = self._s2i(ops[0])
+        b = self._s2i(ops[1])
+        if a < 0:
+            s1 = -1
+        else:
+            s1 = 1
+        # mod always follows the sign of the first num
+        result = self._i2s(s1*(abs(a)%abs(b)))
         #print "Result:", result
         self._zstore(result, self.mem[self.pc])
         self.pc = self.pc + 1
@@ -1317,6 +1342,9 @@ class ZCpu:
     def _remove_obj(self):
         pc = self.pc
         ops = self._read_operands_short_1op()
+        self.plugin.debugprint( '{0}: remove_obj {1}'.format(format(pc,'X'),ops), 2 )
+        if ops[0] == 0: # We have nothing to do here!
+            return
         obj = self._find_object(ops[0])
         if self.zver < 4:
             f = self._find_object(self.mem[obj+4]) # Find the addr of parent
@@ -1326,9 +1354,7 @@ class ZCpu:
             else:
                 t = self._find_object(self.mem[f+6]) # Get the first child of the father
                 #print "^^", self.mem[t+5], "^^"
-                tn = self.mem[f+6]
                 while (self.mem[t+5] <> ops[0]): # While the object t isn't a sibling of o
-                    tn = self.mem[t+5]
                     t = self._find_object(self.mem[t+5])
                 #print "Got ", self.mem[obj+5], "as sibling of", tn
                 self.mem[t+5] = self.mem[obj+5]
@@ -1336,30 +1362,30 @@ class ZCpu:
             self.mem[obj+5] = 0 # Sibling of obj
         else:
             fn = (self.mem[obj+6] << 8) + self.mem[obj+7]
-            f = self._find_object(fn) # Find the addr of parent
-            cn = (self.mem[f+10] << 8) + self.mem[f+11]
-            if cn == ops[0]: # If the object to move is the first child
-                self.mem[f+10] = self.mem[obj+8]
-                self.mem[f+11] = self.mem[obj+9]
-                #print "Father", (self.mem[obj+6] << 8) + self.mem[obj+7], "now has as child", (self.mem[obj+8] << 8) + self.mem[obj+9]
-            else:
+            if fn != 0:
+                f = self._find_object(fn) # Find the addr of parent
                 cn = (self.mem[f+10] << 8) + self.mem[f+11]
-                t = self._find_object(cn) # Get the first child of the father
-                #print "^^", (self.mem[t+8] << 8) + self.mem[t+9], "^^"
-                tn = (self.mem[f+10] << 8) + self.mem[f+11]
-                sn = (self.mem[t+8] << 8) + self.mem[t+9]
-                while (sn <> ops[0]): # While the object t isn't a sibling of o
-                    tn = sn
-                    t = self._find_object(sn)
+                if cn == ops[0]: # If the object to move is the first child
+                    self.mem[f+10] = self.mem[obj+8]
+                    self.mem[f+11] = self.mem[obj+9]
+                    #print "Father", (self.mem[obj+6] << 8) + self.mem[obj+7], "now has as child", (self.mem[obj+8] << 8) + self.mem[obj+9]
+                else:
+                    t = self._find_object(cn) # Get the first child of the father
+                    #print "^^", (self.mem[t+8] << 8) + self.mem[t+9], "^^"
+                    tn = cn
                     sn = (self.mem[t+8] << 8) + self.mem[t+9]
-                #print "Got ", (self.mem[obj+8] << 8) + self.mem[obj+9], "as sibling of", tn
-                self.mem[t+8] = self.mem[obj+8]
-                self.mem[t+9] = self.mem[obj+9]
+                    while (sn <> ops[0]): # While the object t isn't a sibling of o
+                        #print fn,sn,ops[0]
+                        tn = sn
+                        t = self._find_object(sn)
+                        sn = (self.mem[t+8] << 8) + self.mem[t+9]
+                    #print "Got ", (self.mem[obj+8] << 8) + self.mem[obj+9], "as sibling of", tn
+                    self.mem[t+8] = self.mem[obj+8]
+                    self.mem[t+9] = self.mem[obj+9]
             self.mem[obj+6] = 0 # Father of obj
             self.mem[obj+7] = 0
             self.mem[obj+8] = 0 # Sibling of obj
             self.mem[obj+9] = 0
-        self.plugin.debugprint( '{0}: remove_obj {1}'.format(format(pc,'X'),ops), 2 )
 
     def _print_obj(self):
         pc = self.pc
@@ -1743,7 +1769,10 @@ class ZCpu:
         pc = self.pc
         ops = self._read_operands_var_2op()
         self.intr = 1
-        self.intr_data = [ops[0], ops[1]]
+        if (len(ops)>=2):
+            self.intr_data = [ops[0], ops[1]]
+        else:
+            self.intr_data = [ops[0], 0]
         #print "Max read:", self.mem[ops[0]]
         #print "Max parse:", self.mem[ops[1]]
         #if (self.mem[ops[0]] < 7):
@@ -2438,7 +2467,7 @@ class ZCpu:
         self.stack.push_local_vars()
         self.stack.push_frame( self.pc )
         self.stack.push_frame( res )
-        self.stack.push_frame(len(argv))
+        self.stack.push_frame(len(argv)+1)
         # Jump to routine address
         self.pc = self._unpack_addr(r)
         #print "Max:", self.header.length_of_file()
