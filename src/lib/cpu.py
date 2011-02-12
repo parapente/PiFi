@@ -903,8 +903,12 @@ class ZCpu:
             ops = self._read_operands_var_2op()
         else: # Long 2OP
             ops = self._read_operands_long_2op()
+        self.plugin.debugprint( '{0}: get_next_prop {1}'.format(format(pc,'X'),ops), 2 )
         if ops[0] == 0:
-            sys.exit("Can't get property of nothing!")
+            print "get_next_prop: Can't get property of nothing!"
+            self._zstore(0, self.mem[self.pc])
+            self.pc += 1
+            return
         obj = self._find_object(ops[0])
         #print "Obj addr:", obj
         if ops[1] == 0:
@@ -941,7 +945,7 @@ class ZCpu:
                         if num == 0:
                             num = 64
                         prop_addr += num + 1
-                    elif (self.mem[p] & 0x40) <> 0: # 6th bit is 1 so there are 2 bytes of data
+                    elif (self.mem[prop_addr] & 0x40) <> 0: # 6th bit is 1 so there are 2 bytes of data
                         prop_addr += 3
                     else: # Only 1 byte of data
                         prop_addr += 2
@@ -950,7 +954,6 @@ class ZCpu:
                     sys.exit("No such property!")
         self._zstore(prop, self.mem[self.pc])
         self.pc += 1
-        self.plugin.debugprint( '{0}: get_next_prop {1}'.format(format(pc,'X'),ops), 2 )
 
     def _add(self):
         pc = self.pc
