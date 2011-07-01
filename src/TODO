@@ -19,6 +19,7 @@ o Ops:
   * encode_text
   * copy_table
   * print_table
+  * pull(6 user stack)
 
   -- ext --
   * save
