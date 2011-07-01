@@ -438,9 +438,11 @@ class ZTextWidget(QWidget):
 
     def read_char(self, callback):
         QObject.connect(self, SIGNAL("keyPressed(int)"), callback)
+        print 'Connect char'
 
     def disconnect_read_char(self, callback):
         QObject.disconnect(self, SIGNAL("keyPressed(int)"), callback)
+        print 'Disconnect char'
 
     def selected_ostreams(self):
         s = []
