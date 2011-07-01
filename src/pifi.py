@@ -43,10 +43,10 @@ if __name__ == "__main__":
         print "Plugin " + args.plugin + " not found!"
         sys.exit(3)
 
+    plugin.set_debug_level(args.log_level)
     m = ZMachine(plugin) # Attach plugin to ZMachine
     m.load_story(f)
     plugin.set_zversion(m.zver) # Store version of z-code file
-    plugin.set_debug_level(args.log_level)
     m.init()
     m.boot()
     plugin.exec_() # Start exec loop
