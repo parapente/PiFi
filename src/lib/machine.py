@@ -27,6 +27,8 @@ class ZMachine:
         self.plugin = w
 
     def boot(self):
+        if self.header.version() == 6:
+            self.cpu.start6()
         self.cpu.start()
         self.handle_intr()
 
@@ -182,10 +184,7 @@ class ZMachine:
         # Set the default options
         # Interpreter number and version
         self.mem.mem[0x1e] = 1
-        if self.zver <> 6:
-            self.mem.mem[0x1f] = ord('A')
-        else:
-            self.mem.mem[0x1f] = 1
+        self.mem.mem[0x1f] = 0x41 # revision A
         # Width and height of window
         self.mem.mem[0x20] = self.plugin.height()
         self.mem.mem[0x21] = self.plugin.width()

@@ -85,11 +85,11 @@ class ZHeader:
 
     def routines(self):
         """ Returns the routines offset in memory """
-        return (256*self.header[0x28]+self.header[0x29])*8
+        return 256*self.header[0x28]+self.header[0x29]
 
     def strings(self):
         """ Returns the static strings offset in memory """
-        return (256*self.header[0x2a]+self.header[0x2b])*8
+        return 256*self.header[0x2a]+self.header[0x2b]
 
     def default_background_color(self):
         return self.header[0x2c]

@@ -376,7 +376,7 @@ class ZCpu:
                         self.pc = self.pc + gf + offset - 2
                 else:
                     self.pc = self.pc + gf
-        self.plugin.debugprint( '{0}: jl {1} [{2}] {3}'.format(format(pc,'X'),ops,jif,offset), 2 )
+        self.plugin.debugprint( '{0}: jg {1} [{2}] {3}'.format(format(pc,'X'),ops,jif,offset), 2 )
 
     def _dec_chk(self):
         pc = self.pc
@@ -1569,9 +1569,11 @@ class ZCpu:
         self.plugin.debugprint( '{0}: nop'.format(format(pc,'X')), 2 )
 
     def _save(self):
+        self.plugin.debugprint( ': save', 0 )
         sys.exit("Not implemented yet!")
 
     def _restore(self):
+        self.plugin.debugprint( ': restore', 0 )
         sys.exit("Not implemented yet!")
 
     def _restart(self):
@@ -1843,9 +1845,17 @@ class ZCpu:
         if self.zver <> 6:
             n = self.stack.pop()
             self._zstore(n, ops[0])
+            self.plugin.debugprint( '{0}: pull {1}'.format(format(pc,'X'),ops), 2 )
         else:
-            pass # TODO: Add support for ver 6
-        self.plugin.debugprint( '{0}: pull {1}'.format(format(pc,'X'),ops), 2 )
+	    if (ops==[]): # Use the game stack
+                n = self.stack.pop()
+		variable = self.mem[self.pc]
+                self._zstore(n, variable)
+	        self.pc += 1
+	    else:
+                # TODO: Add support for ver 6
+		sys.exit('pull: User stacks not implemented for V6!')
+            self.plugin.debugprint( '{0}: pull {1} -> {2}'.format(format(pc,'X'),ops,variable), 2 )
 
     def _split_window(self):
         pc = self.pc
@@ -1886,6 +1896,7 @@ class ZCpu:
         self.plugin.debugprint( '{0}: erase_window {1}'.format(format(pc,'X'),ops), 2 )
 
     def _erase_line(self):
+        self.plugin.debugprint( ': erase_line', 0 )
         sys.exit("Not implemented yet!")
 
     def _set_cursor(self):
@@ -1895,6 +1906,7 @@ class ZCpu:
         self.plugin.debugprint( '{0}: set_cursor {1}'.format(format(pc,'X'),ops), 2 )
 
     def _get_cursor(self):
+        self.plugin.debugprint( ': get_cursor', 0 )
         sys.exit("Not implemented yet!")
 
     def _set_text_style(self):
@@ -1927,6 +1939,7 @@ class ZCpu:
         self.plugin.debugprint( '{0}: output_stream {1}'.format(format(pc,'X'),ops), 2 )
 
     def _input_stream(self):
+        self.plugin.debugprint( ': input_stream', 0 )
         sys.exit("Not implemented yet!")
 
     def _sound_effect(self):
@@ -1939,13 +1952,14 @@ class ZCpu:
     def _read_char(self):
         pc = self.pc
         ops = self._read_operands_var_2op()
-        # TODO: Implement timed input
-        if len(ops) > 1:
-            sys.exit("Not implemented yet!")
-        self.intr = 2
         self.plugin.debugprint( '{0}: read_char {1}'.format(format(pc,'X'),ops), 2 )
+        # TODO: Implement timed input
+        #if len(ops) > 1:
+        #    sys.exit("Not implemented yet!")
+        self.intr = 2
 
     def _scan_table(self):
+        self.plugin.debugprint( ': scan_table', 0 )
         sys.exit("Not implemented yet!")
 
     def _not_var(self):
@@ -1992,12 +2006,15 @@ class ZCpu:
         self.plugin.debugprint( '{0}: tokenise {1}'.format(format(pc,'X'),ops), 2 )
 
     def _encode_text(self):
+        self.plugin.debugprint( ': encode_text', 0 )
         sys.exit("Not implemented yet!")
 
     def _copy_table(self):
+        self.plugin.debugprint( ': copy_table', 0 )
         sys.exit("Not implemented yet!")
 
     def _print_table(self):
+        self.plugin.debugprint( ': print_table', 0 )
         sys.exit("Not implemented yet!")
 
     def _check_arg_count(self):
@@ -2044,9 +2061,11 @@ class ZCpu:
         self.plugin.debugprint( '{0}: check_arg_count {1} [{2}] {3}'.format(format(pc,'X'),ops,jif,offset), 2 )
 
     def _save_ext(self):
+        self.plugin.debugprint( ': save_ext', 0 )
         sys.exit("Not implemented yet!")
 
     def _restore_ext(self):
+        self.plugin.debugprint( ': restore_ext', 0 )
         sys.exit("Not implemented yet!")
 
     def _log_shift(self):
@@ -2086,15 +2105,19 @@ class ZCpu:
         self.plugin.debugprint( '{0}: set_font {1}'.format(format(pc,'X'),ops), 2 )
 
     def _draw_picture(self):
+        self.plugin.debugprint( ': draw_picture', 0 )
         sys.exit("Not implemented yet!")
 
     def _picture_data(self):
+        self.plugin.debugprint( ': picture_data', 0 )
         sys.exit("Not implemented yet!")
 
     def _erase_picture(self):
+        self.plugin.debugprint( ': erase_picture', 0 )
         sys.exit("Not implemented yet!")
 
     def _set_margins(self):
+        self.plugin.debugprint( ': set_margins', 0 )
         sys.exit("Not implemented yet!")
 
     def _save_undo(self):
@@ -2107,9 +2130,11 @@ class ZCpu:
         self.plugin.debugprint( '{0}: save_undo {1}'.format(format(pc,'X'),ops), 2 )
 
     def _restore_undo(self):
+        self.plugin.debugprint( ': restore_undo', 0 )
         sys.exit("Not implemented yet!")
 
     def _print_unicode(self):
+        self.plugin.debugprint( ': print_unicode', 0 )
         sys.exit("Not implemented yet!")
 
     def _check_unicode(self):
@@ -2127,42 +2152,55 @@ class ZCpu:
         self.plugin.debugprint( '{0}: check_unicode {1}'.format(format(pc,'X'),ops), 2 )
 
     def _move_window(self):
+        self.plugin.debugprint( ': move_window', 0 )
         sys.exit("Not implemented yet!")
 
     def _window_size(self):
+        self.plugin.debugprint( ': window_size', 0 )
         sys.exit("Not implemented yet!")
 
     def _window_style(self):
+        self.plugin.debugprint( ': window_style', 0 )
         sys.exit("Not implemented yet!")
 
     def _get_wind_prop(self):
+        self.plugin.debugprint( ': wind_prop', 0 )
         sys.exit("Not implemented yet!")
 
     def _scroll_window(self):
+        self.plugin.debugprint( ': scroll_window', 0 )
         sys.exit("Not implemented yet!")
 
     def _pop_stack(self):
+        self.plugin.debugprint( ': pop_stack', 0 )
         sys.exit("Not implemented yet!")
 
     def _read_mouse(self):
+        self.plugin.debugprint( ': read_mouse', 0 )
         sys.exit("Not implemented yet!")
 
     def _mouse_window(self):
+        self.plugin.debugprint( ': mouse_window', 0 )
         sys.exit("Not implemented yet!")
 
     def _push_stack(self):
+        self.plugin.debugprint( ': push_stack', 0 )
         sys.exit("Not implemented yet!")
 
     def _put_wind_prop(self):
+        self.plugin.debugprint( ': put_wind_prop', 0 )
         sys.exit("Not implemented yet!")
 
     def _print_form(self):
+        self.plugin.debugprint( ': print_form', 0 )
         sys.exit("Not implemented yet!")
 
     def _make_menu(self):
+        self.plugin.debugprint( ': make_menu', 0 )
         sys.exit("Not implemented yet!")
 
     def _picture_table(self):
+        self.plugin.debugprint( ': picture_table', 0 )
         sys.exit("Not implemented yet!")
 
     def _read_operands_short_1op(self):
@@ -2320,10 +2358,10 @@ class ZCpu:
         elif self.zver < 6:
             return 4*addr
         elif self.zver < 8:
-            if usage == 1:
-                return 4*addr + 8*header.routines()
+            if usage == 0:
+                return 4*addr + 8*self.header.routines()
             else:
-                return 4*addr + 8*header.strings()
+                return 4*addr + 8*self.header.strings()
         else:
             return 8*addr
 
@@ -2437,6 +2475,11 @@ class ZCpu:
         while(self.intr == 0):
             self.command()
 
+    def start6(self):
+        print self.pc
+        self._prepare_routine(self.pc, [])
+        print self.pc
+
     def _show_status2(self):
         if self.zver < 4:
             # Find the name of the current room
@@ -2477,6 +2520,9 @@ class ZCpu:
         self.stack.push_frame( self.pc )
         self.stack.push_frame( res )
         self.stack.push_frame(len(argv)+1)
+        self._prepare_routine(r, argv)
+        
+    def _prepare_routine(self, r, argv):
         # Jump to routine address
         self.pc = self._unpack_addr(r)
         #print "Max:", self.header.length_of_file()
