@@ -1,0 +1,51 @@
+[ Main x y res;
+
+x = 13/5;
+if (x==2) res="OK"; else res="ERROR";
+print "13/5=", x, " ", (string) res;
+new_line;
+
+x = 13/-5;
+if (x==-2) res="OK"; else res="ERROR";
+print "13/-5=", x, " ", (string) res;
+new_line;
+
+x = -13/5;
+if (x==-2) res="OK"; else res="ERROR";
+print "-13/5=", x, " ", (string) res;
+new_line;
+
+x = -13/-5;
+if (x==2) res="OK"; else res="ERROR";
+print "-13/-5=", x, " ", (string) res;
+new_line;
+
+x = 13%5;
+if (x==3) res="OK"; else res="ERROR";
+print "13%5=", x, " ", (string) res;
+new_line;
+
+x = 13%-5;
+if (x==3) res="OK"; else res="ERROR";
+print "13%-5=", x, " ", (string) res;
+new_line;
+
+x = -13%5;
+if (x==-3) res="OK"; else res="ERROR";
+print "-13%5=", x, " ", (string) res;
+new_line;
+
+x = -13%-5;
+if (x==-3) res="OK"; else res="ERROR";
+print "-13%-5=", x, " ", (string) res;
+new_line;
+
+print "Overflow test^";
+print "-------------^";
+y=5040;
+x=8*y;
+if (x==-25216) res="OK"; else res="ERROR";
+print "8*5040=", x, " ", (string) res;
+new_line;
+@read_char 1 y;
+];
