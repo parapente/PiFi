@@ -1,8 +1,4 @@
 Zokoban - Doesn't start. It doesn't initialize upper window but tries to print in it.
 zsnake - Background color not cleared. Also no split_window and it tries to print in upper win
 animals - Error while painting
-lambs - At the beginning messages are not appearing correctly
-limp - At the beginning messages are not appearing correctly
-vision - At the beginning messages are not appearing correctly
-amish - At the beginning messages are not appearing correctly
 kitten - When starting game a printing error occurs (out of bounds upper window printing???)

@@ -2025,7 +2025,7 @@ class ZCpu:
         self.stack.push_frame(noa)
         r = False
         for i in range(len(ops)):
-            r = r or (ops[i] == noa)
+            r = r or (ops[i] <= noa)
 
         if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
             offset = self.mem[self.pc] & 63
@@ -2519,7 +2519,7 @@ class ZCpu:
         self.stack.push_local_vars()
         self.stack.push_frame( self.pc )
         self.stack.push_frame( res )
-        self.stack.push_frame(len(argv)+1)
+        self.stack.push_frame(len(argv)-1)
         self._prepare_routine(r, argv)
         
     def _prepare_routine(self, r, argv):
