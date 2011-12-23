@@ -15,6 +15,7 @@ class ZOutput:
         self.version = ver
         self.plugin = plugin
         self.mem = mem
+        self.plugin.screen_size_callback = self.set_screen_size
 
     def select_stream(self,n,table):
         self.plugin.select_ostream(n)
@@ -103,3 +104,18 @@ class ZOutput:
 
     def set_font(self,f):
         return self.plugin.set_font(f)
+
+    def set_screen_size(self,w,h):
+        if (self.version > 4):
+            self.mem[0x22] = w / 256
+            self.mem[0x23] = w % 256
+            self.mem[0x24] = h / 256
+            self.mem[0x25] = h % 256
+        else:
+            # The above is necessary because we can store only one byte
+            if (h>255):
+                h = 255
+            if (w>255):
+                w = 255
+            self.mem[0x20] = h
+            self.mem[0x21] = w
