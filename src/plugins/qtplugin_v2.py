@@ -18,6 +18,7 @@ class QtPluginV2(PlugSkel):
     current_window = 0
 
     def prepare_gui(self):
+        print "This is an experimental plugin, not ready for use..."
         self.a = QtGui.QApplication([])
         mainframe = QtGui.QFrame()
         hbl = QtGui.QHBoxLayout()
