@@ -5,6 +5,7 @@
 
 from lib.machine import ZMachine
 from plugins.qtplugin import QtPlugin
+from plugins.qtplugin_v2 import QtPluginV2
 import sys
 import types
 import argparse
@@ -37,12 +38,13 @@ if __name__ == "__main__":
     reload(sys)
     sys.setdefaultencoding("utf-8")
     # Initialize the appropriate plugin
-    if args.plugin in globals() and isinstance(globals()[args.plugin], types.ClassType):
+    if args.plugin in globals() and isinstance(globals()[args.plugin], type):
         plugin = globals()[args.plugin]()
     else:
         print "Plugin " + args.plugin + " not found!"
         sys.exit(3)
 
+    plugin.prepare_gui()
     plugin.set_debug_level(args.log_level)
     m = ZMachine(plugin) # Attach plugin to ZMachine
     m.load_story(f)
