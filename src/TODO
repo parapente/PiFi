@@ -1,3 +1,5 @@
+Normal
+------
 o Z-Machine Debugger
 o Ops:
   -- 2op --
@@ -45,3 +47,11 @@ o Ops:
   * print_form (6)
   * make_menu (6)
   * picture_table (6)
+
+o Reimplement window handling
+
+Minor
+-----
+o Implement the specification of character graphics
+  (maybe there is a bitmap font already in the net we can use)
+o 8.1.5.1 part of spec for char graphics in v5
