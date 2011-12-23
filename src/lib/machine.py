@@ -186,13 +186,7 @@ class ZMachine:
         self.mem.mem[0x1e] = 1
         self.mem.mem[0x1f] = 0x41 # revision A
         # Width and height of window
-        self.mem.mem[0x20] = self.plugin.height()
-        self.mem.mem[0x21] = self.plugin.width()
-        # Width and height of window in units
-        self.mem.mem[0x22] = 0
-        self.mem.mem[0x23] = self.mem.mem[0x21]
-        self.mem.mem[0x24] = 0
-        self.mem.mem[0x25] = self.mem.mem[0x20]
+        self.plugin.update_screen_size()
         # Standard revision number
         self.mem.mem[0x32] = 1
         # Font width in units
