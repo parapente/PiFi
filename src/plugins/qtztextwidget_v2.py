@@ -311,7 +311,7 @@ class ZTextWidget(QWidget):
 
     def draw_text(self, str, window):
         if (len(str)>0): # If there IS something to print
-            painter = QPainter(self.pbuffer)
+            painter = self.pbuffer_painter
 
             # @type window ZWindow
             if (window.cursor == None):
