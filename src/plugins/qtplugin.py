@@ -5,13 +5,12 @@
 from plugins.qtztextwidget import ZTextWidget
 from PyQt4 import QtGui
 from PyQt4 import QtCore
-from plugskel import PlugSkel
+from plugins.plugskel import PlugSkel
 
 __author__="Theofilos Intzoglou"
 __date__ ="$20 Σεπ 2009 2:39:20 μμ$"
 
 class QtPlugin(PlugSkel):
-    a = QtGui.QApplication([])
     widget = None
     win = None
     zver = None
@@ -20,7 +19,8 @@ class QtPlugin(PlugSkel):
     def_fg = 9 # White
     zfont = 1 # Normal z-font
 
-    def __init__(self):
+    def prepare_gui(self):
+        self.a = QtGui.QApplication([])
         mainframe = QtGui.QFrame()
         hbl = QtGui.QHBoxLayout()
         hbl.addWidget(QtGui.QLabel())
