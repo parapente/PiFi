@@ -51,7 +51,7 @@ class ZMachine:
     def get_text(self,text):
         self.plugin.debugprint("Enter!", 2)
         self.input.disconnect_input(self.get_text)
-        self.input.hide_cursor()
+        #self.input.hide_cursor()
         paddr = self.cpu.intr_data[1]
         taddr = self.cpu.intr_data[0]
         self.plugin.debugprint("gt -> '"+text+"'", 2)
