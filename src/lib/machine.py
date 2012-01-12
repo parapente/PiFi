@@ -56,6 +56,7 @@ class ZMachine:
         taddr = self.cpu.intr_data[0]
         self.plugin.debugprint("gt -> '"+text+"'", 2)
         if self.zver < 5:
+            i = 0
             for i in range(len(text)):
                 if (i == (len(text) - 1)) and text[i] == '\n':
                     self.mem.mem[taddr + 1 + i] = 0
