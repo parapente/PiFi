@@ -75,7 +75,7 @@ class PlugSkel(object):
         self.widget.set_font_style(s)
 
     def show_upper_window(self,lines):
-        self.widget.split_window(lines, self.zver)
+        self.split_window(lines, self.zver)
 
     def set_window(self,w):
         self.current_window = w
@@ -83,7 +83,9 @@ class PlugSkel(object):
             self.window[1].set_cursor_position(1, 1)
 
     def set_cursor(self,y,x):
-        self.widget.set_cursor(y, x)
+        if (self.current_window==1):
+            self.window[1].set_cursor_position(x,y)
+            self.widget.update_real_cursor_position()
 
     def set_colour(self,fg,bg):
         if fg == 1:
