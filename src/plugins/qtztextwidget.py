@@ -179,8 +179,7 @@ class ZTextWidget(QWidget):
             return Qt.darkGray
 
     def set_cursor(self,x,y):
-        if self.cur_win == 1: # You can only set the position of the cursor if the upper window is selected
-            self.upper_win_cursor = [x,y]
+        self.upper_win_cursor = [x,y]
 
     def set_window(self,w):
         if w < 2:
