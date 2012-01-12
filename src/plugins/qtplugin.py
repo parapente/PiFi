@@ -143,3 +143,6 @@ class QtPlugin(PlugSkel):
             return res
         else:
             return 0
+
+    def split_window(self,lines,version):
+        self.widget.split_window(lines,version)
