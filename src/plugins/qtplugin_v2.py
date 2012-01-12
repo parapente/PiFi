@@ -35,10 +35,6 @@ class QtPluginV2(PlugSkel):
         mainframe.setLayout(vbl)
         self.win = QtGui.QMainWindow()
         self.rline = False
-        #rect = QtCore.QRect()
-        #rect.setWidth(640)
-        #rect.setHeight(480)
-        #win.setGeometry(rect)
         self.win.setCentralWidget(mainframe)
         self.win.show()
 
@@ -64,7 +60,13 @@ class QtPluginV2(PlugSkel):
         self.widget.prints(s,self.window[self.current_window])
 
     def split_window(self,lines,ver):
-        pass
+        if (ver==6):
+            traceback.print_stack()
+            exit
+        else:
+            if (self.window[1].line_count<lines):
+                self.window[1].set_cursor_position(1,1)
+            self.window[1].set_line_count(lines)
 
     def show_cursor(self):
         self.widget.show_cursor(self.window[self.current_window])
