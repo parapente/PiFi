@@ -1,12 +1,11 @@
 # -*- coding: utf-8
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
 
 __author__="Theofilos Intzoglou"
 __date__ ="$2 Ιουλ 2011 10:14:46 μμ$"
 
 class ZWindow:
     cursor = None
+    line_count = 0
 
     def __init__(self,id):
         self.wrapping = True
