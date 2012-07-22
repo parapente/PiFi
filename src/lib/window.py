@@ -7,12 +7,12 @@ class ZWindow:
     cursor = None
     line_count = 0
 
-    def __init__(self,id):
+    def __init__(self,wid):
         self.wrapping = True
         self.scrolling = True
         self.text_to_output2 = False
         self.buffering = True
-        self.id = id
+        self.id = wid
 
     def set_position(self,x,y):
         self.x = x

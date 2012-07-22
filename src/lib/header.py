@@ -71,14 +71,14 @@ class ZHeader:
 
     def font_width(self):
         """ Font width in units (defined as width of '0') """
-        if version() == 5:
+        if self.version() == 5:
             return self.header[0x26]
         else:
             return self.header[0x27]
 
     def font_height(self):
         """ Font height in units """
-        if version() == 5:
+        if self.version() == 5:
             return self.header[0x27]
         else:
             return self.header[0x26]

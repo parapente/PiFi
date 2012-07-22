@@ -62,8 +62,8 @@ class QtPlugin(PlugSkel):
         self.rline = True
         self.widget.read_line(callback)
 
-    def set_max_input(self,max):
-        self.widget.set_max_input(max)
+    def set_max_input(self,max_in):
+        self.widget.set_max_input(max_in)
 
     def disconnect_input(self,callback):
         if self.rline:

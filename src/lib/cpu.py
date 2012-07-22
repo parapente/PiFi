@@ -760,9 +760,9 @@ class ZCpu:
                 else:
                     t = self._find_object(self.mem[f+6]) # Get the first child of the father
                     #print "^^", self.mem[t+5], "^^"
-                    tn = self.mem[f+6]
+                    #tn = self.mem[f+6]
                     while (self.mem[t+5] <> ops[0]): # While the object t isn't a sibling of o
-                        tn = self.mem[t+5]
+                        #tn = self.mem[t+5]
                         t = self._find_object(self.mem[t+5])
                     #print "Got ", self.mem[o+5], "as sibling of", tn
                     self.mem[t+5] = self.mem[o+5]
@@ -787,9 +787,9 @@ class ZCpu:
                         t = self._find_object(cn) # Get the first child of the father
                         sn = (self.mem[t+8] << 8) + self.mem[t+9]
                         #print "^^", sn, "^^"
-                        tn = cn
+                        #tn = cn
                         while (sn <> ops[0]): # While the object t isn't a sibling of o
-                            tn = sn
+                            #tn = sn
                             t = self._find_object(sn)
                             sn = (self.mem[t+8] << 8) + self.mem[t+9]
                         #print "Got ", ((self.mem[o+8] << 8) + self.mem[o+9]), "as sibling of", tn
@@ -1381,11 +1381,11 @@ class ZCpu:
                 else:
                     t = self._find_object(cn) # Get the first child of the father
                     #print "^^", (self.mem[t+8] << 8) + self.mem[t+9], "^^"
-                    tn = cn
+                    #tn = cn
                     sn = (self.mem[t+8] << 8) + self.mem[t+9]
                     while (sn <> ops[0]): # While the object t isn't a sibling of o
                         #print fn,sn,ops[0]
-                        tn = sn
+                        #tn = sn
                         t = self._find_object(sn)
                         sn = (self.mem[t+8] << 8) + self.mem[t+9]
                     #print "Got ", (self.mem[obj+8] << 8) + self.mem[obj+9], "as sibling of", tn
@@ -1642,12 +1642,12 @@ class ZCpu:
         data = self.file.read(max_length)
         
         # Calculate checksum
-        sum = 0
+        chksum = 0
         i = 0
         l = len(data)
         while i < l:
-            sum += data[i]
-        sum %= 0x10000
+            chksum += data[i]
+        chksum %= 0x10000
 
         # Check offset
         if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
@@ -1661,7 +1661,7 @@ class ZCpu:
             gf = 2
         jif = 'True'
         if (self.mem[self.pc] & 128) == 128: # Jump if true
-            if sum == self.header.checksum(): # Jump to label
+            if chksum == self.header.checksum(): # Jump to label
                 if offset == 0: # Return false
                     self._rfalse2()
                 elif offset == 1: # Return true
@@ -1672,7 +1672,7 @@ class ZCpu:
                 self.pc = self.pc + gf
         else:
             jif = 'False'
-            if not (sum == self.header.checksum()): # Jump to label
+            if not (chksum == self.header.checksum()): # Jump to label
                 if offset == 0: # Return false
                     self._rfalse2()
                 elif offset == 1: # Return true
@@ -1847,15 +1847,15 @@ class ZCpu:
             self._zstore(n, ops[0])
             self.plugin.debugprint( '{0}: pull {1}'.format(format(pc,'X'),ops), 2 )
         else:
-	    if (ops==[]): # Use the game stack
+            if (ops==[]): # Use the game stack
                 n = self.stack.pop()
-		variable = self.mem[self.pc]
+                variable = self.mem[self.pc]
                 self._zstore(n, variable)
-	        self.pc += 1
-	    else:
+                self.pc += 1
+            else:
                 # TODO: Add support for ver 6
-		sys.exit('pull: User stacks not implemented for V6!')
-            self.plugin.debugprint( '{0}: pull {1} -> {2}'.format(format(pc,'X'),ops,variable), 2 )
+                sys.exit('pull: User stacks not implemented for V6!')
+                self.plugin.debugprint( '{0}: pull {1} -> {2}'.format(format(pc,'X'),ops,variable), 2 )
 
     def _split_window(self):
         pc = self.pc
@@ -2241,16 +2241,16 @@ class ZCpu:
         type_byte = self.mem[self.pc]
         self.pc = self.pc + 1
         for i in range(4):
-            type = ( type_byte & mask) >> (3-i)*2
-            if type == 0: # Large constant (2 bytes)
+            optype = ( type_byte & mask) >> (3-i)*2
+            if optype == 0: # Large constant (2 bytes)
                 #print "PC:",hex(self.pc),"--",hex(self.mem[self.pc]),",",hex(self.mem[self.pc+1])
                 num = ( self.mem[self.pc] << 8 ) + self.mem[self.pc+1]
                 values.append( num )
                 self.pc = self.pc + 2
-            elif type == 1: # Small constant (1 byte)
+            elif optype == 1: # Small constant (1 byte)
                 values.append( self.mem[self.pc] )
                 self.pc = self.pc + 1
-            elif type == 2: # Variable (1 byte)
+            elif optype == 2: # Variable (1 byte)
                 if self.mem[self.pc] == 0:
                     values.append( self.stack.pop() )
                 elif self.mem[self.pc] < 0x10:
@@ -2273,16 +2273,16 @@ class ZCpu:
         type_byte2 = self.mem[self.pc + 1]
         self.pc = self.pc + 2
         for i in range(4):
-            type = ( type_byte & mask) >> (3-i)*2
-            if type == 0: # Large constant (2 bytes)
+            optype = ( type_byte & mask) >> (3-i)*2
+            if optype == 0: # Large constant (2 bytes)
                 #print "PC:",hex(self.pc),"--",hex(self.mem[self.pc]),",",hex(self.mem[self.pc+1])
                 num = ( self.mem[self.pc] << 8 ) + self.mem[self.pc+1]
                 values.append( num )
                 self.pc = self.pc + 2
-            elif type == 1: # Small constant (1 byte)
+            elif optype == 1: # Small constant (1 byte)
                 values.append( self.mem[self.pc] )
                 self.pc = self.pc + 1
-            elif type == 2: # Variable (1 byte)
+            elif optype == 2: # Variable (1 byte)
                 if self.mem[self.pc] == 0:
                     values.append( self.stack.pop() )
                 elif self.mem[self.pc] < 0x10:
@@ -2297,16 +2297,16 @@ class ZCpu:
             mask = mask >> 2
         mask = 192
         for i in range(4):
-            type = ( type_byte2 & mask) >> (3-i)*2
-            if type == 0: # Large constant (2 bytes)
+            optype = ( type_byte2 & mask) >> (3-i)*2
+            if optype == 0: # Large constant (2 bytes)
                 #print "PC:",hex(self.pc),"--",hex(self.mem[self.pc]),",",hex(self.mem[self.pc+1])
                 num = ( self.mem[self.pc] << 8 ) + self.mem[self.pc+1]
                 values.append( num )
                 self.pc = self.pc + 2
-            elif type == 1: # Small constant (1 byte)
+            elif optype == 1: # Small constant (1 byte)
                 values.append( self.mem[self.pc] )
                 self.pc = self.pc + 1
-            elif type == 2: # Variable (1 byte)
+            elif optype == 2: # Variable (1 byte)
                 if self.mem[self.pc] == 0:
                     values.append( self.stack.pop() )
                 elif self.mem[self.pc] < 0x10:
@@ -2439,7 +2439,7 @@ class ZCpu:
             text.append(self.mem[a])
             a = a + 1
             i = i + 1
-        dtext = decode_text(text, self.zver, self.mem, self.header.abbrev_table(), False, self.header.alphabet_table(), 0)
+        #dtext = decode_text(text, self.zver, self.mem, self.header.abbrev_table(), False, self.header.alphabet_table(), 0)
         #print dtext
         p = table_addr + self.mem[table_addr] * 2 + 1 # Skip property name
         if self.zver < 4:

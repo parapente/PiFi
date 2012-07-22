@@ -15,6 +15,7 @@ from PyQt4.QtCore import QSize
 from PyQt4.QtCore import QString
 from PyQt4.QtCore import pyqtSignal
 from lib.stream import ZStream
+import sys
 
 __author__="Theofilos Intzoglou"
 __date__ ="$15 Αυγ 2009 10:46:38 μμ$"
@@ -187,18 +188,18 @@ class ZTextWidget(QWidget):
         else:
             sys.exit("Unknown window {0}!?!".args(w))
 
-    def prints(self,str):
+    def prints(self,txt):
         if self._ostream[0].selected:
             if self.cur_win == 0: # Lower win
                 # TODO: Buffering
                 c = self.lower_win_cursor
                 i = 0
-                total = len(str)
+                total = len(txt)
                 #print "Total -", total
                 while (i < total):
                     s = ""
-                    while (i < total) and (str[i] <> '\n') and (c <= self.width):
-                        s += str[i]
+                    while (i < total) and (txt[i] <> '\n') and (c <= self.width):
+                        s += txt[i]
                         i += 1
                         c += 1
                     self.print_line(s)
@@ -207,26 +208,26 @@ class ZTextWidget(QWidget):
                         self.insert_new_line()
                         self.lower_win_cursor = 1
                         c = 1
-                    elif (i < total) and (str[i] == '\n'):
+                    elif (i < total) and (txt[i] == '\n'):
                         self.insert_new_line()
                         self.lower_win_cursor = 1
                         c = 1
                         i += 1
-                    #elif (i == total) and (str[i-1] <> '\n'):
+                    #elif (i == total) and (txt[i-1] <> '\n'):
                     else:
                         self.lower_win_cursor += len(s)
             else:
                 i = self.upper_win_cursor[0]
                 j = 0
                 l = self.upper_win_cursor[1]
-                #print "-", i, l, "-", str
+                #print "-", i, l, "-", txt
                 #print "len upperbuf=", len(self.upper_buf)
-                while (i <= self.width) and (j < len(str)):
-                    if str[j] <> '\n':
+                while (i <= self.width) and (j < len(txt)):
+                    if txt[j] <> '\n':
                         self.upper_buf[(((l - 1) * self.width) + (i - 1)) * 4] = self.cur_fg
                         self.upper_buf[((((l - 1) * self.width) + (i - 1)) * 4) + 1] = self.cur_bg
                         self.upper_buf[((((l - 1) * self.width) + (i - 1)) * 4) + 2] = self.cur_style
-                        self.upper_buf[((((l - 1) * self.width) + (i - 1)) * 4) + 3] = str[j]
+                        self.upper_buf[((((l - 1) * self.width) + (i - 1)) * 4) + 3] = txt[j]
                         i += 1
                         j += 1
                     else:
@@ -237,15 +238,15 @@ class ZTextWidget(QWidget):
                 self.upper_win_cursor[0] += j
             self.update()
 
-    def print_line(self,str):
+    def print_line(self,txt):
         col = self.lower_win_cursor
-        #print "Column:", col, str
+        #print "Column:", col, txt
         if self.cur_win == 0: # Lower win
-            for i in range(len(str)):
+            for i in range(len(txt)):
                 self.buf[(col - 1 + i) * 4] = self.cur_fg
                 self.buf[((col - 1 + i) * 4) + 1] = self.cur_bg
                 self.buf[((col - 1 + i) * 4) + 2] = self.cur_style
-                self.buf[((col - 1 + i) * 4) + 3] = str[i]
+                self.buf[((col - 1 + i) * 4) + 3] = txt[i]
 
     def print_char(self,c):
         col = self.lower_win_cursor

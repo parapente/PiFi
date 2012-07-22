@@ -5,7 +5,7 @@ from array import array
 __author__="Theofilos Intzoglou"
 __date__ ="$24 Ιουν 2009 10:28:44 μμ$"
 
-def decode_text(buffer, version, mem, abbrev, isabbrev, alpha_table, unicode_table):
+def decode_text(text_buffer, version, mem, abbrev, isabbrev, alpha_table, unicode_table):
     z2 = [1,2,0]
     z3 = [2,0,1]
     z = [z2,z3]
@@ -18,11 +18,11 @@ def decode_text(buffer, version, mem, abbrev, isabbrev, alpha_table, unicode_tab
     tenbit_next = 0
     text = ""
     i = 0
-    l = len(buffer)
+    l = len(text_buffer)
     while (i < l):
-        b1 = (buffer[i] & 124) >> 2
-        b2 = ((buffer[i] & 3) << 3) | ((buffer[i+1] & 224) >> 5)
-        b3 = (buffer[i+1] & 31)
+        b1 = (text_buffer[i] & 124) >> 2
+        b2 = ((text_buffer[i] & 3) << 3) | ((text_buffer[i+1] & 224) >> 5)
+        b3 = (text_buffer[i+1] & 31)
         bz = [b1,b2,b3]
         for b in bz:
             if tenbit_next == 1:

@@ -29,9 +29,9 @@ class ZOutput:
     def deselect_stream(self,n):
         if n == 3:
             addr = self.table_list[len(self.table_list) - 2]
-            bytes = self.table_list[len(self.table_list) - 1]
-            self.mem[addr] = bytes >> 8
-            self.mem[addr + 1] = bytes & 0xff
+            numbytes = self.table_list[len(self.table_list) - 1]
+            self.mem[addr] = numbytes >> 8
+            self.mem[addr + 1] = numbytes & 0xff
             del self.table_list[len(self.table_list) - 1]
             del self.table_list[len(self.table_list) - 1]
             if len(self.table_list) == 0:

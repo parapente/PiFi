@@ -16,6 +16,7 @@ from PyQt4.QtCore import QRectF
 from PyQt4.QtGui import QImage
 from lib.window import ZWindow
 from lib.stream import ZStream
+import traceback
 
 __author__="Theofilos Intzoglou"
 __date__ ="$04 Ιουλ 2011 07:36:38 μμ$"
@@ -48,7 +49,11 @@ class ZTextWidget(QWidget):
         self.pbuffer.fill(0)
         font = self.font()
         font.setPointSize(12)
-        self.setFont(font)
+        self.normal_font = font
+        self.fixed_font = QFont(font)
+        self.fixed_font.setStyleHint(QFont.TypeWriter)
+        #self.setFont(self.normal_font)
+        self.setFont(self.fixed_font)
         self.font_metrics = self.fontMetrics()
         self.linesize = self.font_metrics.height()
         #print self.font().pointSize(), 'line height:', self.linesize
@@ -120,24 +125,6 @@ class ZTextWidget(QWidget):
         del self.input_buf[self._input_cursor_pos]
         #self.draw_cursor(window,False)
 
-#    def draw_cursor(self,window,show):
-#        rect = QRectF()
-#        rect.setX(window.cursor_real_pos[0])
-#        rect.setY(window.cursor_real_pos[1])
-#        rect.setWidth(self.pbuffer.width()-window.cursor_real_pos[0])
-#        rect.setHeight(self.linesize)
-#        #print rect.x(), rect.y(), rect.height()
-#
-#        painter = QPainter(self.pbuffer)
-#        if (show):
-#            painter.setPen(self.ztoq_color(self.cur_fg))
-#        else:
-#            painter.setPen(self.ztoq_color(self.cur_bg))
-#        painter.setBackground(QBrush(self.ztoq_color(self.cur_bg)))
-#        bounding_rect = painter.boundingRect(rect,unichr(0x2581))
-#        #print bounding_rect.x(), bounding_rect.y(), bounding_rect.height()
-#        painter.drawText(bounding_rect.x(), bounding_rect.y(),unichr(0x2581))
-
     def keyPressEvent(self,e):
         if e.key() == Qt.Key_Left:
             if self._input_cursor_pos>0:
@@ -170,7 +157,7 @@ class ZTextWidget(QWidget):
             self.keyPressed.emit(130)
             pass
         elif e.key() == Qt.Key_Backspace:
-            if len(self.input_buf)>0: # If there IS something to delete
+            if len(self.input_buf)>1: # If there IS something to delete
                 self.clean_input_buffer_from_screen()
                 del self.input_buf[self._input_cursor_pos-1]
                 self._input_cursor_pos -= 1
@@ -280,34 +267,34 @@ class ZTextWidget(QWidget):
         QObject.disconnect(self, SIGNAL("keyPressed(int)"), callback)
         print 'Disconnect char'
 
-    def prints(self, str, window):
+    def prints(self, txt, window):
         lastspace = 0
         i = 0
-        buffer = ''
-        for w in str:
+        textbuffer = ''
+        for w in txt:
             if (w == '\n' or w == unichr(self.cursor_char)):
-                if (len(buffer)>0): # If there is something to print
-                    self.draw_text(buffer, window)
-                    buffer = ''
+                if (len(textbuffer)>0): # If there is something to print
+                    self.draw_text(textbuffer, window)
+                    textbuffer = ''
                 self.draw_text(w, window)
                 if (w == '\n'): # \n is whitespace :-)
                     lastspace = i
             elif (w == ' '): # Space was found
                 if (lastspace == i-1): # Contiuous spaces
-                    buffer += w
+                    textbuffer += w
                 else:
-                    self.draw_text(buffer, window)
+                    self.draw_text(textbuffer, window)
                     self.draw_text(' ', window)
-                    buffer = ''
+                    textbuffer = ''
                 lastspace = i
             else:
-                buffer += w
+                textbuffer += w
             i += 1
-        if (len(buffer)>0): # Buffer not empty
-            self.draw_text(buffer, window)
+        if (len(textbuffer)>0): # Buffer not empty
+            self.draw_text(textbuffer, window)
 
-    def draw_text(self, str, window):
-        if (len(str)>0): # If there IS something to print
+    def draw_text(self, txt, window):
+        if (len(txt)>0): # If there IS something to print
             painter = self.pbuffer_painter
 
             # @type window ZWindow
@@ -319,7 +306,7 @@ class ZTextWidget(QWidget):
                     window.set_cursor_position(1, 1)
                     window.set_cursor_real_position(2, self.linesize-1)
 
-            if (str=='\n'):
+            if (txt=='\n'):
                 if (window.cursor[1]==self.height):
                     if (window.scrolling):
                         self.scroll(painter)
@@ -340,27 +327,27 @@ class ZTextWidget(QWidget):
                 painter.setRenderHint(QPainter.TextAntialiasing)
                 painter.setBackground(QBrush(self.ztoq_color(self.cur_bg)))
                 #painter.setBackgroundMode(Qt.OpaqueMode)
-                bounding_rect = painter.boundingRect(rect,str)
+                bounding_rect = painter.boundingRect(rect,txt)
                 if (rect.contains(bounding_rect)):
-                    #print rect.x(), rect.y(), rect.width(),rect.height(), str, bounding_rect
-                    painter.drawText(bounding_rect, str)
-                    if str != unichr(self.cursor_char):
-                        window.set_cursor_position(window.cursor[0]+len(str), window.cursor[1])
+                    #print rect.x(), rect.y(), rect.width(),rect.height(), txt, bounding_rect
+                    painter.drawText(bounding_rect, txt)
+                    if txt != unichr(self.cursor_char):
+                        window.set_cursor_position(window.cursor[0]+len(txt), window.cursor[1])
                         window.set_cursor_real_position(rect.x()+bounding_rect.width(), rect.y())
                 else: # There is not enough space
-                    #print "Not enough space to print:", str
+                    #print "Not enough space to print:", txt
                     self.scroll(painter)
                     rect.setX(window.cursor_real_pos[0])
                     rect.setY(window.cursor_real_pos[1])
                     rect.setWidth(self.pbuffer.width()-window.cursor_real_pos[0])
                     rect.setHeight(self.linesize)
-                    bounding_rect = painter.boundingRect(rect,str)
-                    painter.drawText(bounding_rect, str)
-                    if str != unichr(self.cursor_char):
-                        window.set_cursor_position(window.cursor[0]+len(str), window.cursor[1])
+                    bounding_rect = painter.boundingRect(rect,txt)
+                    painter.drawText(bounding_rect, txt)
+                    if txt != unichr(self.cursor_char):
+                        window.set_cursor_position(window.cursor[0]+len(txt), window.cursor[1])
                         window.set_cursor_real_position(rect.x()+bounding_rect.width(), rect.y())
 
-    def buffered_string(self, str, window):
+    def buffered_string(self, txt, window):
         # @type window ZWindow
         if (window.buffering):
             rect = QRect()
@@ -368,11 +355,11 @@ class ZTextWidget(QWidget):
             rect.setY(window.cursor_real_pos[1])
             rect.setWidth(window.width-window.cursor_real_pos[0])
             rect.setHeight(self.linesize)
-            bounding_rect = painter.boundingRect(rect,str)
+            bounding_rect = painter.boundingRect(rect,txt)
             if (rect.contains(bounding_rect)): # string fits in this line
-                return str
+                return txt
         else:
-            return str
+            return txt
 
     def clean_input_buffer_from_screen(self):
         rect = QRectF()
@@ -380,10 +367,10 @@ class ZTextWidget(QWidget):
         rect.setY(self.lastwindow.cursor_real_pos[1])
         rect.setWidth(self.pbuffer.width()-self.lastwindow.cursor_real_pos[0])
         rect.setHeight(self.linesize)
-        buffer = ''
+        txtbuffer = ''
         for w in self.input_buf:
-            buffer += w
-        bounding_rect = self.pbuffer_painter.boundingRect(rect, buffer)
+            txtbuffer += w
+        bounding_rect = self.pbuffer_painter.boundingRect(rect, txtbuffer)
         if (rect.contains(bounding_rect)): # string fits in this line
             self.pbuffer_painter.eraseRect(bounding_rect)
             #self.pbuffer_painter.drawRect(bounding_rect)
@@ -392,3 +379,12 @@ class ZTextWidget(QWidget):
             self.pbuffer_painter.eraseRect(rect)
             #print 'Erasing rect', rect
             # FIXME: clear next lines
+
+    def clear(self):
+        traceback.print_stack()
+        # TODO
+        exit
+        pass
+
+    def update_real_cursor_pos(self):
+        pass

@@ -77,8 +77,8 @@ class ZMachine:
         self.cpu.start()
         self.handle_intr()
 
-    def lex(self,text,parse,dict,flag):
-        if dict <> 0 or flag <> 0:
+    def lex(self,text,parse,dictionary,flag):
+        if dictionary <> 0 or flag <> 0:
             sys.exit("LEX: Not supported yet!")
         txt = ""
         if self.zver < 5:
