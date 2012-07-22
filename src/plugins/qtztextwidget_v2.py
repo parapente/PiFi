@@ -55,7 +55,8 @@ class ZTextWidget(QWidget):
         #self.setFont(self.normal_font)
         self.setFont(self.fixed_font)
         self.font_metrics = self.fontMetrics()
-        self.linesize = self.font_metrics.height()
+        tmp_string = QString('''abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ^0123456789.,!?_#'"/\-:()$%&+*;<>[]{}|`~''')
+        self.linesize = self.font_metrics.tightBoundingRect(tmp_string).height()
         #print self.font().pointSize(), 'line height:', self.linesize
         self.width = (self.pbuffer.width() - 2) / self.font_metrics.averageCharWidth()
         self.height = self.pbuffer.height() / self.linesize
@@ -280,7 +281,7 @@ class ZTextWidget(QWidget):
                 if (w == '\n'): # \n is whitespace :-)
                     lastspace = i
             elif (w == ' '): # Space was found
-                if (lastspace == i-1): # Contiuous spaces
+                if (lastspace == i-1): # Continuous spaces
                     textbuffer += w
                 else:
                     self.draw_text(textbuffer, window)
@@ -363,7 +364,7 @@ class ZTextWidget(QWidget):
 
     def clean_input_buffer_from_screen(self):
         rect = QRectF()
-        rect.setX(self.lastwindow.cursor_real_pos[0])
+        rect.setX(self.lastwindow.cursor_real_pos[0]-1)
         rect.setY(self.lastwindow.cursor_real_pos[1])
         rect.setWidth(self.pbuffer.width()-self.lastwindow.cursor_real_pos[0])
         rect.setHeight(self.linesize)

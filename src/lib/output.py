@@ -111,11 +111,11 @@ class ZOutput:
             self.mem[0x23] = w % 256
             self.mem[0x24] = h / 256
             self.mem[0x25] = h % 256
-        else:
-            # The above is necessary because we can store only one byte
-            if (h>255):
-                h = 255
-            if (w>255):
-                w = 255
-            self.mem[0x20] = h
-            self.mem[0x21] = w
+
+        # The above is necessary because we can store only one byte
+        if (h>255):
+            h = 255
+        if (w>255):
+            w = 255
+        self.mem[0x20] = h
+        self.mem[0x21] = w
