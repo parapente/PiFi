@@ -81,11 +81,12 @@ class PlugSkel(object):
         self.current_window = w
         if (self.zver != 6 and w == 1):
             self.window[1].set_cursor_position(1, 1)
+            self.widget.update_real_cursor_position(self.window[1])
 
-    def set_cursor(self,y,x):
+    def set_cursor(self,x,y):
         if (self.current_window==1):
             self.window[1].set_cursor_position(x,y)
-            self.widget.update_real_cursor_position()
+            self.widget.update_real_cursor_position(self.window[1])
 
     def set_colour(self,fg,bg):
         if fg == 1:
@@ -137,3 +138,6 @@ class PlugSkel(object):
     def update_screen_size(self):
         self.screen_size_callback(self.width(),self.height())
         print self.width(), self.height()
+
+    def erase_window(self,w):
+        self.widget.erase_window(self.window[w])

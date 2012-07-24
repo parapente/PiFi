@@ -146,3 +146,6 @@ class QtPlugin(PlugSkel):
 
     def split_window(self,lines,version):
         self.widget.split_window(lines,version)
+
+    def erase_window(self,w):
+        pass

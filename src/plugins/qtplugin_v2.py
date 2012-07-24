@@ -5,6 +5,7 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 from plugskel import PlugSkel
 import traceback
+import sys
 
 __author__="Theofilos Intzoglou"
 __date__ ="$20 Σεπ 2009 2:39:20 μμ$"
@@ -63,10 +64,11 @@ class QtPluginV2(PlugSkel):
     def split_window(self,lines,ver):
         if (ver==6):
             traceback.print_stack()
-            exit
+            sys.exit()
         else:
             if (self.window[1].line_count<lines):
                 self.window[1].set_cursor_position(1,1)
+                self.window[1].set_cursor_real_position(2,self.widget.linesize)
             self.window[1].set_line_count(lines)
 
     def show_cursor(self):

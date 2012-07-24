@@ -5,18 +5,21 @@ from PyQt4.QtGui import QPainter
 from PyQt4.QtGui import QBrush
 from PyQt4.QtGui import QFont
 from PyQt4.QtGui import QFontMetrics
+from PyQt4.QtGui import QFontInfo
 from PyQt4.QtGui import QSizePolicy
 from PyQt4.QtCore import QObject
 from PyQt4.QtCore import Qt
 from PyQt4.QtCore import SIGNAL
 from PyQt4.QtCore import QSize
 from PyQt4.QtCore import QString
+from PyQt4.QtCore import QChar
 from PyQt4.QtCore import pyqtSignal
 from PyQt4.QtCore import QRectF
 from PyQt4.QtGui import QImage
 from lib.window import ZWindow
 from lib.stream import ZStream
 import traceback
+import sys
 
 __author__="Theofilos Intzoglou"
 __date__ ="$04 Ιουλ 2011 07:36:38 μμ$"
@@ -29,12 +32,16 @@ class ZTextWidget(QWidget):
     cur_style = 0
     max_char = 0
     start_pos = 0
-    cursor_char = 0x258f
+    #cursor_char = 0x258f
+    #cursor_char = 0x005f
+    cursor_char = 0x2017
+    #cursor_char = 0x2582
     input_buf = []
     just_scrolled = False
     reading_line = False
     _cursor_visible = False
     _ostream = None
+    _input_buffer_printing = False
     returnPressed = pyqtSignal(QString)
     keyPressed = pyqtSignal(int)
     pbuffer = QImage(640,480,QImage.Format_RGB32)
@@ -51,16 +58,25 @@ class ZTextWidget(QWidget):
         font.setPointSize(12)
         self.normal_font = font
         self.fixed_font = QFont(font)
-        self.fixed_font.setStyleHint(QFont.TypeWriter)
+        self.fixed_font.setStyleHint(QFont.Monospace)
+        self.fixed_font.setFamily(self.fixed_font.defaultFamily())
+        self.fixed_font.setPointSize(12)
+        print self.fixed_font.family()
         #self.setFont(self.normal_font)
         self.setFont(self.fixed_font)
-        self.font_metrics = self.fontMetrics()
-        tmp_string = QString('''abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ^0123456789.,!?_#'"/\-:()$%&+*;<>[]{}|`~''')
-        self.linesize = self.font_metrics.tightBoundingRect(tmp_string).height()
-        #print self.font().pointSize(), 'line height:', self.linesize
-        self.width = (self.pbuffer.width() - 2) / self.font_metrics.averageCharWidth()
-        self.height = self.pbuffer.height() / self.linesize
         self.pbuffer_painter = QPainter(self.pbuffer)
+        self.pbuffer_painter.setFont(self.fixed_font)
+
+        self.font_metrics = self.pbuffer_painter.fontMetrics()
+
+        self.linesize = self.font_metrics.height()+1
+        self.avgwidth = self.font_metrics.averageCharWidth()
+        print self.font_metrics.averageCharWidth(), self.linesize, self.avgwidth
+        print self.font_metrics.height()
+        self.width = (self.pbuffer.width() - 4) / self.font_metrics.averageCharWidth()
+        self.height = self.pbuffer.height() / self.linesize
+
+        self.pbuffer_painter.setFont(self.normal_font)
 
     def paintEvent(self,e):
         painter = QPainter(self)
@@ -211,7 +227,9 @@ class ZTextWidget(QWidget):
         tmp_real_pos = self.lastwindow.cursor_real_pos
         self.lastwindow.set_cursor_position(self.insert_pos[0], self.insert_pos[1])
         self.lastwindow.set_cursor_real_position(self.insert_real_pos[0], self.insert_real_pos[1])
+        self._input_buffer_printing = True
         self.prints(self.input_buf, self.lastwindow)
+        self._input_buffer_printing = False
         if (self.just_scrolled): # A new line scroll // Is it really necessary?
             self.just_scrolled = False
             self.lastwindow.set_cursor_position(tmp_pos[0], tmp_pos[1])
@@ -253,6 +271,7 @@ class ZTextWidget(QWidget):
         self.lastwindow = window
         self.cur_pos = 0
         self.reading_line = True
+        self.update()
         QObject.connect(self, SIGNAL("returnPressed(QString)"), callback)
 
     def disconnect_read_line(self, callback):
@@ -260,6 +279,7 @@ class ZTextWidget(QWidget):
         QObject.disconnect(self, SIGNAL("returnPressed(QString)"), callback)
 
     def read_char(self, window, callback):
+        self.update()
         self.lastwindow = window
         QObject.connect(self, SIGNAL("keyPressed(int)"), callback)
         print 'Connect char'
@@ -295,7 +315,7 @@ class ZTextWidget(QWidget):
             self.draw_text(textbuffer, window)
 
     def draw_text(self, txt, window):
-        if (len(txt)>0): # If there IS something to print
+        if ((len(txt)>0) and not ((txt == unichr(self.cursor_char)) and (self._cursor_visible == False))): # If there IS something to print
             painter = self.pbuffer_painter
 
             # @type window ZWindow
@@ -327,7 +347,10 @@ class ZTextWidget(QWidget):
                 painter.setFont(self.font())
                 painter.setRenderHint(QPainter.TextAntialiasing)
                 painter.setBackground(QBrush(self.ztoq_color(self.cur_bg)))
-                #painter.setBackgroundMode(Qt.OpaqueMode)
+                if (self._input_buffer_printing == False):
+                    painter.setBackgroundMode(Qt.OpaqueMode)
+                else:
+                    painter.setBackgroundMode(Qt.TransparentMode)
                 bounding_rect = painter.boundingRect(rect,txt)
                 if (rect.contains(bounding_rect)):
                     #print rect.x(), rect.y(), rect.width(),rect.height(), txt, bounding_rect
@@ -338,7 +361,9 @@ class ZTextWidget(QWidget):
                 else: # There is not enough space
                     #print "Not enough space to print:", txt
                     self.scroll(painter)
-                    rect.setX(window.cursor_real_pos[0])
+                    window.set_cursor_position(1, self.height)
+                    window.set_cursor_real_position(2, self.height*(self.linesize-1))
+                    rect.setX(2)
                     rect.setY(window.cursor_real_pos[1])
                     rect.setWidth(self.pbuffer.width()-window.cursor_real_pos[0])
                     rect.setHeight(self.linesize)
@@ -364,7 +389,7 @@ class ZTextWidget(QWidget):
 
     def clean_input_buffer_from_screen(self):
         rect = QRectF()
-        rect.setX(self.lastwindow.cursor_real_pos[0]-1)
+        rect.setX(self.lastwindow.cursor_real_pos[0])
         rect.setY(self.lastwindow.cursor_real_pos[1])
         rect.setWidth(self.pbuffer.width()-self.lastwindow.cursor_real_pos[0])
         rect.setHeight(self.linesize)
@@ -382,10 +407,16 @@ class ZTextWidget(QWidget):
             # FIXME: clear next lines
 
     def clear(self):
-        traceback.print_stack()
-        # TODO
-        exit
-        pass
+        self.pbuffer.fill(self.ztoq_color(self.cur_bg))
 
-    def update_real_cursor_pos(self):
-        pass
+    def update_real_cursor_position(self, w):
+        w.set_cursor_real_position(2+(w.cursor[0]-1)*self.avgwidth, w.cursor[1]*self.linesize)
+        #print w.cursor, '->', w.cursor_real_pos
+
+    def erase_window(self, w):
+        if (w.id == 1):
+            self.pbuffer_painter.eraseRect(QRectF(2, 0, self.pbuffer.width()-2, w.line_count*self.linesize))
+            print 2, 0, self.pbuffer.width()-2, w.line_count*self.linesize
+        else:
+            traceback.print_stack()
+            sys.exit()

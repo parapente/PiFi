@@ -22,7 +22,7 @@ class ZInput:
             self.stream[2].selected = True
 
     def read_char(self, callback):
-        self.plugin.show_cursor()
+        #self.plugin.show_cursor()
         self.plugin.read_char(callback)
 
     def read_line(self, max_read, callback):

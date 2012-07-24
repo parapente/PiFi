@@ -1892,7 +1892,7 @@ class ZCpu:
         elif ops[0] == 0xfffe: # Just clear the screen
             pass
         else: # Erase window
-            pass
+            self.plugin.erase_window(ops[0])
         self.plugin.debugprint( '{0}: erase_window {1}'.format(format(pc,'X'),ops), 2 )
 
     def _erase_line(self):
