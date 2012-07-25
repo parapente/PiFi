@@ -99,7 +99,6 @@ class ZTextWidget(QWidget):
         #print 'pbuffer[0] height:', self.pbuffer[0].height(), 'width:', self.pbuffer[0].width()
         painter.drawImage(0,0,part)
         #print 'pbuffer[0] height:', self.pbuffer[0].height(), 'width:', self.pbuffer[0].width()
-        self.update_game_area()
         if (self.reading_line):
             self.just_scrolled = True
 
@@ -160,7 +159,6 @@ class ZTextWidget(QWidget):
                 self.input_buf.insert(self._input_cursor_pos, c)
                 self.clean_input_buffer_from_screen()
                 self.draw_input_buffer()
-                self.update_game_area()
             e.accept()
             self.keyPressed.emit(131)
         elif e.key() == Qt.Key_Right:
@@ -170,7 +168,6 @@ class ZTextWidget(QWidget):
                 self.input_buf.insert(self._input_cursor_pos, c)
                 self.clean_input_buffer_from_screen()
                 self.draw_input_buffer()
-                self.update_game_area()
             e.accept()
             self.keyPressed.emit(132)
         elif e.key() == Qt.Key_Up:
@@ -421,13 +418,11 @@ class ZTextWidget(QWidget):
             self.pbuffer_painter[0].eraseRect(rect)
             #print 'Erasing rect', rect
             # FIXME: clear next lines
-        self.update_game_area()
 
     def clear(self):
         # TODO: check if works fine
         print 'clearing...'
         self.game_area.fill(self.ztoq_color(self.cur_bg))
-        self.update_game_area()
 
     def update_real_cursor_position(self, w):
         w.set_cursor_real_position(2+(w.cursor[0]-1)*self.avgwidth, (w.cursor[1]-1)*self.linesize)
@@ -446,7 +441,6 @@ class ZTextWidget(QWidget):
             traceback.print_stack()
             print 'erase_window for window',w.id
             sys.exit()
-        self.update_game_area()
 
     def split_window(self, lines, ver):
         print 'Lines:', lines
