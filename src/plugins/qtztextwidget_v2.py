@@ -200,8 +200,10 @@ class ZTextWidget(QWidget):
             self.keyPressed.emit(8)
         elif (e.key() == Qt.Key_Return) or (e.key() == Qt.Key_Enter):
             self.clean_input_buffer_from_screen()
-            self.hide_cursor(self.lastwindow)
-            self.draw_input_buffer()
+            if (self._cursor_visible == True):
+                self.hide_cursor(self.lastwindow)
+            if (self.reading_line == True):
+                self.draw_input_buffer()
             text = ''
             for i in self.input_buf:
                 text += i
@@ -432,7 +434,7 @@ class ZTextWidget(QWidget):
         #print w.cursor, '->', w.cursor_real_pos
 
     def erase_window(self, w):
-        if (w.id == 1):
+        if ((w.id >= 0) and (w.id < 8)):
             if (self.pbuffer_painter[w.id] == None):
                 self.pbuffer_painter[w.id] = QPainter(self.pbuffer[w.id])
             self.pbuffer_painter[w.id].setPen(self.ztoq_color(self.cur_fg))
@@ -442,6 +444,7 @@ class ZTextWidget(QWidget):
             print 2, 0, self.pbuffer[w.id].width()-2, w.line_count*self.linesize
         else:
             traceback.print_stack()
+            print 'erase_window for window',w.id
             sys.exit()
         self.update_game_area()
 
@@ -466,5 +469,6 @@ class ZTextWidget(QWidget):
                 #del tmp
             else: # New window
                 self.pbuffer[1] = QImage(self.pbuffer[0].width(),lines*self.linesize,QImage.Format_RGB32)
+                self.pbuffer[1].fill(0)
             if ver == 3:
                 self.pbuffer[1].fill(self.ztoq_color(self.cur_bg))

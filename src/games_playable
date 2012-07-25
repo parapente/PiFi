@@ -22,3 +22,12 @@ lambs
 limp
 vision
 amish
+reversi
+freefall (though the pieces don't fall on their own - no timed input yet!)
+TGM
+tube
+Alpha (though it's like cheating without the clock - no timed input yet!)
+boothdye
+appall
+mhpquest
+vindaloo (though you get a couple of warnings for get_prop_addr getting 0 as object)
