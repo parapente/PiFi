@@ -81,12 +81,10 @@ class PlugSkel(object):
         self.current_window = w
         if (self.zver != 6 and w == 1):
             self.window[1].set_cursor_position(1, 1)
-            self.widget.update_real_cursor_position(self.window[1])
 
     def set_cursor(self,x,y):
         if (self.current_window==1):
             self.window[1].set_cursor_position(x,y)
-            self.widget.update_real_cursor_position(self.window[1])
 
     def set_colour(self,fg,bg):
         if fg == 1:
