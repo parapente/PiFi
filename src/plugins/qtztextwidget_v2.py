@@ -423,6 +423,9 @@ class ZTextWidget(QWidget):
         # TODO: check if works fine
         print 'clearing...'
         self.game_area.fill(self.ztoq_color(self.cur_bg))
+        for i in range(8):
+            if (self.pbuffer[i] != None):
+                self.pbuffer[i].fill(self.ztoq_color(self.cur_bg))
 
     def update_real_cursor_position(self, w):
         w.set_cursor_real_position(2+(w.cursor[0]-1)*self.avgwidth, (w.cursor[1]-1)*self.linesize)
