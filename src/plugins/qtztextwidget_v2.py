@@ -44,7 +44,10 @@ class ZTextWidget(QWidget):
     _input_buffer_printing = False
     returnPressed = pyqtSignal(QString)
     keyPressed = pyqtSignal(int)
-    pbuffer = QImage(640,480,QImage.Format_RGB32)
+    pbuffer = [None]*8
+    pbuffer_painter = [None]*8
+    game_area = QImage(640, 480, QImage.Format_RGB32)
+    game_area_painter = QPainter(game_area)
 
     def __init__(self,parent = None,flags = Qt.Widget):
         super(ZTextWidget,self).__init__(parent,flags)
@@ -53,43 +56,50 @@ class ZTextWidget(QWidget):
         sp.setVerticalPolicy(QSizePolicy.Fixed)
         self.setSizePolicy(sp)
         self.setFocusPolicy(Qt.StrongFocus)
-        self.pbuffer.fill(0)
+        self.pbuffer[0] = QImage(640,480,QImage.Format_RGB32)
+        self.pbuffer[0].fill(0)
         font = self.font()
-        font.setPointSize(12)
         self.normal_font = font
         self.fixed_font = QFont(font)
         self.fixed_font.setStyleHint(QFont.Monospace)
         self.fixed_font.setFamily(self.fixed_font.defaultFamily())
-        self.fixed_font.setPointSize(12)
+        self.fixed_font.setPointSize(9)
         print self.fixed_font.family()
         #self.setFont(self.normal_font)
         self.setFont(self.fixed_font)
-        self.pbuffer_painter = QPainter(self.pbuffer)
-        self.pbuffer_painter.setFont(self.fixed_font)
+        self.pbuffer_painter[0] = QPainter(self.pbuffer[0])
+        self.pbuffer_painter[0].setFont(self.fixed_font)
 
-        self.font_metrics = self.pbuffer_painter.fontMetrics()
+        self.font_metrics = self.pbuffer_painter[0].fontMetrics()
 
         self.linesize = self.font_metrics.height()+1
         self.avgwidth = self.font_metrics.averageCharWidth()
         print self.font_metrics.averageCharWidth(), self.linesize, self.avgwidth
         print self.font_metrics.height()
-        self.width = (self.pbuffer.width() - 4) / self.font_metrics.averageCharWidth()
-        self.height = self.pbuffer.height() / self.linesize
+        self.width = (self.pbuffer[0].width() - 4) / self.font_metrics.averageCharWidth()
+        self.height = self.pbuffer[0].height() / self.linesize
 
-        self.pbuffer_painter.setFont(self.normal_font)
+        self.pbuffer_painter[0].setFont(self.normal_font)
 
     def paintEvent(self,e):
         painter = QPainter(self)
-        painter.drawImage(0,0,self.pbuffer)
+        painter.drawImage(0,0,self.game_area)
+
+    def update_game_area(self):
+        for i in range(8):
+            if (self.pbuffer[i] != None):
+                self.game_area_painter.drawImage(0,0,self.pbuffer[i])
+                print 'Drawing:',i
+        self.update()
 
     def scroll(self,painter):
-        part = self.pbuffer.copy(0,self.linesize,self.pbuffer.width(),self.pbuffer.height()-self.linesize)
+        part = self.pbuffer[0].copy(0,self.linesize,self.pbuffer[0].width(),self.pbuffer[0].height()-self.linesize)
         #print 'Part height:', part.height(), 'width:', part.width()
-        self.pbuffer.fill(self.ztoq_color(self.cur_bg))
-        #print 'pbuffer height:', self.pbuffer.height(), 'width:', self.pbuffer.width()
+        self.pbuffer[0].fill(self.ztoq_color(self.cur_bg))
+        #print 'pbuffer[0] height:', self.pbuffer[0].height(), 'width:', self.pbuffer[0].width()
         painter.drawImage(0,0,part)
-        #print 'pbuffer height:', self.pbuffer.height(), 'width:', self.pbuffer.width()
-        self.update()
+        #print 'pbuffer[0] height:', self.pbuffer[0].height(), 'width:', self.pbuffer[0].width()
+        self.update_game_area()
         if (self.reading_line):
             self.just_scrolled = True
 
@@ -150,7 +160,7 @@ class ZTextWidget(QWidget):
                 self.input_buf.insert(self._input_cursor_pos, c)
                 self.clean_input_buffer_from_screen()
                 self.draw_input_buffer()
-                self.update()
+                self.update_game_area()
             e.accept()
             self.keyPressed.emit(131)
         elif e.key() == Qt.Key_Right:
@@ -160,7 +170,7 @@ class ZTextWidget(QWidget):
                 self.input_buf.insert(self._input_cursor_pos, c)
                 self.clean_input_buffer_from_screen()
                 self.draw_input_buffer()
-                self.update()
+                self.update_game_area()
             e.accept()
             self.keyPressed.emit(132)
         elif e.key() == Qt.Key_Up:
@@ -208,14 +218,14 @@ class ZTextWidget(QWidget):
         elif e.key() == Qt.Key_Escape:
             e.accept()
             self.keyPressed.emit(27)
-        elif e.text().isEmpty() == False:
+        elif (e.text().isEmpty() == False):
             if (self.reading_line) and (len(self.input_buf) < self.max_char+1):
                 self.clean_input_buffer_from_screen()
                 self.input_buf.insert(self._input_cursor_pos, unicode(e.text()))
                 self._input_cursor_pos += 1
                 self.draw_input_buffer()
             e.accept()
-            t = ord(str(e.text()))
+            t = ord(str(e.text()[0]))
             if ((t > 31) and (t < 127)) or ((t > 154) and (t <252)):
                 self.keyPressed.emit(t)
         else:
@@ -239,13 +249,15 @@ class ZTextWidget(QWidget):
             self.lastwindow.set_cursor_real_position(tmp_real_pos[0], tmp_real_pos[1])
         #self.draw_cursor(self.lastwindow, self._cursor_visible)
         #print self.input_buf, len(self.input_buf), self.max_char
-        self.update()
+        self.update_game_area()
 
     def set_text_colour(self,fg):
         self.cur_fg = fg
+        print "fg:", fg
 
     def set_text_background_colour(self,bg):
         self.cur_bg = bg
+        print "bg:", bg
 
     def set_font_style(self,s):
         if s == 0:
@@ -271,7 +283,7 @@ class ZTextWidget(QWidget):
         self.lastwindow = window
         self.cur_pos = 0
         self.reading_line = True
-        self.update()
+        self.update_game_area()
         QObject.connect(self, SIGNAL("returnPressed(QString)"), callback)
 
     def disconnect_read_line(self, callback):
@@ -279,7 +291,7 @@ class ZTextWidget(QWidget):
         QObject.disconnect(self, SIGNAL("returnPressed(QString)"), callback)
 
     def read_char(self, window, callback):
-        self.update()
+        self.update_game_area()
         self.lastwindow = window
         QObject.connect(self, SIGNAL("keyPressed(int)"), callback)
         print 'Connect char'
@@ -316,7 +328,9 @@ class ZTextWidget(QWidget):
 
     def draw_text(self, txt, window):
         if ((len(txt)>0) and not ((txt == unichr(self.cursor_char)) and (self._cursor_visible == False))): # If there IS something to print
-            painter = self.pbuffer_painter
+            if (self.pbuffer_painter[window.id] == None):
+                self.pbuffer_painter[window.id] = QPainter(self.pbuffer[window.id])
+            painter = self.pbuffer_painter[window.id]
 
             # @type window ZWindow
             if (window.cursor == None):
@@ -340,7 +354,7 @@ class ZTextWidget(QWidget):
                 rect = QRectF()
                 rect.setX(window.cursor_real_pos[0])
                 rect.setY(window.cursor_real_pos[1])
-                rect.setWidth(self.pbuffer.width()-window.cursor_real_pos[0])
+                rect.setWidth(self.pbuffer[window.id].width()-window.cursor_real_pos[0])
                 rect.setHeight(self.linesize)
 
                 painter.setPen(self.ztoq_color(self.cur_fg))
@@ -365,7 +379,7 @@ class ZTextWidget(QWidget):
                     window.set_cursor_real_position(2, self.height*(self.linesize-1))
                     rect.setX(2)
                     rect.setY(window.cursor_real_pos[1])
-                    rect.setWidth(self.pbuffer.width()-window.cursor_real_pos[0])
+                    rect.setWidth(self.pbuffer[window.id].width()-window.cursor_real_pos[0])
                     rect.setHeight(self.linesize)
                     bounding_rect = painter.boundingRect(rect,txt)
                     painter.drawText(bounding_rect, txt)
@@ -391,32 +405,66 @@ class ZTextWidget(QWidget):
         rect = QRectF()
         rect.setX(self.lastwindow.cursor_real_pos[0])
         rect.setY(self.lastwindow.cursor_real_pos[1])
-        rect.setWidth(self.pbuffer.width()-self.lastwindow.cursor_real_pos[0])
+        rect.setWidth(self.pbuffer[0].width()-self.lastwindow.cursor_real_pos[0])
         rect.setHeight(self.linesize)
         txtbuffer = ''
         for w in self.input_buf:
             txtbuffer += w
-        bounding_rect = self.pbuffer_painter.boundingRect(rect, txtbuffer)
+        bounding_rect = self.pbuffer_painter[0].boundingRect(rect, txtbuffer)
         if (rect.contains(bounding_rect)): # string fits in this line
-            self.pbuffer_painter.eraseRect(bounding_rect)
+            self.pbuffer_painter[0].eraseRect(bounding_rect)
             #self.pbuffer_painter.drawRect(bounding_rect)
             #print 'Erasing rect', bounding_rect
         else:
-            self.pbuffer_painter.eraseRect(rect)
+            self.pbuffer_painter[0].eraseRect(rect)
             #print 'Erasing rect', rect
             # FIXME: clear next lines
+        self.update_game_area()
 
     def clear(self):
-        self.pbuffer.fill(self.ztoq_color(self.cur_bg))
+        # TODO: check if works fine
+        print 'clearing...'
+        self.game_area.fill(self.ztoq_color(self.cur_bg))
+        self.update_game_area()
 
     def update_real_cursor_position(self, w):
-        w.set_cursor_real_position(2+(w.cursor[0]-1)*self.avgwidth, w.cursor[1]*self.linesize)
+        w.set_cursor_real_position(2+(w.cursor[0]-1)*self.avgwidth, (w.cursor[1]-1)*self.linesize)
         #print w.cursor, '->', w.cursor_real_pos
 
     def erase_window(self, w):
         if (w.id == 1):
-            self.pbuffer_painter.eraseRect(QRectF(2, 0, self.pbuffer.width()-2, w.line_count*self.linesize))
-            print 2, 0, self.pbuffer.width()-2, w.line_count*self.linesize
+            if (self.pbuffer_painter[w.id] == None):
+                self.pbuffer_painter[w.id] = QPainter(self.pbuffer[w.id])
+            self.pbuffer_painter[w.id].setPen(self.ztoq_color(self.cur_fg))
+            self.pbuffer_painter[w.id].setBackground(QBrush(self.ztoq_color(self.cur_bg)))
+            self.pbuffer_painter[w.id].setBackgroundMode(Qt.OpaqueMode)
+            self.pbuffer_painter[w.id].eraseRect(QRectF(0, 0, self.pbuffer[w.id].width(), w.line_count*self.linesize))
+            print 2, 0, self.pbuffer[w.id].width()-2, w.line_count*self.linesize
         else:
             traceback.print_stack()
             sys.exit()
+        self.update_game_area()
+
+    def split_window(self, lines, ver):
+        print 'Lines:', lines
+        # Copy window 1 to window 0 if it already exists
+        if (self.pbuffer[1] != None):
+            self.pbuffer_painter[0].drawImage(0,0,self.pbuffer[1])
+
+        if (lines == 0): # Unsplit
+            #self.pbuffer[1].fill(self.ztoq_color(self.cur_bg))
+            #del self.pbuffer_painter[1]
+            #del self.pbuffer[1]
+            self.pbuffer_painter[1] = None
+            self.pbuffer[1] = None
+        else:
+            if (self.pbuffer[1] != None): # Window needs resizing
+                tmp = self.pbuffer[1]
+                #del self.pbuffer_painter[1]
+                self.pbuffer_painter[1] = None
+                self.pbuffer[1] = self.pbuffer[1].copy(0,0,self.pbuffer[1].width(),lines*self.linesize)
+                #del tmp
+            else: # New window
+                self.pbuffer[1] = QImage(self.pbuffer[0].width(),lines*self.linesize,QImage.Format_RGB32)
+            if ver == 3:
+                self.pbuffer[1].fill(self.ztoq_color(self.cur_bg))

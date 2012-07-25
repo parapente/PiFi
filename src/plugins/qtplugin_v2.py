@@ -59,7 +59,8 @@ class QtPluginV2(PlugSkel):
         self.widget.prints('\n',self.window[self.current_window])
 
     def prints(self,s):
-        self.widget.prints(s,self.window[self.current_window])
+        if (self._ostream[0].selected == True):
+            self.widget.prints(s,self.window[self.current_window])
 
     def split_window(self,lines,ver):
         if (ver==6):
@@ -70,9 +71,21 @@ class QtPluginV2(PlugSkel):
                 self.window[1].set_cursor_position(1,1)
                 self.window[1].set_cursor_real_position(2,self.widget.linesize)
             self.window[1].set_line_count(lines)
+            self.widget.split_window(lines,ver)
 
     def show_cursor(self):
         self.widget.show_cursor(self.window[self.current_window])
 
     def hide_cursor(self):
         self.widget.hide_cursor(self.window[self.current_window])
+
+    def set_window(self,w):
+        self.current_window = w
+        if (self.zver != 6 and w == 1):
+            self.window[1].set_cursor_position(1, 1)
+            self.widget.update_real_cursor_position(self.window[1])
+
+    def set_cursor(self,x,y):
+        if (self.current_window==1):
+            self.window[1].set_cursor_position(x,y)
+            self.widget.update_real_cursor_position(self.window[1])
