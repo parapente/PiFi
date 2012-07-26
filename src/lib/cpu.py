@@ -1480,7 +1480,7 @@ class ZCpu:
     def _not(self):
         pc = self.pc
         ops = self._read_operands_short_1op()
-        if self.zver == 5:
+        if self.zver >= 5:
             #print "This is truly a call_1n"
             self._call_1n(pc,ops)
         else:
