@@ -52,9 +52,10 @@ class ZOutput:
             addr = self.table_list[len(self.table_list) - 2]
             addr += 2
             l = len(s)
-            chars = self.table_list[len(self.table_list) - 1] + l
-            self.table_list[len(self.table_list) - 1] = chars
-            #print "Printing in memory -- ", s
+            chars = self.table_list[len(self.table_list) - 1]
+            addr += chars
+            self.table_list[len(self.table_list) - 1] = chars + l
+            #print 'Printing in memory {',addr,'} -- "', s,'"'
             for i in range(l):
                 if ord(s[i]) == 10:
                     self.mem[addr + i] = 13
