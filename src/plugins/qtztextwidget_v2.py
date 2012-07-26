@@ -39,6 +39,7 @@ class ZTextWidget(QWidget):
     input_buf = []
     just_scrolled = False
     reading_line = False
+    reverse_video = False
     _cursor_visible = False
     _ostream = None
     _input_buffer_printing = False

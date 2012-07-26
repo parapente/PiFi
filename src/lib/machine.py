@@ -158,10 +158,8 @@ class ZMachine:
             max_length = 128 * 1024
         elif (b < 6):
             max_length = 256 * 1024
-        elif (b == 6 or b == 8):
+        elif (b == 6 or b == 7 or b == 8):
             max_length = 512 * 1024
-        elif (b == 7):
-            max_length = 320 * 1024
         else:
             print 'Not a valid story file'
             sys.exit(10)
