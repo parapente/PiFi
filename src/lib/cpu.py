@@ -2010,8 +2010,24 @@ class ZCpu:
         sys.exit("Not implemented yet!")
 
     def _copy_table(self):
-        self.plugin.debugprint( ': copy_table', 0 )
-        sys.exit("Not implemented yet!")
+        pc = self.pc
+        ops = self._read_operands_var_2op()
+        self.plugin.debugprint( '{0}: copy_table {1}'.format(format(pc,'X'),ops), 2 )
+        if (ops[1] == 0): # Copy zeros to the first variable
+            for i in range(abs(ops[2])):
+                self.mem[ops[0]+i] = 0
+        else: # Copy first to second
+            tmplist = []
+            if (ops[2]>0): # Make sure that the first isn't destroyed
+                for i in range(ops[2]):
+                    tmplist.append(self.mem[ops[0]+i])
+                for i in range(ops[2]):
+                    self.mem[ops[1]+i] = tmplist[i]
+                for i in range(ops[2]):
+                    self.mem[ops[0]+i] = tmplist[i]
+            else:
+                for i in range(abs(ops[2])):
+                    self.mem[ops[1]+i] = self.mem[ops[0]+i]
 
     def _print_table(self):
         self.plugin.debugprint( ': print_table', 0 )
