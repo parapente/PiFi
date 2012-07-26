@@ -72,7 +72,7 @@ class ZTextWidget(QWidget):
 
         self.font_metrics = self.pbuffer_painter[0].fontMetrics()
 
-        self.linesize = self.font_metrics.height()+1
+        self.linesize = self.font_metrics.height()
         self.avgwidth = self.font_metrics.averageCharWidth()
         print self.font_metrics.averageCharWidth(), self.linesize, self.avgwidth
         print self.font_metrics.height()
@@ -269,7 +269,10 @@ class ZTextWidget(QWidget):
         newfont.setItalic(False)
         newfont.setFixedPitch(False)
         newfont.setBold(False)
+        self.reverse_video = False
         # And now check for extra style
+        if ((self.cur_style & 1) == 1): # Reverse video
+            self.reverse_video = True
         if ((self.cur_style & 2) == 2): # Bold
             newfont.setBold(True)
         if ((self.cur_style & 4) == 4): # Italic
@@ -356,10 +359,14 @@ class ZTextWidget(QWidget):
                 rect.setWidth(self.pbuffer[window.id].width()-window.cursor_real_pos[0])
                 rect.setHeight(self.linesize)
 
-                painter.setPen(self.ztoq_color(self.cur_fg))
+                if (self.reverse_video == True):
+                    painter.setPen(self.ztoq_color(self.cur_bg))
+                    painter.setBackground(QBrush(self.ztoq_color(self.cur_fg)))
+                else:
+                    painter.setPen(self.ztoq_color(self.cur_fg))
+                    painter.setBackground(QBrush(self.ztoq_color(self.cur_bg)))
                 painter.setFont(self.font())
                 painter.setRenderHint(QPainter.TextAntialiasing)
-                painter.setBackground(QBrush(self.ztoq_color(self.cur_bg)))
                 if (self._input_buffer_printing == False):
                     painter.setBackgroundMode(Qt.OpaqueMode)
                 else:

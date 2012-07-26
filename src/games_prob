@@ -11,4 +11,3 @@ zball - Needs cursor key input (same problem as painter)
 Zokoban - Segmentation fault
 ZTornado - restore_ext not implemented
 spacez - Seems frozen (probably due to no timed input available)
-taipan - copy_table not implemented and some graphical glitches

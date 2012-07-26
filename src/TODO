@@ -19,7 +19,6 @@ o Ops:
   * scan_table
   * tokenise (custom dict, flags)
   * encode_text
-  * copy_table
   * print_table
   * pull(6 user stack)
 
