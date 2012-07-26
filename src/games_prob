@@ -11,3 +11,43 @@ zball - Needs cursor key input (same problem as painter)
 Zokoban - Segmentation fault
 ZTornado - restore_ext not implemented
 spacez - Seems frozen (probably due to no timed input available)
+
+theatre
+stiffmst
+rogue
+mst3k1
+mst3k2
+mst3k1_2 - print_table not implemented
+
+TheDayIShotHitler
+sunburst - throw not implemented
+
+sunburst - catch not implemented
+
+sunburst
+medusa - get_cursor not implemented
+
+Advent
+alice3
+amiss
+AOTYRZ
+beneath
+BibleRetold
+bishoes
+bluechairs - input_stream not implemented
+
+ats
+bluechairs
+bunny
+permagic
+robots
+rogue
+School
+selection
+sgate
+taipan
+trw
+wossname
+z-life
+zombies
+zsnake - sound_effect not implemented
