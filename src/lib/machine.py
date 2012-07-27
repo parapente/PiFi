@@ -47,33 +47,41 @@ class ZMachine:
             self.cpu.intr = 0
             self.cpu.start()
             self.handle_intr()
+        elif self.cpu.intr == 69: # Quit
+            self.input.read_char(self.get_char)
 
-    def get_text(self,text):
-        self.plugin.debugprint("Enter!", 2)
+    def get_text(self,text,interrupted=False):
         self.input.disconnect_input(self.get_text)
         #self.input.hide_cursor()
-        paddr = self.cpu.intr_data[1]
-        taddr = self.cpu.intr_data[0]
-        self.plugin.debugprint("gt -> '"+text+"'", 2)
-        if self.zver < 5:
-            i = 0
-            for i in range(len(text)):
-                if (i == (len(text) - 1)) and text[i] == '\n':
-                    self.mem.mem[taddr + 1 + i] = 0
-                else:
-                    self.mem.mem[taddr + 1 + i] = ord(str(text[i]))
-            i += 1
-            self.mem.mem[taddr + 1 + i] = 0
-            self.lex(taddr,paddr,0,0)
-        else:
-            if taddr != 0:
+        if (interrupted == False): # We got here because user pressed enter
+            self.plugin.debugprint("Enter!", 2)
+            paddr = self.cpu.intr_data[1]
+            taddr = self.cpu.intr_data[0]
+            self.plugin.debugprint("gt -> '"+text+"'", 2)
+            if self.zver < 5:
+                i = 0
                 for i in range(len(text)):
-                    self.mem.mem[taddr + 2 + i] = ord(str(text[i]))
-                self.mem.mem[taddr + 1] = len(text)
+                    if (i == (len(text) - 1)) and text[i] == '\n':
+                        self.mem.mem[taddr + 1 + i] = 0
+                    else:
+                        self.mem.mem[taddr + 1 + i] = ord(str(text[i]))
+                i += 1
+                self.mem.mem[taddr + 1 + i] = 0
                 self.lex(taddr,paddr,0,0)
+            else:
+                if taddr != 0:
+                    skip = self.mem.mem[taddr + 1]
+                    for i in range(len(text)):
+                        self.mem.mem[taddr + 2 + i + skip] = ord(str(text[i]))
+                    self.mem.mem[taddr + 1] = len(text) + skip
+                    self.lex(taddr,paddr,0,0)
+                    if self.zver > 4:
+                        self.cpu.got_char(10)
+        else:
+            print 'input was interrupted'
+            if self.zver > 4:
+                self.cpu.got_char(0)
         self.cpu.intr = 0
-        if self.zver > 4:
-            self.cpu.got_char(10)
         self.cpu.start()
         self.handle_intr()
 
@@ -144,10 +152,13 @@ class ZMachine:
     def get_char(self,char):
         self.input.disconnect_input(self.get_char)
         self.plugin.debugprint("Character read!", 2)
-        self.cpu.got_char(char)
-        self.cpu.intr = 0
-        self.cpu.start()
-        self.handle_intr()
+        if (self.cpu.intr == 2):
+            self.cpu.got_char(char)
+            self.cpu.intr = 0
+            self.cpu.start()
+            self.handle_intr()
+        else:
+            sys.exit('Quit')
 
     def load_story(self,f):
         # @type f file

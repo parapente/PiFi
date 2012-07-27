@@ -1613,7 +1613,8 @@ class ZCpu:
     def _quit(self):
         pc = self.pc
         self.plugin.debugprint( '{0}: quit'.format(format(pc,'X')), 2 )
-        sys.exit("Quit")
+        self.output.prints('[Press any key to quit]')
+        self.intr = 69
 
     def _new_line(self):
         pc = self.pc
