@@ -2,7 +2,6 @@ Zokoban - Doesn't start. It doesn't initialize upper window but tries to print i
 zsnake - Background color not cleared. Also no split_window and it tries to print in upper win
 animals - Error while painting
 kitten - When starting game a printing error occurs (out of bounds upper window printing???)
-bomber - Needs timed input
 wurm - Segmentation fault
 SameGame - restore_ext not implemented
 painter - Needs cursor key input

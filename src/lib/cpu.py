@@ -235,9 +235,9 @@ class ZCpu:
                     j += 1
                 if r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse2()
+                        self._return(0)
                     elif offset == 1: # Return true
-                        self._rtrue2()
+                        self._return(1)
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -255,9 +255,9 @@ class ZCpu:
                     j += 1
                 if not r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse2()
+                        self._return(0)
                     elif offset == 1: # Return true
-                        self._rtrue2()
+                        self._return(1)
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -292,9 +292,9 @@ class ZCpu:
                     j += 1
                 if r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse2()
+                        self._return(0)
                     elif offset == 1: # Return true
-                        self._rtrue2()
+                        self._return(1)
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -312,9 +312,9 @@ class ZCpu:
                     j += 1
                 if not r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse2()
+                        self._return(0)
                     elif offset == 1: # Return true
-                        self._rtrue2()
+                        self._return(1)
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -349,9 +349,9 @@ class ZCpu:
                     j += 1
                 if r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse2()
+                        self._return(0)
                     elif offset == 1: # Return true
-                        self._rtrue2()
+                        self._return(1)
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -369,9 +369,9 @@ class ZCpu:
                     j += 1
                 if not r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse2()
+                        self._return(0)
                     elif offset == 1: # Return true
-                        self._rtrue2()
+                        self._return(1)
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -407,9 +407,9 @@ class ZCpu:
                     j += 1
                 if r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse2()
+                        self._return(0)
                     elif offset == 1: # Return true
-                        self._rtrue2()
+                        self._return(1)
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -427,9 +427,9 @@ class ZCpu:
                     j += 1
                 if not r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse2()
+                        self._return(0)
                     elif offset == 1: # Return true
-                        self._rtrue2()
+                        self._return(1)
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -465,9 +465,9 @@ class ZCpu:
                     j += 1
                 if r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse2()
+                        self._return(0)
                     elif offset == 1: # Return true
-                        self._rtrue2()
+                        self._return(1)
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -485,9 +485,9 @@ class ZCpu:
                     j += 1
                 if not r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse2()
+                        self._return(0)
                     elif offset == 1: # Return true
-                        self._rtrue2()
+                        self._return(1)
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -518,9 +518,9 @@ class ZCpu:
                 b = (self.mem[obj+6] << 8) + self.mem[obj+7]
             if b == ops[1]:
                 if offset == 0: # Return false
-                    self._rfalse2()
+                    self._return(0)
                 elif offset == 1: # Return true
-                    self._rtrue2()
+                    self._return(1)
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
@@ -533,9 +533,9 @@ class ZCpu:
                 b = (self.mem[obj+6] << 8) + self.mem[obj+7]
             if b <> ops[1]:
                 if offset == 0: # Return false
-                    self._rfalse2()
+                    self._return(0)
                 elif offset == 1: # Return true
-                    self._rtrue2()
+                    self._return(1)
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
@@ -566,9 +566,9 @@ class ZCpu:
                 r = ((ops[0] & ops[1]) == ops[1])
                 if r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse2()
+                        self._return(0)
                     elif offset == 1: # Return true
-                        self._rtrue2()
+                        self._return(1)
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -582,9 +582,9 @@ class ZCpu:
                 r = ((ops[0] & ops[1]) == ops[1])
                 if not r: # Jump to label
                     if offset == 0: # Return false
-                        self._rfalse2()
+                        self._return(0)
                     elif offset == 1: # Return true
-                        self._rtrue2()
+                        self._return(1)
                     else:
                         self.pc = self.pc + gf + offset - 2
                 else:
@@ -644,9 +644,9 @@ class ZCpu:
         if (self.mem[self.pc] & 128) == 128: # Jump if true
             if (b & mask) == mask: # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse2()
+                    self._return(0)
                 elif offset == 1: # Return true
-                    self._rtrue2()
+                    self._return(1)
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
@@ -655,9 +655,9 @@ class ZCpu:
             jif = 'False'
             if (b & mask) == 0: # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse2()
+                    self._return(0)
                 elif offset == 1: # Return true
-                    self._rtrue2()
+                    self._return(1)
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
@@ -1103,9 +1103,9 @@ class ZCpu:
         if (self.mem[self.pc] & 128) == 128: # Jump if true
             if ops[0] == 0: # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse2()
+                    self._return(0)
                 elif offset == 1: # Return true
-                    self._rtrue2()
+                    self._return(1)
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
@@ -1114,9 +1114,9 @@ class ZCpu:
             jif = 'False'
             if ops[0] <> 0: # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse2()
+                    self._return(0)
                 elif offset == 1: # Return true
-                    self._rtrue2()
+                    self._return(1)
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
@@ -1149,9 +1149,9 @@ class ZCpu:
         if (self.mem[self.pc] & 128) == 128: # Jump if true
             if sibl <> 0: # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse2()
+                    self._return(0)
                 elif offset == 1: # Return true
-                    self._rtrue2()
+                    self._return(1)
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
@@ -1160,9 +1160,9 @@ class ZCpu:
             jif = 'False'
             if sibl == 0: # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse2()
+                    self._return(0)
                 elif offset == 1: # Return true
-                    self._rtrue2()
+                    self._return(1)
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
@@ -1197,9 +1197,9 @@ class ZCpu:
         if (self.mem[self.pc] & 128) == 128: # Jump if true
             if child <> 0: # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse2()
+                    self._return(0)
                 elif offset == 1: # Return true
-                    self._rtrue2()
+                    self._return(1)
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
@@ -1208,9 +1208,9 @@ class ZCpu:
             jif = 'False'
             if child == 0: # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse2()
+                    self._return(0)
                 elif offset == 1: # Return true
-                    self._rtrue2()
+                    self._return(1)
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
@@ -1422,14 +1422,20 @@ class ZCpu:
     def _ret(self):
         pc = self.pc
         ops = self._read_operands_short_1op()
+        self._return(ops[0])
+        self.plugin.debugprint( '{0}: ret {1}'.format(format(pc,'X'),ops), 2 )
+
+    def _return(self, value):
         self.stack.pop_frame() # We don't need the number of args
+        self.intr_data = self.stack.pop_frame()
+        self.intr = self.stack.pop_frame()
         return_var = self.stack.pop_frame()
         prev_pc = self.stack.pop_frame()
         self.stack.pop_local_vars()
         if return_var <> -1: # If we want the returned value...
-            self._zstore(ops[0],return_var)
+            self._zstore(value,return_var)
+        self.last_return = value # Keep last value (used in timed input)
         self.pc = prev_pc
-        self.plugin.debugprint( '{0}: ret {1}'.format(format(pc,'X'),ops), 2 )
 
     def _jump(self):
         pc = self.pc
@@ -1498,31 +1504,13 @@ class ZCpu:
 
     def _rtrue(self):
         pc = self.pc
-        self._rtrue2()
+        self._return(1)
         self.plugin.debugprint( '{0}: rtrue'.format(format(pc,'X')), 2 )
-
-    def _rtrue2(self):
-        self.stack.pop_frame() # We don't need the number of args
-        return_var = self.stack.pop_frame()
-        prev_pc = self.stack.pop_frame()
-        self.stack.pop_local_vars()
-        if return_var <> -1: # If we want the returned value...
-            self._zstore(1,return_var)
-        self.pc = prev_pc
 
     def _rfalse(self):
         pc = self.pc
-        self._rfalse2()
+        self._return(0)
         self.plugin.debugprint( '{0}: rfalse'.format(format(pc,'X')), 2 )
-
-    def _rfalse2(self):
-        self.stack.pop_frame() # We don't need the number of args
-        return_var = self.stack.pop_frame()
-        prev_pc = self.stack.pop_frame()
-        self.stack.pop_local_vars()
-        if return_var <> -1: # If we want the returned value...
-            self._zstore(0,return_var)
-        self.pc = prev_pc
 
     def _print(self):
         pc = self.pc
@@ -1560,7 +1548,7 @@ class ZCpu:
         self.output.prints(text + "\n")
         #print text
         self.pc += i + 1
-        self._rtrue2()
+        self._return(1)
         self.plugin.debugprint( '{0}: print_ret "{1}"'.format(format(pc,'X'),text), 2 )
 
     def _nop(self):
@@ -1584,13 +1572,7 @@ class ZCpu:
     def _ret_popped(self):
         pc = self.pc
         data = self.stack.pop()
-        self.stack.pop_frame() # We don't need the number of args
-        return_var = self.stack.pop_frame()
-        prev_pc = self.stack.pop_frame()
-        self.stack.pop_local_vars()
-        #print "Returned", data
-        self._zstore(data, return_var)
-        self.pc = prev_pc
+        self._return(data)
         self.plugin.debugprint( '{0}: ret_popped'.format(format(pc,'X')), 2 )
 
     def _pop(self):
@@ -1664,9 +1646,9 @@ class ZCpu:
         if (self.mem[self.pc] & 128) == 128: # Jump if true
             if chksum == self.header.checksum(): # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse2()
+                    self._return(0)
                 elif offset == 1: # Return true
-                    self._rtrue2()
+                    self._return(1)
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
@@ -1675,9 +1657,9 @@ class ZCpu:
             jif = 'False'
             if not (chksum == self.header.checksum()): # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse2()
+                    self._return(0)
                 elif offset == 1: # Return true
-                    self._rtrue2()
+                    self._return(1)
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
@@ -1698,9 +1680,9 @@ class ZCpu:
         jif = 'True'
         if (self.mem[self.pc] & 128) == 128: # Jump if true
             if offset == 0: # Return false
-                self._rfalse2()
+                self._return(0)
             elif offset == 1: # Return true
-                self._rtrue2()
+                self._return(1)
             else:
                 self.pc = self.pc + gf + offset - 2
         else:
@@ -1782,7 +1764,7 @@ class ZCpu:
         ops = self._read_operands_var_2op()
         self.intr = 1
         if (len(ops)>=2):
-            self.intr_data = [ops[0], ops[1]]
+            self.intr_data = ops
         else:
             self.intr_data = [ops[0], 0]
         #print "Max read:", self.mem[ops[0]]
@@ -1954,9 +1936,10 @@ class ZCpu:
         pc = self.pc
         ops = self._read_operands_var_2op()
         self.plugin.debugprint( '{0}: read_char {1}'.format(format(pc,'X'),ops), 2 )
-        # TODO: Implement timed input
-        #if len(ops) > 1:
-        #    sys.exit("Not implemented yet!")
+        if len(ops) > 1:
+            self.intr_data = [ops[1],ops[2]]
+        else:
+            self.intr_data = [0]
         self.intr = 2
 
     def _scan_table(self):
@@ -2057,9 +2040,9 @@ class ZCpu:
         if (self.mem[self.pc] & 128) == 128: # Jump if true
             if r: # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse2()
+                    self._return(0)
                 elif offset == 1: # Return true
-                    self._rtrue2()
+                    self._return(1)
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
@@ -2068,9 +2051,9 @@ class ZCpu:
             jif = 'False'
             if not r: # Jump to label
                 if offset == 0: # Return false
-                    self._rfalse2()
+                    self._return(0)
                 elif offset == 1: # Return true
-                    self._rtrue2()
+                    self._return(1)
                 else:
                     self.pc = self.pc + gf + offset - 2
             else:
@@ -2531,14 +2514,16 @@ class ZCpu:
                 else:
                     self.output.print_status(text, "{0}:{1}".format(hour, mins))
 
-    def _routine(self,r,argv,res):
+    def _routine(self,r,argv,res,intr_on_return=0):
         # Save local vars, pc and return address in stack
         self.stack.push_local_vars()
         self.stack.push_frame( self.pc )
         self.stack.push_frame( res )
+        self.stack.push_frame( intr_on_return )
+        self.stack.push_frame( self.intr_data )
         self.stack.push_frame(len(argv))
         self._prepare_routine(r, argv)
-        
+
     def _prepare_routine(self, r, argv):
         # Jump to routine address
         self.pc = self._unpack_addr(r)

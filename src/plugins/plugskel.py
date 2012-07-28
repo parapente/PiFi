@@ -14,7 +14,7 @@ class PlugSkel(object):
 
     def prepare_gui(self):
         pass
-    
+
     def set_debug_level(self,lvl):
         self.level = lvl
 
@@ -45,12 +45,12 @@ class PlugSkel(object):
     def hide_cursor(self):
         self.widget.hide_cursor()
 
-    def read_char(self, callback):
-        self.widget.read_char(self.window[self.current_window], callback)
+    def read_char(self, callback, time, timeout_callback):
+        self.widget.read_char(self.window[self.current_window], callback, time, timeout_callback)
 
-    def read_line(self,callback):
+    def read_line(self, callback, time, timeout_callback, reset):
         self.rline = True
-        self.widget.read_line(self.window[self.current_window], callback)
+        self.widget.read_line(self.window[self.current_window], callback, time, timeout_callback, reset)
 
     def set_max_input(self,max_in):
         self.widget.set_max_input(max_in)
@@ -139,3 +139,9 @@ class PlugSkel(object):
 
     def erase_window(self,w):
         self.widget.erase_window(self.window[w])
+
+    def stop_line_timer(self):
+        self.widget.stop_line_timer()
+
+    def stop_char_timer(self):
+        self.widget.stop_char_timer()

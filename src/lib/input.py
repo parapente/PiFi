@@ -21,17 +21,22 @@ class ZInput:
             self.stream[1].selected = False
             self.stream[2].selected = True
 
-    def read_char(self, callback):
-        #self.plugin.show_cursor()
-        self.plugin.read_char(callback)
+    def read_char(self, callback, time, timeout_callback):
+        self.plugin.read_char(callback, time, timeout_callback)
 
-    def read_line(self, max_read, callback):
+    def read_line(self, max_read, callback, time, timeout_callback, reset=True):
         self.plugin.set_max_input(max_read)
         self.plugin.show_cursor()
-        self.plugin.read_line(callback)
+        self.plugin.read_line(callback, time, timeout_callback, reset)
 
     def disconnect_input(self, callback):
         self.plugin.disconnect_input(callback)
+
+    def stop_line_timer(self):
+        self.plugin.stop_line_timer()
+
+    def stop_char_timer(self):
+        self.plugin.stop_char_timer()
 
     def hide_cursor(self):
         self.plugin.hide_cursor()

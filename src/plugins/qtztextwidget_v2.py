@@ -15,6 +15,7 @@ from PyQt4.QtCore import QString
 from PyQt4.QtCore import QChar
 from PyQt4.QtCore import pyqtSignal
 from PyQt4.QtCore import QRectF
+from PyQt4.QtCore import QTimer
 from PyQt4.QtGui import QImage
 from lib.window import ZWindow
 from lib.stream import ZStream
@@ -43,12 +44,15 @@ class ZTextWidget(QWidget):
     _cursor_visible = False
     _ostream = None
     _input_buffer_printing = False
+    _input_cursor_pos = 0
     returnPressed = pyqtSignal(QString)
     keyPressed = pyqtSignal(int)
     pbuffer = [None]*8
     pbuffer_painter = [None]*8
     game_area = QImage(640, 480, QImage.Format_RGB32)
     game_area_painter = QPainter(game_area)
+    chartimer = None
+    linetimer = None
 
     def __init__(self,parent = None,flags = Qt.Widget):
         super(ZTextWidget,self).__init__(parent,flags)
@@ -138,11 +142,13 @@ class ZTextWidget(QWidget):
 
     def show_cursor(self,window):
         self.lastwindow = window
-        self._cursor_visible = True
-        self._input_cursor_pos = 0
+        #self._input_cursor_pos = 0
+        #print self._input_cursor_pos
         self.insert_pos = window.cursor
         self.insert_real_pos = window.cursor_real_pos
-        self.input_buf = [unichr(self.cursor_char)]
+        if (self._cursor_visible != True): # If the cursor is already visible avoid multiplying it...
+            self.input_buf.insert(self._input_cursor_pos, unichr(self.cursor_char))
+        self._cursor_visible = True
         self.clean_input_buffer_from_screen()
         self.draw_input_buffer()
         #self.draw_cursor(window,True)
@@ -208,9 +214,9 @@ class ZTextWidget(QWidget):
             print text
             self.draw_text('\n', self.lastwindow)
             self.keyPressed.emit(13)
-            self.returnPressed.emit(text)
             self._input_cursor_pos = 0
             self.input_buf = [unichr(self.cursor_char)]
+            self.returnPressed.emit(text)
             e.accept()
         elif ((e.key() >= Qt.Key_F1) and (e.key() <= Qt.Key_F12)):
             e.accept()
@@ -225,7 +231,7 @@ class ZTextWidget(QWidget):
                 self._input_cursor_pos += 1
                 self.draw_input_buffer()
             e.accept()
-            t = ord(str(e.text()[0]))
+            t = ord(str(e.text()[0])) # TODO: Check if we can handle multiple events at once
             if ((t > 31) and (t < 127)) or ((t > 154) and (t <252)):
                 self.keyPressed.emit(t)
         else:
@@ -253,11 +259,9 @@ class ZTextWidget(QWidget):
 
     def set_text_colour(self,fg):
         self.cur_fg = fg
-        print "fg:", fg
 
     def set_text_background_colour(self,bg):
         self.cur_bg = bg
-        print "bg:", bg
 
     def set_font_style(self,s):
         if s == 0:
@@ -282,22 +286,36 @@ class ZTextWidget(QWidget):
             newfont.setFixedPitch(True)
         self.setFont(newfont)
 
-    def read_line(self, window, callback):
+    def read_line(self, window, callback, time, timeout_callback, reset):
         self.lastwindow = window
-        self.cur_pos = 0
+        print reset
+        if (reset == True):
+            self.cur_pos = 0
         self.reading_line = True
         self.update_game_area()
         QObject.connect(self, SIGNAL("returnPressed(QString)"), callback)
+        if (self.linetimer == None):
+            self.linetimer = QTimer()
+            self.linetimer.setSingleShot(True)
+            QObject.connect(self.linetimer, SIGNAL('timeout()'), timeout_callback)
+        if (time <> 0):
+            self.linetimer.start(time * 100)
 
     def disconnect_read_line(self, callback):
         self.reading_line = False
         QObject.disconnect(self, SIGNAL("returnPressed(QString)"), callback)
 
-    def read_char(self, window, callback):
+    def read_char(self, window, callback, time, timeout_callback):
         self.update_game_area()
         self.lastwindow = window
         QObject.connect(self, SIGNAL("keyPressed(int)"), callback)
         print 'Connect char'
+        if (self.chartimer == None):
+            self.chartimer = QTimer()
+            self.chartimer.setSingleShot(True)
+            QObject.connect(self.chartimer, SIGNAL('timeout()'), timeout_callback)
+        if (time <> 0):
+            self.chartimer.start(time * 100)
 
     def disconnect_read_char(self, callback):
         QObject.disconnect(self, SIGNAL("keyPressed(int)"), callback)
@@ -428,7 +446,6 @@ class ZTextWidget(QWidget):
             # FIXME: clear next lines
 
     def clear(self):
-        # TODO: check if works fine
         print 'clearing...'
         self.game_area.fill(self.ztoq_color(self.cur_bg))
         for i in range(8):
@@ -477,3 +494,11 @@ class ZTextWidget(QWidget):
                 self.pbuffer[1].fill(0)
             if ver == 3:
                 self.pbuffer[1].fill(self.ztoq_color(self.cur_bg))
+
+    def stop_line_timer(self):
+        if (self.linetimer != None):
+            self.linetimer.stop()
+
+    def stop_char_timer(self):
+        if (self.chartimer != None):
+            self.chartimer.stop()

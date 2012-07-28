@@ -34,9 +34,12 @@ class ZMachine:
 
     def handle_intr(self):
         if self.cpu.intr == 1: # Input interrupt to read a line of text
-            self.input.read_line(self.mem.mem[self.cpu.intr_data[0]], self.get_text)
+            if (len(self.cpu.intr_data)>2):
+                self.input.read_line(self.mem.mem[self.cpu.intr_data[0]], self.get_text, self.cpu.intr_data[2], self.intr_line_routine)
+            else:
+                self.input.read_line(self.mem.mem[self.cpu.intr_data[0]], self.get_text, 0, self.intr_line_routine)
         elif self.cpu.intr == 2: # Input interrupt to read a character
-            self.input.read_char(self.get_char)
+            self.input.read_char(self.get_char, self.cpu.intr_data[0], self.intr_char_routine)
         elif self.cpu.intr == 3: # Reset interrupt
             self.file.seek(0)
             self.output.clear_screen()
@@ -47,11 +50,40 @@ class ZMachine:
             self.cpu.intr = 0
             self.cpu.start()
             self.handle_intr()
+        elif self.cpu.intr == 10: # Return from routine, back to sread
+            if (self.cpu.last_return == 1): # Routine returned true, we must bail out
+                self.get_text('',True)
+            else: # Continue waiting for input
+                self.input.read_line(self.mem.mem[self.cpu.intr_data[0]], self.get_text, self.cpu.intr_data[2], self.intr_line_routine, False)
+        elif self.cpu.intr == 20: # Return from routine, back to read_char
+            if (self.cpu.last_return == 1): # Routine returned true, we must bail out
+                print 'bail out!'
+                self.cpu.intr = 2
+                self.get_char(0)
+            else: # Continue waiting for input
+                print 'continue input'
+                self.input.read_char(self.get_char, self.cpu.intr_data[0], self.intr_char_routine)
         elif self.cpu.intr == 69: # Quit
-            self.input.read_char(self.get_char)
+            self.input.read_char(self.get_char, 0, self.intr_char_routine)
+
+    def intr_char_routine(self):
+        self.input.disconnect_input(self.get_char)
+        print 'timeout char!'
+        self.cpu.intr = 0
+        self.cpu._routine(self.cpu.intr_data[1],[],-1,20)
+        self.cpu.start()
+        self.handle_intr()
+
+    def intr_line_routine(self):
+        self.input.disconnect_input(self.get_text)
+        self.cpu.intr = 0
+        self.cpu._routine(self.cpu.intr_data[3],[],-1,10)
+        self.cpu.start()
+        self.handle_intr()
 
     def get_text(self,text,interrupted=False):
         self.input.disconnect_input(self.get_text)
+        self.input.stop_line_timer()
         #self.input.hide_cursor()
         if (interrupted == False): # We got here because user pressed enter
             self.plugin.debugprint("Enter!", 2)
@@ -151,6 +183,7 @@ class ZMachine:
 
     def get_char(self,char):
         self.input.disconnect_input(self.get_char)
+        self.input.stop_char_timer()
         self.plugin.debugprint("Character read!", 2)
         if (self.cpu.intr == 2):
             self.cpu.got_char(char)
@@ -209,7 +242,7 @@ class ZMachine:
             self.mem.mem[0x1] = 0x20
         else:
             # Color, Bold, Italic, Fixed is available
-            self.mem.mem[0x1] = 0x1d
+            self.mem.mem[0x1] = 0x9d
         # Default background color
         self.mem.mem[0x2c] = 2
         # Default foreground color
