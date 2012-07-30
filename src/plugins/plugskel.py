@@ -121,7 +121,7 @@ class PlugSkel(object):
 
     def selected_ostreams(self):
         s = []
-        for i in range(4):
+        for i in xrange(4):
             if self._ostream[i].selected == True:
                 s.append(i+1)
         return s

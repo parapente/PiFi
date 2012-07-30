@@ -14,15 +14,20 @@ class ZMemory:
     static_end = 0;
     high_beg = 0;
     high_end = 0;
-    def __init__(self,data,max_length):
+    def __init__(self,f,max_length):
         self.mem = array('B');
-        for i in range(len(data)):
-            self.mem.append(ord(data[i]));
-        if ( max_length - len(data) ) <> 0:
-            for i in range(max_length-len(data)):
-                self.mem.append(0)
+        try:
+            self.mem.fromfile(f,max_length)
+        except EOFError:
+            print 'file size:', f.tell()
+            need = max_length - f.tell()
+            if ( need ) > 0:
+                for i in xrange(need):
+                    self.mem.append(0)
         self.static_beg = 256*self.mem[0x0e]+self.mem[0x0f];
         self.high_beg = 256*self.mem[0x04]+self.mem[0x05];
+                    #for i in xrange(len(data)):
+        #    self.mem.append(ord(data[i]));
         #print 'Static:',self.static_beg,'High:',self.high_beg
         # TODO: Find static_end
 

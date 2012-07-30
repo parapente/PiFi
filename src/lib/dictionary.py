@@ -16,7 +16,7 @@ class ZDictionary:
         addr = header.dictionary()
         n = mem[addr]
         if n > 0:
-            for i in range(n):
+            for i in xrange(n):
                 self.separators.append(chr(mem[addr + i + 1]))
         entry_length = mem[addr + 1 + n]
         entries = (mem[addr + 2 + n] << 8) + mem[addr + 3 + n]
@@ -30,7 +30,7 @@ class ZDictionary:
         while (j < entries):
             entry_addr = addr
             t = []
-            for i in range(self.word_length):
+            for i in xrange(self.word_length):
                 t.append(mem[addr + i])
             entry = decode_text(t, zver, mem, header.abbrev_table(), False, header.alphabet_table(), 0)
             #print "e[", j, "]=", entry

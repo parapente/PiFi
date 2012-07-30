@@ -8,6 +8,7 @@ from output import ZOutput
 from ztext import *
 from dictionary import ZDictionary
 import sys
+from threading import Lock
 
 __author__="Theofilos Intzoglou"
 __date__ ="$1 Ιουλ 2009 4:39:00 μμ$"
@@ -22,6 +23,7 @@ class ZMachine:
     dict = None
     zver = None
     file = None
+    mutex = Lock()
 
     def __init__(self,w):
         self.plugin = w
@@ -51,40 +53,45 @@ class ZMachine:
             self.cpu.start()
             self.handle_intr()
         elif self.cpu.intr == 10: # Return from routine, back to sread
+            self.mutex.release()
             if (self.cpu.last_return == 1): # Routine returned true, we must bail out
                 self.get_text('',True)
             else: # Continue waiting for input
                 self.input.read_line(self.mem.mem[self.cpu.intr_data[0]], self.get_text, self.cpu.intr_data[2], self.intr_line_routine, False)
         elif self.cpu.intr == 20: # Return from routine, back to read_char
+            self.mutex.release()
             if (self.cpu.last_return == 1): # Routine returned true, we must bail out
-                print 'bail out!'
                 self.cpu.intr = 2
                 self.get_char(0)
             else: # Continue waiting for input
-                print 'continue input'
                 self.input.read_char(self.get_char, self.cpu.intr_data[0], self.intr_char_routine)
         elif self.cpu.intr == 69: # Quit
             self.input.read_char(self.get_char, 0, self.intr_char_routine)
 
     def intr_char_routine(self):
+        self.mutex.acquire()
         self.input.disconnect_input(self.get_char)
-        print 'timeout char!'
         self.cpu.intr = 0
         self.cpu._routine(self.cpu.intr_data[1],[],-1,20)
         self.cpu.start()
         self.handle_intr()
 
     def intr_line_routine(self):
+        self.mutex.acquire()
+        self.plugin.debugprint("@@@@@@@@@@ start @@@@@@@@@@@@@@@@", 2)
         self.input.disconnect_input(self.get_text)
         self.cpu.intr = 0
         self.cpu._routine(self.cpu.intr_data[3],[],-1,10)
         self.cpu.start()
+        self.plugin.debugprint("@@@@@@@@@@@ end @@@@@@@@@@@@@@@@@", 2)
         self.handle_intr()
 
     def get_text(self,text,interrupted=False):
-        self.input.disconnect_input(self.get_text)
         self.input.stop_line_timer()
+        self.input.disconnect_input(self.get_text)
+        self.mutex.acquire()
         #self.input.hide_cursor()
+        print 'get_text:', text, interrupted
         if (interrupted == False): # We got here because user pressed enter
             self.plugin.debugprint("Enter!", 2)
             paddr = self.cpu.intr_data[1]
@@ -92,7 +99,7 @@ class ZMachine:
             self.plugin.debugprint("gt -> '"+text+"'", 2)
             if self.zver < 5:
                 i = 0
-                for i in range(len(text)):
+                for i in xrange(len(text)):
                     if (i == (len(text) - 1)) and text[i] == '\n':
                         self.mem.mem[taddr + 1 + i] = 0
                     else:
@@ -103,7 +110,7 @@ class ZMachine:
             else:
                 if taddr != 0:
                     skip = self.mem.mem[taddr + 1]
-                    for i in range(len(text)):
+                    for i in xrange(len(text)):
                         self.mem.mem[taddr + 2 + i + skip] = ord(str(text[i]))
                     self.mem.mem[taddr + 1] = len(text) + skip
                     self.lex(taddr,paddr,0,0)
@@ -114,6 +121,7 @@ class ZMachine:
             if self.zver > 4:
                 self.cpu.got_char(0)
         self.cpu.intr = 0
+        self.mutex.release()
         self.cpu.start()
         self.handle_intr()
 
@@ -127,7 +135,7 @@ class ZMachine:
                 txt += unichr(self.mem.mem[text + 1 + i])
                 i += 1
         else:
-            for i in range(self.mem.mem[text + 1]):
+            for i in xrange(self.mem.mem[text + 1]):
                 txt += unichr(self.mem.mem[text + 2 + i])
         l = len(txt)
         self.plugin.debugprint("txt='"+txt+"' Len:"+str(l), 2)
@@ -162,7 +170,7 @@ class ZMachine:
             w1 = ""
             # If the word is too large we need to cut it down
             if len(words[i]) > (self.dict.word_length * 3 / 2):
-                for j in range(self.dict.word_length * 3 / 2):
+                for j in xrange(self.dict.word_length * 3 / 2):
                     w1 += words[i][j]
             else:
                 w1 = words[i]
@@ -182,12 +190,14 @@ class ZMachine:
             i += 2
 
     def get_char(self,char):
-        self.input.disconnect_input(self.get_char)
         self.input.stop_char_timer()
+        self.input.disconnect_input(self.get_char)
+        self.mutex.acquire()
         self.plugin.debugprint("Character read!", 2)
         if (self.cpu.intr == 2):
             self.cpu.got_char(char)
             self.cpu.intr = 0
+            self.mutex.release()
             self.cpu.start()
             self.handle_intr()
         else:
@@ -210,8 +220,7 @@ class ZMachine:
 
         # Now that we checked the file size we rewind the file and read the data into memory
         f.seek(0)
-        data = f.read(max_length)
-        self.mem = ZMemory(data,max_length)
+        self.mem = ZMemory(f,max_length)
         self.header = ZHeader(self.mem.mem)
         self.header.print_all(self.plugin)
         self.input = ZInput(self.plugin)

@@ -148,7 +148,7 @@ def encode_text(text, version, mem, abbrev, isabbrev, alpha_table, unicode_table
     if (version == 1):
         a2.remove('\n')
         a2.insert(a2.index('-'),'<')
-    for i in range(l):
+    for i in xrange(l):
         c = t[i].lower()
         if ( c >= 'a') and (c <= 'z'):
             n = (ord(c) - ord('a')) + 6

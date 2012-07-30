@@ -91,10 +91,9 @@ class ZTextWidget(QWidget):
         painter.drawImage(0,0,self.game_area)
 
     def update_game_area(self):
-        for i in range(8):
+        for i in xrange(8):
             if (self.pbuffer[i] != None):
                 self.game_area_painter.drawImage(0,0,self.pbuffer[i])
-                print 'Drawing:',i
         self.update()
 
     def scroll(self,painter):
@@ -215,7 +214,7 @@ class ZTextWidget(QWidget):
             self.draw_text('\n', self.lastwindow)
             self.keyPressed.emit(13)
             self._input_cursor_pos = 0
-            self.input_buf = [unichr(self.cursor_char)]
+            self.input_buf = []
             self.returnPressed.emit(text)
             e.accept()
         elif ((e.key() >= Qt.Key_F1) and (e.key() <= Qt.Key_F12)):
@@ -288,7 +287,7 @@ class ZTextWidget(QWidget):
 
     def read_line(self, window, callback, time, timeout_callback, reset):
         self.lastwindow = window
-        print reset
+        #print reset
         if (reset == True):
             self.cur_pos = 0
         self.reading_line = True
@@ -448,7 +447,7 @@ class ZTextWidget(QWidget):
     def clear(self):
         print 'clearing...'
         self.game_area.fill(self.ztoq_color(self.cur_bg))
-        for i in range(8):
+        for i in xrange(8):
             if (self.pbuffer[i] != None):
                 self.pbuffer[i].fill(self.ztoq_color(self.cur_bg))
 
@@ -471,7 +470,7 @@ class ZTextWidget(QWidget):
             sys.exit()
 
     def split_window(self, lines, ver):
-        print 'Lines:', lines
+        #print 'Lines:', lines
         # Copy window 1 to window 0 if it already exists
         if (self.pbuffer[1] != None):
             self.pbuffer_painter[0].drawImage(0,0,self.pbuffer[1])
@@ -497,6 +496,7 @@ class ZTextWidget(QWidget):
 
     def stop_line_timer(self):
         if (self.linetimer != None):
+            print 'stop'
             self.linetimer.stop()
 
     def stop_char_timer(self):
