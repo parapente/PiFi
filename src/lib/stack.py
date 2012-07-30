@@ -35,14 +35,9 @@ class ZStack:
         return self.frames.pop()
 
     def push_local_vars(self):
-        for i in xrange(15):
-            #print "Pushed:", self.local_vars[i]
-            self.frames.append(self.local_vars[i])
-        #self.frames.append(self.local_vars)
+        self.frames.append(self.local_vars.tolist())
 
     def pop_local_vars(self):
+        data = self.frames.pop()
         for i in xrange(15):
-            self.local_vars[14 - i] = self.frames.pop()
-        #for i in xrange(15):
-        #    print "Popped:", self.local_vars[i]
-        #self.local_vars = self.frames.pop()
+            self.local_vars[i] = data[i]
