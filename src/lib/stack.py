@@ -16,28 +16,53 @@ class ZStack:
     def __init__(self):
         #self.queue = Queue.LifoQueue(100*1024*1024)
         #self.frames = Queue.LifoQueue(10*1024*1024)
-        self.queue = []
-        self.frames = []
+        self.queue = [0]*1000
+        self.queuepos = 0
+        self.queuemaxpos = 1000
+        self.frames = [0]*3000
+        self.framespos = 0
+        self.framesmaxpos = 3000
         self.local_vars = array('H')
         for i in xrange(15):
             self.local_vars.append(0)
 
     def push(self,n):
-        self.queue.append(n)
+        if (self.queuepos < self.queuemaxpos):
+            self.queue[self.queuepos] = n
+            self.queuepos += 1
+        else:
+            self.queue.append(n)
+            self.queuepos += 1
+            self.queuemaxpos += 1
 
     def pop(self):
-        return self.queue.pop()
+        self.queuepos -= 1
+        return  self.queue[self.queuepos]
 
     def push_frame(self,n):
-        self.frames.append(n)
+        if (self.framespos < self.framesmaxpos):
+            self.frames[self.framespos] = n
+            self.framespos += 1
+        else:
+            self.frames.append(n)
+            self.framespos += 1
+            self.framesmaxpos += 1
 
     def pop_frame(self):
-        return self.frames.pop()
+        self.framespos -= 1
+        return self.frames[self.framespos]
 
     def push_local_vars(self):
-        self.frames.append(self.local_vars.tolist())
+        if (self.framespos < self.framesmaxpos):
+            self.frames[self.framespos] = self.local_vars.tolist()
+            self.framespos += 1
+        else:
+            self.frames.append(self.local_vars.tolist())
+            self.framespos += 1
+            self.framesmaxpos += 1
 
     def pop_local_vars(self):
-        data = self.frames.pop()
+        self.framespos -= 1
+        data = self.frames[self.framespos]
         for i in xrange(15):
             self.local_vars[i] = data[i]

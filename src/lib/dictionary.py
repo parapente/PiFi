@@ -12,7 +12,7 @@ class ZDictionary:
     data_length = 0
 
     def __init__(self, mem, header):
-        zver = header.version()
+        zver = header.version
         addr = header.dictionary()
         n = mem[addr]
         if n > 0:

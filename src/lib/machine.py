@@ -29,7 +29,7 @@ class ZMachine:
         self.plugin = w
 
     def boot(self):
-        if self.header.version() == 6:
+        if self.header.version == 6:
             self.cpu.start6()
         self.cpu.start()
         self.handle_intr()
@@ -70,10 +70,12 @@ class ZMachine:
 
     def intr_char_routine(self):
         self.mutex.acquire()
+        self.plugin.debugprint("@@@@@@@@@@ start @@@@@@@@@@@@@@@@", 2)
         self.input.disconnect_input(self.get_char)
         self.cpu.intr = 0
         self.cpu._routine(self.cpu.intr_data[1],[],-1,20)
         self.cpu.start()
+        self.plugin.debugprint("@@@@@@@@@@@ end @@@@@@@@@@@@@@@@@", 2)
         self.handle_intr()
 
     def intr_line_routine(self):
@@ -224,13 +226,13 @@ class ZMachine:
         self.header = ZHeader(self.mem.mem)
         self.header.print_all(self.plugin)
         self.input = ZInput(self.plugin)
-        self.zver = self.header.version()
+        self.zver = self.header.version
         self.output = ZOutput(self.zver, self.mem.mem, self.plugin)
         self.cpu = ZCpu(self.mem.mem,self.header,self.output,self.plugin)
         self.cpu.file = f
         self.dict = ZDictionary(self.mem.mem, self.header)
         self.plugin.debugprint('Version of story file: {0}'.format(self.zver), 1)
-        self.plugin.debugprint('Length of file: {0}'.format(self.header.length_of_file()), 1)
+        self.plugin.debugprint('Length of file: {0}'.format(self.header.length_of_file), 1)
 
     def init(self):
         # Set the default options

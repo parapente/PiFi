@@ -11,10 +11,21 @@ class ZHeader:
     def __init__(self,h):
         self.header = h
         self.global_table = 256*h[0x0c]+h[0x0d]
+        self.version = h[0]
+        length = 256*self.header[0x1a]+self.header[0x1b]
+        if length <> 0:
+            if self.version <= 3:
+                self.length_of_file = length*2
+            elif self.version < 6:
+                self.length_of_file = length*4
+            else:
+                self.length_of_file = length*8
+        else:
+            self.length_of_file = len(h)
 
-    def version(self):
-        """ Version of story file """
-        return self.header[0]
+    #def version(self):
+    #    """ Version of story file """
+    #    return self.header[0]
 
     def pc(self):
         """ Program Counter """
@@ -36,17 +47,17 @@ class ZHeader:
         """ Location of the abbreviations table """
         return 256*self.header[0x18]+self.header[0x19]
 
-    def length_of_file(self):
-        length = 256*self.header[0x1a]+self.header[0x1b]
-        if length <> 0:
-            if self.version() <= 3:
-                return length*2
-            elif self.version() < 6:
-                return length*4
-            else:
-                return length*8
-        else:
-            return len(self.header)
+    #def length_of_file(self):
+    #    length = 256*self.header[0x1a]+self.header[0x1b]
+    #    if length <> 0:
+    #        if self.version <= 3:
+    #            return length*2
+    #        elif self.version < 6:
+    #            return length*4
+    #        else:
+    #            return length*8
+    #    else:
+    #        return len(self.header)
 
     def checksum(self):
         """ Return the checksum stored in the file """
@@ -72,14 +83,14 @@ class ZHeader:
 
     def font_width(self):
         """ Font width in units (defined as width of '0') """
-        if self.version() == 5:
+        if self.version == 5:
             return self.header[0x26]
         else:
             return self.header[0x27]
 
     def font_height(self):
         """ Font height in units """
-        if self.version() == 5:
+        if self.version == 5:
             return self.header[0x27]
         else:
             return self.header[0x26]
