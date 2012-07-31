@@ -10,6 +10,7 @@ class ZHeader:
 
     def __init__(self,h):
         self.header = h
+        self.global_table = 256*h[0x0c]+h[0x0d]
 
     def version(self):
         """ Version of story file """
@@ -27,9 +28,9 @@ class ZHeader:
         """ Location of the object table """
         return 256*self.header[0x0a]+self.header[0x0b]
 
-    def global_table(self):
+    #def global_table(self):
         """ Location of the global variables table """
-        return 256*self.header[0x0c]+self.header[0x0d]
+    #    return 256*self.header[0x0c]+self.header[0x0d]
 
     def abbrev_table(self):
         """ Location of the abbreviations table """
@@ -125,7 +126,7 @@ class ZHeader:
         plugin.debugprint( "Alphabet table: {0}".format(self.alphabet_table()), 2)
         plugin.debugprint( "Characters table: {0}".format(self.characters_table()), 2)
         plugin.debugprint( "Dictionary: {0}".format(self.dictionary()), 2)
-        plugin.debugprint( "Global var table: {0}".format(self.global_table()), 2)
+        plugin.debugprint( "Global var table: {0}".format(self.global_table), 2)
         plugin.debugprint( "Header ext table: {0}".format(self.header_ext_table()), 2)
         plugin.debugprint( "Object table: {0}".format(self.obj_table()), 2)
         plugin.debugprint( "Static strings offset: {0}".format(self.strings()), 2)

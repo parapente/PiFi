@@ -208,9 +208,11 @@ class ZCpu:
                 self.pc = self.pc + gf
             else:
                 j = 2
-                r = self._s2i(ops[0]) == self._s2i(ops[1])
+                #r = self._s2i(ops[0]) == self._s2i(ops[1])
+                r = ops[0] == ops[1]
                 while j < n:
-                    r = r or (self._s2i(ops[0]) == self._s2i(ops[j]))
+                    #r = r or (self._s2i(ops[0]) == self._s2i(ops[j]))
+                    r = r or (ops[0] == ops[j])
                     j += 1
                 if r: # Jump to label
                     if offset == 0: # Return false
@@ -228,9 +230,11 @@ class ZCpu:
                 self.pc = self.pc + gf
             else:
                 j = 2
-                r = self._s2i(ops[0]) == self._s2i(ops[1])
+                #r = self._s2i(ops[0]) == self._s2i(ops[1])
+                r = ops[0] == ops[1]
                 while j < n:
-                    r = r or (self._s2i(ops[0]) == self._s2i(ops[j]))
+                    #r = r or (self._s2i(ops[0]) == self._s2i(ops[j]))
+                    r = r or (ops[0] == ops[j])
                     j += 1
                 if not r: # Jump to label
                     if offset == 0: # Return false
@@ -304,33 +308,35 @@ class ZCpu:
             self.plugin.debugprint( '{0}: jl {1} [{2}] {3}'.format(format(pc,'X'),ops,jif,offset), 2 )
 
     def _jg(self):
-        pc = self.pc
-        if self.mem[self.pc] >= 0xc0: # Variable 2OP
+        mem = self.mem
+        if mem[self.pc] >= 0xc0: # Variable 2OP
             self._read_operands_var_2op()
         else: # Long 2OP
             self._read_operands_long_2op()
+        pc = self.pc
         ops = self.ops
-        if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
-            offset = self.mem[self.pc] & 63
+        if (mem[pc] & 64) == 64: # Offset is 1 byte long
+            offset = mem[pc] & 63
             gf = 1
         else: # Offset is 2 byte long
-            if self.mem[self.pc] & 32 == 32: # Negative offset
-                offset = (((self.mem[self.pc] | 0xc0) << 8) + self.mem[self.pc + 1] - 65536)
+            if mem[pc] & 32 == 32: # Negative offset
+                offset = (((mem[pc] | 0xc0) << 8) + mem[pc + 1] - 65536)
             else:
-                offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
+                offset = ((mem[pc] & 63) << 8) + mem[pc + 1]
             gf = 2
         jif = 'True'
-        if (self.mem[self.pc] & 128) == 128: # Jump if true
+        if (mem[pc] & 128) == 128: # Jump if true
             n = self.numops
             if n == 1: # Nothing to compare
                 self.pc = self.pc + gf
             else:
                 j = 2
-                siops0 = self._s2i(ops[0])
-                siops1 = self._s2i(ops[1])
+                s2i = self._s2i
+                siops0 = s2i(ops[0])
+                siops1 = s2i(ops[1])
                 r = siops0 > siops1
                 while j < n:
-                    r = r or (siops0 > self._s2i(ops[j]))
+                    r = r or (siops0 > s2i(ops[j]))
                     j += 1
                 if r: # Jump to label
                     if offset == 0: # Return false
@@ -348,11 +354,12 @@ class ZCpu:
                 self.pc = self.pc + gf
             else:
                 j = 2
-                siops0 = self._s2i(ops[0])
-                siops1 = self._s2i(ops[1])
+                s2i = self._s2i
+                siops0 = s2i(ops[0])
+                siops1 = s2i(ops[1])
                 r = siops0 > siops1
                 while j < n:
-                    r = r or (siops0 > self._s2i(ops[j]))
+                    r = r or (siops0 > s2i(ops[j]))
                     j += 1
                 if not r: # Jump to label
                     if offset == 0: # Return false
@@ -985,15 +992,17 @@ class ZCpu:
 
     def _add(self):
         pc = self.pc
-        if self.mem[self.pc] >= 0xc0: # Variable 2OP
+        mem = self.mem
+        if mem[self.pc] >= 0xc0: # Variable 2OP
             self._read_operands_var_2op()
         else: # Long 2OP
             self._read_operands_long_2op()
         ops = self.ops
-        result = self._i2s(self._s2i(ops[0]) + self._s2i(ops[1]))
+        #result = self._i2s(self._s2i(ops[0]) + self._s2i(ops[1]))
+        result = (ops[0] + ops[1]) & 0xffff
         #print "Result:", result
-        self._zstore(result, self.mem[self.pc])
-        self.pc = self.pc + 1
+        self._zstore(result, mem[self.pc])
+        self.pc += 1
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: add {1}'.format(format(pc,'X'),ops), 2 )
 
@@ -1004,7 +1013,8 @@ class ZCpu:
         else: # Long 2OP
             self._read_operands_long_2op()
         ops = self.ops
-        result = self._i2s(self._s2i(ops[0]) - self._s2i(ops[1]))
+        #result = self._i2s(self._s2i(ops[0]) - self._s2i(ops[1]))
+        result = self._i2s(ops[0] - ops[1])
         #print "Result:", result
         self._zstore(result, self.mem[self.pc])
         self.pc = self.pc + 1
@@ -1327,15 +1337,15 @@ class ZCpu:
             #print "Inc --", tmp
             return tmp
         else:
-            b1 = self.mem[ self.header.global_table() + (var - 16) * 2 ]
-            b2 = self.mem[ self.header.global_table() + (var - 16) * 2 + 1]
+            b1 = self.mem[ self.header.global_table + (var - 16) * 2 ]
+            b2 = self.mem[ self.header.global_table + (var - 16) * 2 + 1]
             #print "Before:", (b1 << 8) + b2
             tmp = (b1 << 8) + b2 + 1
             if tmp == 0x10000:
                 tmp = 0
             #print "After:", tmp
-            self.mem[ self.header.global_table() + (var - 16) * 2 ] = tmp >> 8
-            self.mem[ self.header.global_table() + (var - 16) * 2 + 1] = tmp & 0xff
+            self.mem[ self.header.global_table + (var - 16) * 2 ] = tmp >> 8
+            self.mem[ self.header.global_table + (var - 16) * 2 + 1] = tmp & 0xff
             #print "Global var", var - 15, "has now value", tmp
             return tmp
 
@@ -1362,15 +1372,15 @@ class ZCpu:
             #print "Dec --", tmp
             return tmp
         else:
-            b1 = self.mem[ self.header.global_table() + (var - 16) * 2 ]
-            b2 = self.mem[ self.header.global_table() + (var - 16) * 2 + 1]
+            b1 = self.mem[ self.header.global_table + (var - 16) * 2 ]
+            b2 = self.mem[ self.header.global_table + (var - 16) * 2 + 1]
             #print "Before:", (b1 << 8) + b2
             tmp = (b1 << 8) + b2 - 1
             if tmp == -1:
                 tmp = 0xffff
             #print "After:", tmp
-            self.mem[ self.header.global_table() + (var - 16) * 2 ] = tmp >> 8
-            self.mem[ self.header.global_table() + (var - 16) * 2 + 1] = tmp & 0xff
+            self.mem[ self.header.global_table + (var - 16) * 2 ] = tmp >> 8
+            self.mem[ self.header.global_table + (var - 16) * 2 + 1] = tmp & 0xff
             #print "Global var", var - 15, "has now value", tmp
             return tmp
 
@@ -1491,10 +1501,11 @@ class ZCpu:
 
     def _return(self, value):
         self.stack.pop_frame() # We don't need the number of args
-        self.intr_data = self.stack.pop_frame()
-        self.intr = self.stack.pop_frame()
-        return_var = self.stack.pop_frame()
-        prev_pc = self.stack.pop_frame()
+        data = self.stack.pop_frame()
+        self.intr_data = data[3]
+        self.intr = data[2]
+        return_var = data[1]
+        prev_pc = data[0]
         self.stack.pop_local_vars()
         if return_var <> -1: # If we want the returned value...
             self._zstore(value,return_var)
@@ -1544,8 +1555,8 @@ class ZCpu:
         elif ops[0] < 16:
             data = self.stack.local_vars[ops[0] - 1]
         elif ops[0] < 256:
-            data = self.mem[self.header.global_table() + (where - 16) * 2] << 8
-            data += self.mem[self.header.global_table() + (where - 16) * 2 + 1]
+            data = self.mem[self.header.global_table + (where - 16) * 2] << 8
+            data += self.mem[self.header.global_table + (where - 16) * 2 + 1]
         else:
             sys.exit("No such variable!!!")
         self._zstore(data, self.pc)
@@ -1782,11 +1793,12 @@ class ZCpu:
         self._read_operands_var_2op()
         ops = self.ops
         n = self.numops
-        i = 1
-        argv = []
-        while i < n:
-            argv.append(ops[i])
-            i += 1
+        #i = 1
+        argv = list(ops)
+        del argv[0]
+        #while i < n:
+        #    argv.append(ops[i])
+        #    i += 1
         return_addr = self.mem[self.pc]
         self.pc = self.pc + 1
         self._routine(ops[0],argv,return_addr)
@@ -2387,8 +2399,8 @@ class ZCpu:
                 num += 1
             else:
                 #print "Got global var", (self.mem[self.pc] - 15)
-                b1 = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 ]
-                b2 = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 + 1]
+                b1 = self.mem[ self.header.global_table + (self.mem[self.pc] - 16) * 2 ]
+                b2 = self.mem[ self.header.global_table + (self.mem[self.pc] - 16) * 2 + 1]
                 self.ops[num] = (b1 << 8) + b2
                 num += 1
             self.pc += 1
@@ -2420,8 +2432,8 @@ class ZCpu:
                     self.ops[num] = self.stack.local_vars[self.mem[self.pc] - 1]
                     num += 1
                 else:
-                    b1 = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 ]
-                    b2 = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 + 1]
+                    b1 = self.mem[ self.header.global_table + (self.mem[self.pc] - 16) * 2 ]
+                    b2 = self.mem[ self.header.global_table + (self.mem[self.pc] - 16) * 2 + 1]
                     self.ops[num] = (b1 << 8) + b2
                     num += 1
                 self.pc = self.pc + 1
@@ -2455,8 +2467,8 @@ class ZCpu:
                     self.ops[num] = self.stack.local_vars[self.mem[self.pc] - 1]
                     num += 1
                 else:
-                    b1 = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 ]
-                    b2 = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 + 1]
+                    b1 = self.mem[ self.header.global_table + (self.mem[self.pc] - 16) * 2 ]
+                    b2 = self.mem[ self.header.global_table + (self.mem[self.pc] - 16) * 2 + 1]
                     self.ops[num] = (b1 << 8) + b2
                     num += 1
                 self.pc = self.pc + 1
@@ -2482,8 +2494,8 @@ class ZCpu:
                     self.ops[num] = self.stack.local_vars[self.mem[self.pc] - 1]
                     num += 1
                 else:
-                    b1 = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 ]
-                    b2 = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 + 1]
+                    b1 = self.mem[ self.header.global_table + (self.mem[self.pc] - 16) * 2 ]
+                    b2 = self.mem[ self.header.global_table + (self.mem[self.pc] - 16) * 2 + 1]
                     self.ops[num] = (b1 << 8) + b2
                     num += 1
                 self.pc = self.pc + 1
@@ -2507,8 +2519,9 @@ class ZCpu:
                 self.ops[num] = self.stack.local_vars[self.mem[self.pc] - 1]
                 num += 1
             else:
-                val = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 ] << 8
-                val = val + self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 + 1]
+                gt = self.header.global_table
+                val = self.mem[ gt + (self.mem[self.pc] - 16) * 2 ] << 8
+                val = val + self.mem[ gt + (self.mem[self.pc] - 16) * 2 + 1]
                 self.ops[num] = val
                 num += 1
         self.pc = self.pc + 1
@@ -2523,8 +2536,9 @@ class ZCpu:
                 self.ops[num] = self.stack.local_vars[self.mem[self.pc] - 1]
                 num += 1
             else:
-                val = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 ] << 8
-                val = val + self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 + 1]
+                gt = self.header.global_table
+                val = self.mem[ gt + (self.mem[self.pc] - 16) * 2 ] << 8
+                val = val + self.mem[ gt + (self.mem[self.pc] - 16) * 2 + 1]
                 self.ops[num] = val
                 num += 1
         self.pc = self.pc + 1
@@ -2556,8 +2570,8 @@ class ZCpu:
             self.stack.local_vars[where - 1] = value
             #print "Local var", where, "has now value", value
         elif where < 256:
-            self.mem[self.header.global_table() + (where - 16) * 2] = (value >> 8)
-            self.mem[self.header.global_table() + (where - 16) * 2 + 1] = (value & 0xff)
+            self.mem[self.header.global_table + (where - 16) * 2] = (value >> 8)
+            self.mem[self.header.global_table + (where - 16) * 2 + 1] = (value & 0xff)
             #print "Global var", where - 15, "has now value", value
         else:
             self.mem[where] = value >> 8
@@ -2662,7 +2676,7 @@ class ZCpu:
     def _show_status2(self):
         if self.zver < 4:
             # Find the name of the current room
-            objnum = (self.mem[self.header.global_table()] << 8) + self.mem[self.header.global_table() + 1]
+            objnum = (self.mem[self.header.global_table] << 8) + self.mem[self.header.global_table + 1]
             obj = self._find_object(objnum)
             if self.zver < 4:
                 prop_addr = (self.mem[obj + 7] << 8) + self.mem[obj + 8]
@@ -2682,12 +2696,12 @@ class ZCpu:
                 if self.header.score_game() == 0:
                     score_game = True
             if score_game:
-                score = (self.mem[self.header.global_table() + 2] << 8) + self.mem[self.header.global_table() + 3]
-                turns = (self.mem[self.header.global_table() + 4] << 8) + self.mem[self.header.global_table() + 5]
+                score = (self.mem[self.header.global_table + 2] << 8) + self.mem[self.header.global_table + 3]
+                turns = (self.mem[self.header.global_table + 4] << 8) + self.mem[self.header.global_table + 5]
                 self.output.print_status(text, "Score: {0} Turns: {1}".format(score, turns))
             else:
-                hour = (self.mem[self.header.global_table() + 2] << 8) + self.mem[self.header.global_table() + 3]
-                mins = (self.mem[self.header.global_table() + 4] << 8) + self.mem[self.header.global_table() + 5]
+                hour = (self.mem[self.header.global_table + 2] << 8) + self.mem[self.header.global_table + 3]
+                mins = (self.mem[self.header.global_table + 4] << 8) + self.mem[self.header.global_table + 5]
                 if mins < 10:
                     self.output.print_status(text, "{0}:0{1}".format(hour, mins))
                 else:
@@ -2695,11 +2709,9 @@ class ZCpu:
 
     def _routine(self,r,argv,res,intr_on_return=0):
         # Save local vars, pc and return address in stack
+        data = [self.pc, res, intr_on_return, self.intr_data]
         self.stack.push_local_vars()
-        self.stack.push_frame( self.pc )
-        self.stack.push_frame( res )
-        self.stack.push_frame( intr_on_return )
-        self.stack.push_frame( self.intr_data )
+        self.stack.push_frame(data)
         self.stack.push_frame(len(argv))
         self._prepare_routine(r, argv)
 
