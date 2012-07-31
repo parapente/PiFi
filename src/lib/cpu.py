@@ -27,6 +27,8 @@ class ZCpu:
     intr_data = []
     file = None
     plugin = None
+    ops = [0]*8
+    numops = 0
 
     def __init__(self,m,h,o,p):
         self.mem = m
@@ -186,9 +188,10 @@ class ZCpu:
     def _je(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
             offset = self.mem[self.pc] & 63
             gf = 1
@@ -200,7 +203,7 @@ class ZCpu:
             gf = 2
         jif = 'True'
         if (self.mem[self.pc] & 128) == 128: # Jump if true
-            n = len(ops)
+            n = self.numops
             if n == 1: # Nothing to compare
                 self.pc = self.pc + gf
             else:
@@ -220,7 +223,7 @@ class ZCpu:
                     self.pc = self.pc + gf
         else:
             jif = 'False'
-            n = len(ops)
+            n = self.numops
             if n == 1: # Nothing to compare
                 self.pc = self.pc + gf
             else:
@@ -244,9 +247,10 @@ class ZCpu:
     def _jl(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
             offset = self.mem[self.pc] & 63
             gf = 1
@@ -258,7 +262,7 @@ class ZCpu:
             gf = 2
         jif = 'True'
         if (self.mem[self.pc] & 128) == 128: # Jump if true
-            n = len(ops)
+            n = self.numops
             if n == 1: # Nothing to compare
                 self.pc = self.pc + gf
             else:
@@ -278,7 +282,7 @@ class ZCpu:
                     self.pc = self.pc + gf
         else:
             jif = 'False'
-            n = len(ops)
+            n = self.numops
             if n == 1: # Nothing to compare
                 self.pc = self.pc + gf
             else:
@@ -302,9 +306,10 @@ class ZCpu:
     def _jg(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
             offset = self.mem[self.pc] & 63
             gf = 1
@@ -316,14 +321,16 @@ class ZCpu:
             gf = 2
         jif = 'True'
         if (self.mem[self.pc] & 128) == 128: # Jump if true
-            n = len(ops)
+            n = self.numops
             if n == 1: # Nothing to compare
                 self.pc = self.pc + gf
             else:
                 j = 2
-                r = self._s2i(ops[0]) > self._s2i(ops[1])
+                siops0 = self._s2i(ops[0])
+                siops1 = self._s2i(ops[1])
+                r = siops0 > siops1
                 while j < n:
-                    r = r or (self._s2i(ops[0]) > self._s2i(ops[j]))
+                    r = r or (siops0 > self._s2i(ops[j]))
                     j += 1
                 if r: # Jump to label
                     if offset == 0: # Return false
@@ -336,14 +343,16 @@ class ZCpu:
                     self.pc = self.pc + gf
         else:
             jif = 'False'
-            n = len(ops)
+            n = self.numops
             if n == 1: # Nothing to compare
                 self.pc = self.pc + gf
             else:
                 j = 2
-                r = self._s2i(ops[0]) > self._s2i(ops[1])
+                siops0 = self._s2i(ops[0])
+                siops1 = self._s2i(ops[1])
+                r = siops0 > siops1
                 while j < n:
-                    r = r or (self._s2i(ops[0]) > self._s2i(ops[j]))
+                    r = r or (siops0 > self._s2i(ops[j]))
                     j += 1
                 if not r: # Jump to label
                     if offset == 0: # Return false
@@ -360,10 +369,10 @@ class ZCpu:
     def _dec_chk(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
-        val = self._dec2(ops[0])
+            self._read_operands_long_2op()
+        ops = self.ops
         if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
             offset = self.mem[self.pc] & 63
             gf = 1
@@ -375,14 +384,15 @@ class ZCpu:
             gf = 2
         jif = 'True'
         if (self.mem[self.pc] & 128) == 128: # Jump if true
-            n = len(ops)
+            n = self.numops
             if n == 1: # Nothing to compare
                 self.pc = self.pc + gf
             else:
                 j = 2
-                r = self._s2i(val) < self._s2i(ops[1])
+                val = self._s2i(self._dec2(ops[0]))
+                r = val < self._s2i(ops[1])
                 while j < n:
-                    r = r or (self._s2i(val) < self._s2i(ops[j]))
+                    r = r or (val < self._s2i(ops[j]))
                     j += 1
                 if r: # Jump to label
                     if offset == 0: # Return false
@@ -395,14 +405,15 @@ class ZCpu:
                     self.pc = self.pc + gf
         else:
             jif = 'False'
-            n = len(ops)
+            n = self.numops
             if n == 1: # Nothing to compare
                 self.pc = self.pc + gf
             else:
                 j = 2
-                r = self._s2i(val) >= self._s2i(ops[1])
+                val = self._s2i(self._dec2(ops[0]))
+                r = val >= self._s2i(ops[1])
                 while j < n:
-                    r = r or (self._s2i(val) >= self._s2i(ops[j]))
+                    r = r or (val >= self._s2i(ops[j]))
                     j += 1
                 if not r: # Jump to label
                     if offset == 0: # Return false
@@ -419,10 +430,10 @@ class ZCpu:
     def _inc_chk(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
-        val = self._inc2(ops[0])
+            self._read_operands_long_2op()
+        ops = self.ops
         if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
             offset = self.mem[self.pc] & 63
             gf = 1
@@ -434,14 +445,15 @@ class ZCpu:
             gf = 2
         jif = 'True'
         if (self.mem[self.pc] & 128) == 128: # Jump if true
-            n = len(ops)
+            n = self.numops
             if n == 1: # Nothing to compare
                 self.pc = self.pc + gf
             else:
                 j = 2
-                r = self._s2i(val) > self._s2i(ops[1])
+                val = self._s2i(self._inc2(ops[0]))
+                r = val > self._s2i(ops[1])
                 while j < n:
-                    r = r or (self._s2i(val) > self._s2i(ops[j]))
+                    r = r or (val > self._s2i(ops[j]))
                     j += 1
                 if r: # Jump to label
                     if offset == 0: # Return false
@@ -454,14 +466,15 @@ class ZCpu:
                     self.pc = self.pc + gf
         else:
             jif = 'False'
-            n = len(ops)
+            n = self.numops
             if n == 1: # Nothing to compare
                 self.pc = self.pc + gf
             else:
                 j = 2
-                r = self._s2i(val) <= self._s2i(ops[1])
+                val = self._s2i(self._inc2(ops[0]))
+                r = val <= self._s2i(ops[1])
                 while j < n:
-                    r = r or (self._s2i(val) <= self._s2i(ops[j]))
+                    r = r or (val <= self._s2i(ops[j]))
                     j += 1
                 if not r: # Jump to label
                     if offset == 0: # Return false
@@ -478,9 +491,10 @@ class ZCpu:
     def _jin(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
             offset = self.mem[self.pc] & 63
             gf = 1
@@ -527,9 +541,10 @@ class ZCpu:
     def _test(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
             offset = self.mem[self.pc] & 63
             gf = 1
@@ -541,7 +556,7 @@ class ZCpu:
             gf = 2
         jif = 'True'
         if (self.mem[self.pc] & 128) == 128: # Jump if true
-            n = len(ops)
+            n = self.numops
             if n == 1: # Nothing to compare
                 self.pc = self.pc + gf
             else:
@@ -557,7 +572,7 @@ class ZCpu:
                     self.pc = self.pc + gf
         else:
             jif = 'False'
-            n = len(ops)
+            n = self.numops
             if n == 1: # Nothing to compare
                 self.pc = self.pc + gf
             else:
@@ -577,9 +592,10 @@ class ZCpu:
     def _or(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         res = ops[0] | ops[1]
         self._zstore(res, self.mem[self.pc])
         self.pc += 1
@@ -589,9 +605,10 @@ class ZCpu:
     def _and(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         res = ops[0] & ops[1]
         self._zstore(res, self.mem[self.pc])
         self.pc += 1
@@ -601,9 +618,10 @@ class ZCpu:
     def _test_attr(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         obj = self._find_object(ops[0])
         #print "Obj:",ops[0],"addr:",format(obj,"X")
         if self.zver < 4:
@@ -653,9 +671,10 @@ class ZCpu:
     def _set_attr(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: set_attr {1}'.format(format(pc,'X'),ops), 2 )
         if ops[0] == 0:
@@ -684,9 +703,10 @@ class ZCpu:
     def _clear_attr(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: clear_attr {1}'.format(format(pc,'X'),ops), 2 )
         if ops[0] == 0:
@@ -717,9 +737,10 @@ class ZCpu:
     def _store(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         if ops[0]==0: # store should not add new value to stack
             self.stack.pop() # so we pop the top value
         self._zstore(ops[1], ops[0])
@@ -729,9 +750,10 @@ class ZCpu:
     def _insert_obj(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: insert_obj {1}'.format(format(pc,'X'),ops), 2 )
         if ops[1] == 0 or ops[0] == 0:
@@ -793,9 +815,10 @@ class ZCpu:
     def _loadw(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         return_var = self.mem[self.pc]
         self.pc += 1
         addr = ops[0] + 2 * ops[1]
@@ -807,9 +830,10 @@ class ZCpu:
     def _loadb(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         return_var = self.mem[self.pc]
         self.pc += 1
         addr = ops[0] + ops[1]
@@ -821,9 +845,10 @@ class ZCpu:
     def _get_prop(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         if ops[0] == 0:
             # Failing gracefully...
             print "get_prop: Can't get property of nothing!"
@@ -869,9 +894,10 @@ class ZCpu:
     def _get_prop_addr(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         if ops[0] == 0:
             self.output.prints("** get_prop_addr got 0 as object! **\n")
             prop = 0
@@ -900,9 +926,10 @@ class ZCpu:
     def _get_next_prop(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: get_next_prop {1}'.format(format(pc,'X'),ops), 2 )
         if ops[0] == 0:
@@ -959,9 +986,10 @@ class ZCpu:
     def _add(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         result = self._i2s(self._s2i(ops[0]) + self._s2i(ops[1]))
         #print "Result:", result
         self._zstore(result, self.mem[self.pc])
@@ -972,9 +1000,10 @@ class ZCpu:
     def _sub(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         result = self._i2s(self._s2i(ops[0]) - self._s2i(ops[1]))
         #print "Result:", result
         self._zstore(result, self.mem[self.pc])
@@ -985,9 +1014,10 @@ class ZCpu:
     def _mul(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         result = self._i2s(self._s2i(ops[0]) * self._s2i(ops[1]))
         #print "Result:", result
         self._zstore(result, self.mem[self.pc])
@@ -998,9 +1028,10 @@ class ZCpu:
     def _div(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         if ops[1] == 0: # Division by zero
             print "Divide by zero!"
             exit(20)
@@ -1024,9 +1055,10 @@ class ZCpu:
     def _mod(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         if ops[1] == 0: # Division by zero
             print "Divide by zero!"
             exit(20)
@@ -1047,9 +1079,10 @@ class ZCpu:
     def _call_2s(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         argv = [ops[1]]
         return_addr = self.mem[self.pc]
         self.pc += 1
@@ -1061,9 +1094,10 @@ class ZCpu:
     def _call_2n(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         argv = [ops[1]]
         return_addr = -1
         self._routine(ops[0],argv,return_addr)
@@ -1074,9 +1108,10 @@ class ZCpu:
     def _set_colour(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         self.output.set_colour(ops[0],ops[1])
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: set_colour {1}'.format(format(pc,'X'),ops), 2 )
@@ -1084,16 +1119,18 @@ class ZCpu:
     def _throw(self):
         pc = self.pc
         if self.mem[self.pc] >= 0xc0: # Variable 2OP
-            ops = self._read_operands_var_2op()
+            self._read_operands_var_2op()
         else: # Long 2OP
-            ops = self._read_operands_long_2op()
+            self._read_operands_long_2op()
+        ops = self.ops
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: throw {1}'.format(format(pc,'X'),ops), 2 )
         sys.exit("Not implemented yet!")
 
     def _jz(self):
         pc = self.pc
-        ops = self._read_operands_short_1op()
+        self._read_operands_short_1op()
+        ops = self.ops
         if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
             offset = self.mem[self.pc] & 63
             gf = 1
@@ -1130,7 +1167,8 @@ class ZCpu:
 
     def _get_sibling(self):
         pc = self.pc
-        ops = self._read_operands_short_1op()
+        self._read_operands_short_1op()
+        ops = self.ops
         return_var = self.mem[self.pc]
         self.pc += 1
         #print self.mem[self.pc]
@@ -1180,7 +1218,8 @@ class ZCpu:
 
     def _get_child(self):
         pc = self.pc
-        ops = self._read_operands_short_1op()
+        self._read_operands_short_1op()
+        ops = self.ops
         return_var = self.mem[self.pc]
         self.pc += 1
         if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
@@ -1229,7 +1268,8 @@ class ZCpu:
 
     def _get_parent(self):
         pc = self.pc
-        ops = self._read_operands_short_1op()
+        self._read_operands_short_1op()
+        ops = self.ops
         obj = self._find_object(ops[0])
         if self.zver < 4:
             self._zstore(self.mem[obj+4], self.mem[self.pc])
@@ -1244,7 +1284,8 @@ class ZCpu:
 
     def _get_prop_len(self):
         pc = self.pc
-        ops = self._read_operands_short_1op()
+        self._read_operands_short_1op()
+        ops = self.ops
         ops[0] = ops[0] - 1
         if self.zver < 4:
             prop_num = self.mem[ops[0]] % 32
@@ -1265,7 +1306,8 @@ class ZCpu:
 
     def _inc(self):
         pc = self.pc
-        ops = self._read_operands_short_1op()
+        self._read_operands_short_1op()
+        ops = self.ops
         self._inc2(ops[0])
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: inc {1}'.format(format(pc,'X'),ops), 2 )
@@ -1299,7 +1341,8 @@ class ZCpu:
 
     def _dec(self):
         pc = self.pc
-        ops = self._read_operands_short_1op()
+        self._read_operands_short_1op()
+        ops = self.ops
         self._dec2(ops[0])
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: dec {1}'.format(format(pc,'X'),ops), 2 )
@@ -1333,7 +1376,8 @@ class ZCpu:
 
     def _print_addr(self):
         pc = self.pc
-        ops = self._read_operands_short_1op()
+        self._read_operands_short_1op()
+        ops = self.ops
         uaddr = ops[0]
         #print uaddr
         buf = []
@@ -1353,7 +1397,8 @@ class ZCpu:
 
     def _call_1s(self):
         pc = self.pc
-        ops = self._read_operands_short_1op()
+        self._read_operands_short_1op()
+        ops = self.ops
         argv = []
         return_addr = self.mem[self.pc]
         self.pc += 1
@@ -1363,7 +1408,8 @@ class ZCpu:
 
     def _remove_obj(self):
         pc = self.pc
-        ops = self._read_operands_short_1op()
+        self._read_operands_short_1op()
+        ops = self.ops
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: remove_obj {1}'.format(format(pc,'X'),ops), 2 )
         if ops[0] == 0: # We have nothing to do here!
@@ -1412,7 +1458,8 @@ class ZCpu:
 
     def _print_obj(self):
         pc = self.pc
-        ops = self._read_operands_short_1op()
+        self._read_operands_short_1op()
+        ops = self.ops
         if (ops[0] < 1) or ((self.zver < 4) and (ops[0] > 255)) or ((self.zver > 3) and (ops[0] > 65535)):
             sys.exit("Invalid object number")
         obj = self._find_object(ops[0])
@@ -1436,7 +1483,8 @@ class ZCpu:
 
     def _ret(self):
         pc = self.pc
-        ops = self._read_operands_short_1op()
+        self._read_operands_short_1op()
+        ops = self.ops
         self._return(ops[0])
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: ret {1}'.format(format(pc,'X'),ops), 2 )
@@ -1455,7 +1503,8 @@ class ZCpu:
 
     def _jump(self):
         pc = self.pc
-        ops = self._read_operands_short_1op()
+        self._read_operands_short_1op()
+        ops = self.ops
         offset = ops[0] - 2
         if offset > 0x7fff:
             offset = offset - 0x10000
@@ -1466,7 +1515,8 @@ class ZCpu:
 
     def _print_paddr(self):
         pc = self.pc
-        ops = self._read_operands_short_1op()
+        self._read_operands_short_1op()
+        ops = self.ops
         uaddr = self._unpack_addr(ops[0])
         #print uaddr
         buf = []
@@ -1486,7 +1536,8 @@ class ZCpu:
 
     def _load(self):
         pc = self.pc
-        ops = self._read_operands_short_1op()
+        self._read_operands_short_1op()
+        ops = self.ops
         if ops[0] == 0:
             data = self.stack.pop() # load shouldn't lose the top value of stack
             self.stack.push(data)
@@ -1504,7 +1555,8 @@ class ZCpu:
 
     def _not(self):
         pc = self.pc
-        ops = self._read_operands_short_1op()
+        self._read_operands_short_1op()
+        ops = self.ops
         if self.zver >= 5:
             #print "This is truly a call_1n"
             self._call_1n(pc,ops)
@@ -1727,10 +1779,12 @@ class ZCpu:
 
     def _call(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
+        n = self.numops
         i = 1
         argv = []
-        while i < len(ops):
+        while i < n:
             argv.append(ops[i])
             i += 1
         return_addr = self.mem[self.pc]
@@ -1741,7 +1795,8 @@ class ZCpu:
 
     def _storew(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         addr = ops[0] + (2 * ops[1])
         self.mem[addr] = ops[2] >> 8
         self.mem[addr + 1] = ops[2] & 0xff
@@ -1750,7 +1805,8 @@ class ZCpu:
 
     def _storeb(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         addr = ops[0] + ops[1]
         self.mem[addr] = ops[2]
         if (self.plugin.level >= 2):
@@ -1758,7 +1814,8 @@ class ZCpu:
 
     def _put_prop(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         if ops[0] == 0:
             exit("Can't put prop to nothing!")
         d = self._find_object(ops[0])
@@ -1800,10 +1857,11 @@ class ZCpu:
 
     def _sread(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         self.intr = 1
-        if (len(ops)>=2):
-            self.intr_data = ops
+        if (self.numops >= 2):
+            self.intr_data = list(ops)
         else:
             self.intr_data = [ops[0], 0]
         #print "Max read:", self.mem[ops[0]]
@@ -1822,7 +1880,8 @@ class ZCpu:
 
     def _print_char(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         text = convert_from_zscii(ops[0], self.mem, 0)
         self.output.prints(text)
         #print text
@@ -1831,7 +1890,8 @@ class ZCpu:
 
     def _print_num(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         if ops[0] > 0x7fff:
             self.output.prints("{0}".format(ops[0] - 65536))
             #print (ops[0] - 65536)
@@ -1843,7 +1903,8 @@ class ZCpu:
 
     def _random(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         if ops[0] > 0x7fff: # Change seed
             self.random.set_seed(0x10000 - ops[0])
             r = 0
@@ -1861,21 +1922,23 @@ class ZCpu:
 
     def _push(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         self.stack.push(ops[0])
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: push {1}'.format(format(pc,'X'),ops), 2 )
 
     def _pull(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         if self.zver <> 6:
             n = self.stack.pop()
             self._zstore(n, ops[0])
             if (self.plugin.level >= 2):
                 self.plugin.debugprint( '{0}: pull {1}'.format(format(pc,'X'),ops), 2 )
         else:
-            if (ops==[]): # Use the game stack
+            if (self.numops == 0): # Use the game stack
                 n = self.stack.pop()
                 variable = self.mem[self.pc]
                 self._zstore(n, variable)
@@ -1888,26 +1951,30 @@ class ZCpu:
 
     def _split_window(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         self.output.show_upper_window(ops[0])
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: split_window {1}'.format(format(pc,'X'),ops), 2 )
 
     def _set_window(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         self.output.set_window(ops[0])
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: set_window {1}'.format(format(pc,'X'),ops), 2 )
 
     def _call_vs2(self):
         pc = self.pc
-        ops = self._read_operands_var_2op2()
+        self._read_operands_var_2op2()
+        ops = self.ops
+        n = self.numops
         ret = self.mem[self.pc]
         self.pc += 1
         argv = []
         i = 1
-        while i < len(ops):
+        while i < n:
             argv.append(ops[i])
             i += 1
         self._routine(ops[0], argv, ret)
@@ -1916,7 +1983,8 @@ class ZCpu:
 
     def _erase_window(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         if ops[0] == 0xffff: # Unsplit and clear screen
             # TODO: Unsplit
             if (self.plugin.level >= 2):
@@ -1935,7 +2003,8 @@ class ZCpu:
 
     def _set_cursor(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         self.output.set_cursor(ops[1],ops[0])
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: set_cursor {1}'.format(format(pc,'X'),ops), 2 )
@@ -1946,23 +2015,26 @@ class ZCpu:
 
     def _set_text_style(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         self.output.set_font_style(ops[0])
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: set_text_style {1}'.format(format(pc,'X'),ops), 2 )
 
     def _buffer_mode(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
-        print ops
+        self._read_operands_var_2op()
+        ops = self.ops
+        print 'Buffer mode:', ops
         self.output.set_buffering(ops[0])
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: buffer_mode {1}'.format(format(pc,'X'),ops), 2 )
 
     def _output_stream(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
-        print ops
+        self._read_operands_var_2op()
+        ops = self.ops
+        print 'Output stream:', ops
         if ops[0] <> 0:
             if ops[0] == 3:
                 table = ops[1]
@@ -1981,7 +2053,8 @@ class ZCpu:
 
     def _sound_effect(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         # TODO: Implement beeps and sounds!
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: sound_effect {1}'.format(format(pc,'X'),ops), 2 )
@@ -1989,10 +2062,11 @@ class ZCpu:
 
     def _read_char(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: read_char {1}'.format(format(pc,'X'),ops), 2 )
-        if len(ops) > 1:
+        if self.numops > 1:
             self.intr_data = [ops[1],ops[2]]
         else:
             self.intr_data = [0]
@@ -2004,7 +2078,8 @@ class ZCpu:
 
     def _not_var(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         r = ops[0] ^ 0xffff
         self._zstore(r,self.mem[self.pc])
         self.pc += 1
@@ -2013,10 +2088,12 @@ class ZCpu:
 
     def _call_vn(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
+        n = self.numops
         argv = []
         i = 1
-        while i < len(ops):
+        while i < n:
             argv.append(ops[i])
             i += 1
         self._routine(ops[0], argv, -1)
@@ -2025,10 +2102,12 @@ class ZCpu:
 
     def _call_vn2(self):
         pc = self.pc
-        ops = self._read_operands_var_2op2()
+        self._read_operands_var_2op2()
+        ops = self.ops
+        n = self.numops
         argv = []
         i = 1
-        while i < len(ops):
+        while i < n:
             argv.append(ops[i])
             i += 1
         self._routine(ops[0], argv, -1)
@@ -2037,14 +2116,16 @@ class ZCpu:
 
     def _tokenise(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
+        n = self.numops
         self.intr = 4
         self.intr_data = [0,0,0,0]
         self.intr_data[0] = ops[0]
         self.intr_data[1] = ops[1]
-        if len(ops) >= 3:
+        if n >= 3:
             self.intr_data[2] = ops[2]
-        if len(ops) == 4:
+        if n == 4:
             self.intr_data[3] = ops[3]
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: tokenise {1}'.format(format(pc,'X'),ops), 2 )
@@ -2055,7 +2136,8 @@ class ZCpu:
 
     def _copy_table(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: copy_table {1}'.format(format(pc,'X'),ops), 2 )
         if (ops[1] == 0): # Copy zeros to the first variable
@@ -2080,12 +2162,14 @@ class ZCpu:
 
     def _check_arg_count(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
+        n = self.numops
         noa = self.stack.pop_frame()
         #print "Number of args:",noa
         self.stack.push_frame(noa)
         r = False
-        for i in xrange(len(ops)):
+        for i in xrange(n):
             r = r or (ops[i] <= noa)
 
         if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
@@ -2132,7 +2216,8 @@ class ZCpu:
 
     def _log_shift(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         shift = self._s2i(ops[1])
         if shift > 0:
             res = ops[0] << ops[1]
@@ -2146,7 +2231,8 @@ class ZCpu:
 
     def _art_shift(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         shift = self._s2i(ops[1])
         if shift > 0:
             res = self._s2i(ops[0]) << ops[1]
@@ -2160,7 +2246,8 @@ class ZCpu:
 
     def _set_font(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         if (self.plugin.level >= 2):
             self.plugin.debugprint( 'TODO:Implement all fonts', 2)
         # TODO: Implement other fonts
@@ -2191,7 +2278,8 @@ class ZCpu:
         if (self.plugin.level >= 2):
             self.plugin.debugprint( 'TODO:Implement undo', 2)
         # TODO: Implement undo!
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         self._zstore(65535, self.mem[self.pc]) # For now say that undo isn't available :-)
         self.pc += 1
         if (self.plugin.level >= 2):
@@ -2207,7 +2295,8 @@ class ZCpu:
 
     def _check_unicode(self):
         pc = self.pc
-        ops = self._read_operands_var_2op()
+        self._read_operands_var_2op()
+        ops = self.ops
         if (ops[0] >= 0x20) and (ops[0] <= 0x7e):
             self._zstore(3, self.mem[self.pc])
         elif ops[0] == 0xa0:
@@ -2273,39 +2362,42 @@ class ZCpu:
         sys.exit("Not implemented yet!")
 
     def _read_operands_short_1op(self):
-        values = []
+        num = 0
         if (self.mem[self.pc] & 48) == 0:
             #print "Long const"
             self.pc += 1
-            num = ( self.mem[self.pc] << 8 ) + self.mem[self.pc+1]
-            values.append( num )
+            self.ops[num] = ( self.mem[self.pc] << 8 ) + self.mem[self.pc+1]
+            num += 1
             self.pc += 2
         elif (self.mem[self.pc] & 48) == 16:
             #print "Small const"
             self.pc += 1
-            num = self.mem[self.pc]
-            values.append( num )
+            self.ops[num] = self.mem[self.pc]
+            num += 1
             self.pc += 1
         else:
             self.pc += 1
             if self.mem[self.pc] == 0:
                 #print "Got stack!"
-                values.append( self.stack.pop() )
+                self.ops[num] = self.stack.pop()
+                num += 1
             elif self.mem[self.pc] < 0x10:
                 #print "Got local variable", self.mem[self.pc]
-                values.append( self.stack.local_vars[self.mem[self.pc] - 1] )
+                self.ops[num] = self.stack.local_vars[self.mem[self.pc] - 1]
+                num += 1
             else:
                 #print "Got global var", (self.mem[self.pc] - 15)
                 b1 = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 ]
                 b2 = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 + 1]
-                values.append( (b1 << 8) + b2 )
+                self.ops[num] = (b1 << 8) + b2
+                num += 1
             self.pc += 1
-        return values
+        self.numops = num
 
 
     def _read_operands_var_2op(self):
         self.pc = self.pc + 1
-        values = []
+        num = 0
         mask = 192
         type_byte = self.mem[self.pc]
         self.pc = self.pc + 1
@@ -2313,30 +2405,34 @@ class ZCpu:
             optype = ( type_byte & mask) >> (3-i)*2
             if optype == 0: # Large constant (2 bytes)
                 #print "PC:",hex(self.pc),"--",hex(self.mem[self.pc]),",",hex(self.mem[self.pc+1])
-                num = ( self.mem[self.pc] << 8 ) + self.mem[self.pc+1]
-                values.append( num )
+                self.ops[num] = ( self.mem[self.pc] << 8 ) + self.mem[self.pc+1]
+                num += 1
                 self.pc = self.pc + 2
             elif optype == 1: # Small constant (1 byte)
-                values.append( self.mem[self.pc] )
+                self.ops[num] = self.mem[self.pc]
+                num += 1
                 self.pc = self.pc + 1
             elif optype == 2: # Variable (1 byte)
                 if self.mem[self.pc] == 0:
-                    values.append( self.stack.pop() )
+                    self.ops[num] = self.stack.pop()
+                    num += 1
                 elif self.mem[self.pc] < 0x10:
-                    values.append( self.stack.local_vars[self.mem[self.pc] - 1] )
+                    self.ops[num] = self.stack.local_vars[self.mem[self.pc] - 1]
+                    num += 1
                 else:
                     b1 = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 ]
                     b2 = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 + 1]
-                    values.append( (b1 << 8) + b2 )
+                    self.ops[num] = (b1 << 8) + b2
+                    num += 1
                 self.pc = self.pc + 1
             else: # Omitted
                 pass
             mask = mask >> 2
-        return values
+        self.numops = num
 
     def _read_operands_var_2op2(self):
         self.pc = self.pc + 1
-        values = []
+        num = 0
         mask = 192
         type_byte = self.mem[self.pc]
         type_byte2 = self.mem[self.pc + 1]
@@ -2344,22 +2440,25 @@ class ZCpu:
         for i in xrange(4):
             optype = ( type_byte & mask) >> (3-i)*2
             if optype == 0: # Large constant (2 bytes)
-                #print "PC:",hex(self.pc),"--",hex(self.mem[self.pc]),",",hex(self.mem[self.pc+1])
-                num = ( self.mem[self.pc] << 8 ) + self.mem[self.pc+1]
-                values.append( num )
+                self.ops[num] = ( self.mem[self.pc] << 8 ) + self.mem[self.pc+1]
+                num += 1
                 self.pc = self.pc + 2
             elif optype == 1: # Small constant (1 byte)
-                values.append( self.mem[self.pc] )
+                self.ops[num] = self.mem[self.pc]
+                num += 1
                 self.pc = self.pc + 1
             elif optype == 2: # Variable (1 byte)
                 if self.mem[self.pc] == 0:
-                    values.append( self.stack.pop() )
+                    self.ops[num] = self.stack.pop()
+                    num += 1
                 elif self.mem[self.pc] < 0x10:
-                    values.append( self.stack.local_vars[self.mem[self.pc] - 1] )
+                    self.ops[num] = self.stack.local_vars[self.mem[self.pc] - 1]
+                    num += 1
                 else:
                     b1 = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 ]
                     b2 = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 + 1]
-                    values.append( (b1 << 8) + b2 )
+                    self.ops[num] = (b1 << 8) + b2
+                    num += 1
                 self.pc = self.pc + 1
             else: # Omitted
                 pass
@@ -2368,57 +2467,68 @@ class ZCpu:
         for i in xrange(4):
             optype = ( type_byte2 & mask) >> (3-i)*2
             if optype == 0: # Large constant (2 bytes)
-                #print "PC:",hex(self.pc),"--",hex(self.mem[self.pc]),",",hex(self.mem[self.pc+1])
-                num = ( self.mem[self.pc] << 8 ) + self.mem[self.pc+1]
-                values.append( num )
+                self.ops[num] = ( self.mem[self.pc] << 8 ) + self.mem[self.pc+1]
+                num += 1
                 self.pc = self.pc + 2
             elif optype == 1: # Small constant (1 byte)
-                values.append( self.mem[self.pc] )
+                self.ops[num] = self.mem[self.pc]
+                num += 1
                 self.pc = self.pc + 1
             elif optype == 2: # Variable (1 byte)
                 if self.mem[self.pc] == 0:
-                    values.append( self.stack.pop() )
+                    self.ops[num] = self.stack.pop()
+                    num += 1
                 elif self.mem[self.pc] < 0x10:
-                    values.append( self.stack.local_vars[self.mem[self.pc] - 1] )
+                    self.ops[num] = self.stack.local_vars[self.mem[self.pc] - 1]
+                    num += 1
                 else:
                     b1 = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 ]
                     b2 = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 + 1]
-                    values.append( (b1 << 8) + b2 )
+                    self.ops[num] = (b1 << 8) + b2
+                    num += 1
                 self.pc = self.pc + 1
             else: # Omitted
                 pass
             mask = mask >> 2
-        return values
+        self.numops = num
 
     def _read_operands_long_2op(self):
-        values = []
+        num = 0
         code = self.mem[self.pc]
         self.pc = self.pc + 1
         if (code & 64) == 0:
-            values.append(self.mem[self.pc])
+            self.ops[num] = self.mem[self.pc]
+            num += 1
         else:
             if self.mem[self.pc] == 0:
-                values.append( self.stack.pop() )
+                self.ops[num] = self.stack.pop()
+                num += 1
             elif self.mem[self.pc] < 0x10:
-                values.append( self.stack.local_vars[self.mem[self.pc] - 1] )
+                self.ops[num] = self.stack.local_vars[self.mem[self.pc] - 1]
+                num += 1
             else:
-                num = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 ] << 8
-                num = num + self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 + 1]
-                values.append( num )
+                val = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 ] << 8
+                val = val + self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 + 1]
+                self.ops[num] = val
+                num += 1
         self.pc = self.pc + 1
         if (code & 32) == 0:
-            values.append(self.mem[self.pc])
+            self.ops[num] = self.mem[self.pc]
+            num += 1
         else:
             if self.mem[self.pc] == 0:
-                values.append( self.stack.pop() )
+                self.ops[num] = self.stack.pop()
+                num += 1
             elif self.mem[self.pc] < 0x10:
-                values.append( self.stack.local_vars[self.mem[self.pc] - 1] )
+                self.ops[num] = self.stack.local_vars[self.mem[self.pc] - 1]
+                num += 1
             else:
-                num = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 ] << 8
-                num = num + self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 + 1]
-                values.append( num )
+                val = self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 ] << 8
+                val = val + self.mem[ self.header.global_table() + (self.mem[self.pc] - 16) * 2 + 1]
+                self.ops[num] = val
+                num += 1
         self.pc = self.pc + 1
-        return values
+        self.numops = num
 
 
     def _unpack_addr(self,addr,usage=0):
