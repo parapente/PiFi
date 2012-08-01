@@ -42,6 +42,7 @@ class ZCpu:
         self.random = ZRandom()
         self.print_dict = dict()
         self.print_char_dict = dict()
+        self.command_dict = dict()
         self.t2op = dict({1:self._je,
                      2:self._jl,
                      3:self._jg,
@@ -165,27 +166,37 @@ class ZCpu:
                      28:self._picture_table})
 
     def command(self):
-        if self.mem[self.pc] < 0x80: # LONG 2OP
-            code = (self.mem[self.pc] & 31)
-            if self.mem[self.pc] == 0:
-                sys.exit("Invalid opcode!")
-            self.t2op[code]()
-        elif self.mem[self.pc] < 0xb0: # SHORT 1OP
-            code = (self.mem[self.pc] & 15) + 128
-            self.t1op[code]()
-        elif (self.mem[self.pc] < 0xc0) and (self.mem[self.pc] != 0xbe): # SHORT 0OP
-            code = (self.mem[self.pc] & 15) + 176
-            self.t0op[code]()
-        elif self.mem[self.pc] == 0xbe: # EXTENDED VAR
-            self.pc += 1
-            code = self.mem[self.pc]
-            self.text[code]()
-        elif self.mem[self.pc] < 0xe0: # VARIABLE 2OP
-            code = self.mem[self.pc] & 31
-            self.t2op[code]()
-        else:
-            code = (self.mem[self.pc] & 31) + 224
-            self.tvar[code]()
+        value = self.mem[self.pc]
+        try:
+            self.command_dict[value]()
+        except KeyError:
+            if value < 0x80: # LONG 2OP
+                code = (value & 31)
+                if value == 0:
+                    sys.exit("Invalid opcode!")
+                self.command_dict[value] = self.t2op[code]
+                self.t2op[code]()
+            elif value < 0xb0: # SHORT 1OP
+                code = (value & 15) + 128
+                self.command_dict[value] = self.t1op[code]
+                self.t1op[code]()
+            elif (value < 0xc0) and (value != 0xbe): # SHORT 0OP
+                code = (value & 15) + 176
+                self.command_dict[value] = self.t0op[code]
+                self.t0op[code]()
+            elif value == 0xbe: # EXTENDED VAR
+                self.pc += 1
+                code = self.mem[self.pc]
+                self.command_dict[value] = self.text[code]
+                self.text[code]()
+            elif value < 0xe0: # VARIABLE 2OP
+                code = value & 31
+                self.command_dict[value] = self.t2op[code]
+                self.t2op[code]()
+            else:
+                code = (value & 31) + 224
+                self.command_dict[value] = self.tvar[code]
+                self.tvar[code]()
 
     def _je(self):
         pc = self.pc
@@ -1612,9 +1623,9 @@ class ZCpu:
     def _print(self):
         pc = self.pc
         uaddr = self.pc + 1
-        if (uaddr in self.print_dict):
+        try:
             i, text = self.print_dict[uaddr]
-        else:
+        except KeyError:
             buf = []
             eot = False
             i = 0
@@ -1909,9 +1920,9 @@ class ZCpu:
         pc = self.pc
         self._read_operands_var_2op()
         ops = self.ops
-        if ops[0] in self.print_char_dict:
+        try:
             text = self.print_char_dict[ops[0]]
-        else:
+        except KeyError:
             text = convert_from_zscii(ops[0], self.mem, 0)
             self.print_char_dict[ops[0]] = text
         self.output.prints(text)
