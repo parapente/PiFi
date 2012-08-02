@@ -256,13 +256,21 @@ class ZTextWidget(QWidget):
         #print self.input_buf, len(self.input_buf), self.max_char
         self.update_game_area()
 
-    def set_text_colour(self,fg):
+    def set_text_colour(self,fg, win):
         self.cur_fg = fg
+        if (self.pbuffer_painter[win] == None):
+            self.pbuffer_painter[win] = QPainter(self.pbuffer[win])
+        painter = self.pbuffer_painter[win]
+        painter.setPen(self.ztoq_color(self.cur_fg))
 
-    def set_text_background_colour(self,bg):
+    def set_text_background_colour(self,bg, win):
         self.cur_bg = bg
+        if (self.pbuffer_painter[win] == None):
+            self.pbuffer_painter[win] = QPainter(self.pbuffer[win])
+        painter = self.pbuffer_painter[win]
+        painter.setBackground(QBrush(self.ztoq_color(self.cur_bg)))
 
-    def set_font_style(self,s):
+    def set_font_style(self,s,win):
         if s == 0:
             self.cur_style = 0
         else:
@@ -273,10 +281,17 @@ class ZTextWidget(QWidget):
         newfont.setItalic(False)
         newfont.setFixedPitch(False)
         newfont.setBold(False)
+        if (self.reverse_video == True):
+            tmpbg = self.cur_bg
+            self.set_text_background_colour(self.cur_fg,win)
+            self.set_text_colour(tmpbg,win)
         self.reverse_video = False
         # And now check for extra style
         if ((self.cur_style & 1) == 1): # Reverse video
             self.reverse_video = True
+            tmpbg = self.cur_bg
+            self.set_text_background_colour(self.cur_fg,win)
+            self.set_text_colour(tmpbg,win)
         if ((self.cur_style & 2) == 2): # Bold
             newfont.setBold(True)
         if ((self.cur_style & 4) == 4): # Italic
@@ -371,20 +386,10 @@ class ZTextWidget(QWidget):
                     window.set_cursor_position(1, window.cursor[1]+1)
                     window.set_cursor_real_position(2, window.cursor_real_pos[1]+self.linesize)
             else:
-                rect = QRectF()
-                rect.setX(window.cursor_real_pos[0])
-                rect.setY(window.cursor_real_pos[1])
-                rect.setWidth(self.pbuffer[window.id].width()-window.cursor_real_pos[0])
-                rect.setHeight(self.linesize)
+                rect = QRectF(window.cursor_real_pos[0], window.cursor_real_pos[1], self.pbuffer[window.id].width()-window.cursor_real_pos[0], self.linesize)
 
-                if (self.reverse_video == True):
-                    painter.setPen(self.ztoq_color(self.cur_bg))
-                    painter.setBackground(QBrush(self.ztoq_color(self.cur_fg)))
-                else:
-                    painter.setPen(self.ztoq_color(self.cur_fg))
-                    painter.setBackground(QBrush(self.ztoq_color(self.cur_bg)))
                 painter.setFont(self.font())
-                painter.setRenderHint(QPainter.TextAntialiasing)
+                #painter.setRenderHint(QPainter.TextAntialiasing)
                 if (self._input_buffer_printing == False):
                     painter.setBackgroundMode(Qt.OpaqueMode)
                 else:

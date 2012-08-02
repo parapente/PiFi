@@ -1563,8 +1563,6 @@ class ZCpu:
             if (mem[uaddr + i] & 128) == 128:
                 eot = True
             buf.extend([mem[uaddr + i],mem[uaddr + i + 1]])
-            #buf.append(mem[uaddr + i])
-            #buf.append(mem[uaddr + i + 1])
             i += 2
         text = decode_text(buf, self.zver, self.mem, self.header.abbrev_table(), False, self.header.alphabet_table(), 0)
         self.output.prints(text)

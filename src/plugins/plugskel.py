@@ -35,6 +35,7 @@ class PlugSkel(object):
             self.window[1].set_buffering(False)
             self.window[1].set_wrapping(False)
             self.window[1].set_scrolling(False)
+        self.current_window = 0
 
     def exec_(self):
         pass
@@ -72,7 +73,8 @@ class PlugSkel(object):
         self.widget.clear()
 
     def set_font_style(self,s):
-        self.widget.set_font_style(s)
+        win = self.current_window
+        self.widget.set_font_style(s,win)
 
     def show_upper_window(self,lines):
         self.split_window(lines, self.zver)
@@ -87,14 +89,15 @@ class PlugSkel(object):
             self.window[1].set_cursor_position(x,y)
 
     def set_colour(self,fg,bg):
+        win = self.current_window
         if fg == 1:
-            self.widget.set_text_colour(self.def_fg)
+            self.widget.set_text_colour(self.def_fg, win)
         elif fg > 1 and fg < 13:
-            self.widget.set_text_colour(fg)
+            self.widget.set_text_colour(fg, win)
         if bg == 1:
-            self.widget.set_text_background_colour(self.def_bg)
+            self.widget.set_text_background_colour(self.def_bg, win)
         elif bg > 1 and bg < 13:
-            self.widget.set_text_background_colour(bg)
+            self.widget.set_text_background_colour(bg, win)
 
     def width(self):
         return self.widget.width
