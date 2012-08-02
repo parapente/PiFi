@@ -203,7 +203,8 @@ class ZMachine:
             self.cpu.start()
             self.handle_intr()
         else:
-            sys.exit('Quit')
+            self.plugin.quit()
+            #sys.exit('Quit')
 
     def load_story(self,f):
         # @type f file

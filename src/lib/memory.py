@@ -21,9 +21,10 @@ class ZMemory:
         except EOFError:
             print 'file size:', f.tell()
             need = max_length - f.tell()
-            if ( need ) > 0:
-                for i in xrange(need):
-                    self.mem.append(0)
+            self.mem.extend([0]*need)
+            #if ( need ) > 0:
+            #    for i in xrange(need):
+            #        self.mem.append(0)
         self.static_beg = 256*self.mem[0x0e]+self.mem[0x0f];
         self.high_beg = 256*self.mem[0x04]+self.mem[0x05];
                     #for i in xrange(len(data)):

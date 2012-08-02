@@ -41,7 +41,7 @@ class QtPluginV2(PlugSkel):
         self.win.show()
 
     def exec_(self):
-        self.a.exec_()
+        sys.exit(self.a.exec_())
 
     def print_status(self,room,status):
         vbl = self.win.centralWidget().layout()
@@ -89,3 +89,6 @@ class QtPluginV2(PlugSkel):
         if (self.current_window==1):
             self.window[1].set_cursor_position(x,y)
             self.widget.update_real_cursor_position(self.window[1])
+
+    def quit(self):
+        self.win.close()

@@ -168,7 +168,10 @@ class ZCpu:
     def command(self):
         value = self.mem[self.pc]
         try:
-            self.command_dict[value]()
+            cmd = self.command_dict[value]
+            if value == 0xbe:
+                self.pc += 1
+            cmd()
         except KeyError:
             if value < 0x80: # LONG 2OP
                 code = (value & 31)
@@ -1551,15 +1554,17 @@ class ZCpu:
         self._read_operands_short_1op()
         ops = self.ops
         uaddr = self._unpack_addr(ops[0])
+        mem = self.mem
         #print uaddr
         buf = []
         eot = False
         i = 0
         while not eot:
-            if (self.mem[uaddr + i] & 128) == 128:
+            if (mem[uaddr + i] & 128) == 128:
                 eot = True
-            buf.append(self.mem[uaddr + i])
-            buf.append(self.mem[uaddr + i + 1])
+            buf.extend([mem[uaddr + i],mem[uaddr + i + 1]])
+            #buf.append(mem[uaddr + i])
+            #buf.append(mem[uaddr + i + 1])
             i += 2
         text = decode_text(buf, self.zver, self.mem, self.header.abbrev_table(), False, self.header.alphabet_table(), 0)
         self.output.prints(text)

@@ -145,3 +145,6 @@ class PlugSkel(object):
 
     def stop_char_timer(self):
         self.widget.stop_char_timer()
+
+    def quit(self):
+        pass
