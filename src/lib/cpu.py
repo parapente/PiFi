@@ -1525,13 +1525,11 @@ class ZCpu:
             self.plugin.debugprint( '{0}: ret {1}'.format(format(pc,'X'),ops[0:self.numops]), 2 )
 
     def _return(self, value):
-        self.stack.pop_frame() # We don't need the number of args
-        data = self.stack.pop_frame()
-        self.intr_data = data[3]
-        self.intr = data[2]
-        return_var = data[1]
-        prev_pc = data[0]
-        self.stack.pop_local_vars()
+        stack = self.stack
+        stack.pop_frame() # We don't need the number of args
+        data = stack.pop_frame()
+        prev_pc, return_var, self.intr, self.intr_data = data
+        stack.pop_local_vars()
         if return_var <> -1: # If we want the returned value...
             self._zstore(value,return_var)
         self.last_return = value # Keep last value (used in timed input)
@@ -1916,7 +1914,7 @@ class ZCpu:
         ops = self.ops
         self.intr = 1
         if (self.numops >= 2):
-            self.intr_data = list(ops[1:self.numops])
+            self.intr_data = list(ops[0:self.numops])
         else:
             self.intr_data = [ops[0], 0]
         #print "Max read:", self.mem[ops[0]]
@@ -2085,7 +2083,7 @@ class ZCpu:
         pc = self.pc
         self._read_operands_var_2op()
         ops = self.ops
-        print 'Buffer mode:', ops
+        #print 'Buffer mode:', ops
         self.output.set_buffering(ops[0])
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: buffer_mode {1}'.format(format(pc,'X'),ops[0:self.numops]), 2 )
@@ -2094,7 +2092,7 @@ class ZCpu:
         pc = self.pc
         self._read_operands_var_2op()
         ops = self.ops
-        print 'Output stream:', ops
+        #print 'Output stream:', ops
         if ops[0] <> 0:
             if ops[0] == 3:
                 table = ops[1]

@@ -200,7 +200,7 @@ class ZTextWidget(QWidget):
             text = ''
             for i in self.input_buf:
                 text += i
-            print text
+            #print text
             self.draw_text('\n', self.lastwindow)
             self.keyPressed.emit(13)
             self._input_cursor_pos = 0
@@ -314,7 +314,7 @@ class ZTextWidget(QWidget):
         self.update_game_area()
         self.lastwindow = window
         QObject.connect(self, SIGNAL("keyPressed(int)"), callback)
-        print 'Connect char'
+        #print 'Connect char'
         if (self.chartimer == None):
             self.chartimer = QTimer()
             self.chartimer.setSingleShot(True)
@@ -324,7 +324,7 @@ class ZTextWidget(QWidget):
 
     def disconnect_read_char(self, callback):
         QObject.disconnect(self, SIGNAL("keyPressed(int)"), callback)
-        print 'Disconnect char'
+        #print 'Disconnect char'
 
     def prints(self, txt, window):
         if (len(txt)==1): # print_char got us here...
@@ -453,7 +453,7 @@ class ZTextWidget(QWidget):
             # FIXME: clear next lines
 
     def clear(self):
-        print 'clearing...'
+        #print 'clearing...'
         self.game_area.fill(self.ztoq_color[self.cur_bg])
         for i in xrange(8):
             if (self.pbuffer[i] != None):
@@ -472,7 +472,7 @@ class ZTextWidget(QWidget):
             self.pbuffer_painter[w.id].setBackground(self.brush)
             self.pbuffer_painter[w.id].setBackgroundMode(Qt.OpaqueMode)
             self.pbuffer_painter[w.id].eraseRect(QRectF(0, 0, self.pbuffer[w.id].width(), w.line_count*self.linesize))
-            print 2, 0, self.pbuffer[w.id].width()-2, w.line_count*self.linesize
+            #print 2, 0, self.pbuffer[w.id].width()-2, w.line_count*self.linesize
         else:
             traceback.print_stack()
             print 'erase_window for window',w.id
@@ -505,7 +505,6 @@ class ZTextWidget(QWidget):
 
     def stop_line_timer(self):
         if (self.linetimer != None):
-            print 'stop'
             self.linetimer.stop()
 
     def stop_char_timer(self):

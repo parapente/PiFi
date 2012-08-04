@@ -93,7 +93,7 @@ class ZMachine:
         self.input.disconnect_input(self.get_text)
         self.mutex.acquire()
         #self.input.hide_cursor()
-        print 'get_text:', text, interrupted
+        #print 'get_text:', text, interrupted
         if (interrupted == False): # We got here because user pressed enter
             self.plugin.debugprint("Enter!", 2)
             paddr = self.cpu.intr_data[1]
@@ -119,7 +119,7 @@ class ZMachine:
                     if self.zver > 4:
                         self.cpu.got_char(10)
         else:
-            print 'input was interrupted'
+            #print 'input was interrupted'
             if self.zver > 4:
                 self.cpu.got_char(0)
         self.cpu.intr = 0

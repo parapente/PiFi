@@ -22,9 +22,10 @@ class ZStack:
         self.frames = [0]*3000
         self.framespos = 0
         self.framesmaxpos = 3000
-        self.local_vars = array('H')
-        for i in xrange(15):
-            self.local_vars.append(0)
+        self.local_vars = [0]*15
+        #self.local_vars = array('H')
+        #for i in xrange(15):
+        #    self.local_vars.append(0)
 
     def push(self,n):
         if (self.queuepos < self.queuemaxpos):
@@ -54,15 +55,18 @@ class ZStack:
 
     def push_local_vars(self):
         if (self.framespos < self.framesmaxpos):
-            self.frames[self.framespos] = self.local_vars.tolist()
+            #self.frames[self.framespos] = self.local_vars.tolist()
+            self.frames[self.framespos] = list(self.local_vars)
             self.framespos += 1
         else:
-            self.frames.append(self.local_vars.tolist())
+            #self.frames.append(self.local_vars.tolist())
+            self.frames.append(list(self.local_vars))
             self.framespos += 1
             self.framesmaxpos += 1
 
     def pop_local_vars(self):
         self.framespos -= 1
-        data = self.frames[self.framespos]
-        for i in xrange(15):
-            self.local_vars[i] = data[i]
+        self.local_vars = self.frames[self.framespos]
+        #data = self.frames[self.framespos]
+        #for i in xrange(15):
+        #    self.local_vars[i] = data[i]
