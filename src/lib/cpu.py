@@ -1053,7 +1053,7 @@ class ZCpu:
         else: # Long 2OP
             self._read_operands_long_2op()
         ops = self.ops
-        result = self._i2s(self._s2i(ops[0]) * self._s2i(ops[1]))
+        result = (ops[0] * ops[1]) & 0xffff
         #print "Result:", result
         self._zstore(result, self.mem[self.pc])
         self.pc = self.pc + 1
