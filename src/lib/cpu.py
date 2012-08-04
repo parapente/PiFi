@@ -1039,7 +1039,8 @@ class ZCpu:
             self._read_operands_long_2op()
         ops = self.ops
         #result = self._i2s(self._s2i(ops[0]) - self._s2i(ops[1]))
-        result = self._i2s(ops[0] - ops[1])
+        #result = self._i2s(ops[0] - ops[1])
+        result = (ops[0] - ops[1]) & 0xffff
         #print "Result:", result
         self._zstore(result, self.mem[self.pc])
         self.pc = self.pc + 1
@@ -1121,7 +1122,7 @@ class ZCpu:
         argv = [ops[1]]
         return_addr = self.mem[self.pc]
         self.pc += 1
-        self._routine(ops[0],argv,return_addr)
+        self._routine(ops[0],argv,1,return_addr)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: call_2s {1}'.format(format(pc,'X'),ops[0:self.numops]), 2 )
             self.plugin.debugprint( '--v', 2 )
@@ -1135,7 +1136,7 @@ class ZCpu:
         ops = self.ops
         argv = [ops[1]]
         return_addr = -1
-        self._routine(ops[0],argv,return_addr)
+        self._routine(ops[0],argv,1,return_addr)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: call_2n {1}'.format(format(pc,'X'),ops[0:self.numops]), 2 )
             self.plugin.debugprint( '--v', 2 )
@@ -1437,7 +1438,7 @@ class ZCpu:
         argv = []
         return_addr = self.mem[self.pc]
         self.pc += 1
-        self._routine(ops[0],argv,return_addr)
+        self._routine(ops[0],argv,0,return_addr)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: call_1s {1}'.format(format(pc,'X'),ops[0:self.numops]), 2 )
 
@@ -1619,7 +1620,7 @@ class ZCpu:
         argv = []
         addr = ops[0]
         return_addr = -1
-        self._routine(addr,argv,return_addr)
+        self._routine(addr,argv,0,return_addr)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: call_1n {1}'.format(format(pc,'X'),ops[0:self.numops]), 2 )
 
@@ -1842,7 +1843,7 @@ class ZCpu:
         #    i += 1
         return_addr = self.mem[self.pc]
         self.pc = self.pc + 1
-        self._routine(ops[0],argv,return_addr)
+        self._routine(ops[0],argv,self.numops-1,return_addr)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: call {1}'.format(format(pc,'X'),ops[0:self.numops]), 2 )
 
@@ -2035,7 +2036,7 @@ class ZCpu:
         #while i < n:
         #    argv.append(ops[i])
         #    i += 1
-        self._routine(ops[0], argv, ret)
+        self._routine(ops[0], argv, self.numops-1, ret)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: call_vs2 {1}'.format(format(pc,'X'),ops[0:self.numops]), 2 )
 
@@ -2150,7 +2151,7 @@ class ZCpu:
         ops = self.ops
         n = self.numops
         argv = list(ops[1:self.numops])
-        self._routine(ops[0], argv, -1)
+        self._routine(ops[0], argv, self.numops-1, -1)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: call_vn {1}'.format(format(pc,'X'),ops[0:self.numops]), 2 )
 
@@ -2160,7 +2161,7 @@ class ZCpu:
         ops = self.ops
         n = self.numops
         argv = list(ops[1:self.numops])
-        self._routine(ops[0], argv, -1)
+        self._routine(ops[0], argv, self.numops-1, -1)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: call_vn2 {1}'.format(format(pc,'X'),ops[0:self.numops]), 2 )
 
@@ -2751,7 +2752,7 @@ class ZCpu:
 
     def start6(self):
         print self.pc
-        self._prepare_routine(self.pc, [])
+        self._prepare_routine(self.pc, [], 0, 0)
         print self.pc
 
     def _show_status2(self):
@@ -2788,15 +2789,15 @@ class ZCpu:
                 else:
                     self.output.print_status(text, "{0}:{1}".format(hour, mins))
 
-    def _routine(self,r,argv,res,intr_on_return=0):
+    def _routine(self,r,argv,lenargv,res,intr_on_return=0):
         # Save local vars, pc and return address in stack
         data = [self.pc, res, intr_on_return, self.intr_data]
         self.stack.push_local_vars()
         self.stack.push_frame(data)
-        self.stack.push_frame(len(argv))
-        self._prepare_routine(r, argv)
+        self.stack.push_frame(lenargv)
+        self._prepare_routine(r, argv, lenargv)
 
-    def _prepare_routine(self, r, argv):
+    def _prepare_routine(self, r, argv, lenargv):
         # Jump to routine address
         #self.pc = self._unpack_addr(r)
         # Inline _unpack_addr
@@ -2818,26 +2819,34 @@ class ZCpu:
         if self.pc > self.header.length_of_file:
             sys.exit("Call out of bounds!")
         #print self.mem[self.pc]
-        self.stack.local_vars_num = self.mem[self.pc]
+        stack = self.stack
+        mem = self.mem
+        stack.local_vars_num = mem[self.pc]
         self.pc = self.pc + 1
-        if self.stack.local_vars_num > 0:
+        if stack.local_vars_num > 0:
             # Initialize local variables
-            n = len(argv)
             if self.zver < 5:
-                for i in xrange(self.stack.local_vars_num):
-                    if i < n:
-                        self.stack.local_vars[i] = argv[i]
-                    else:
-                        self.stack.local_vars[i] = (self.mem[self.pc] << 8) + self.mem[self.pc + 1]
-                    #print self.stack.local_vars[i]
+                stack.local_vars[0:lenargv] = argv[0:lenargv]
+                while lenargv < stack.local_vars_num:
+                    stack.local_vars[lenargv] = (mem[self.pc] << 8) + mem[self.pc + 1]
+                    lenargv += 1
                     self.pc = self.pc + 2
+            #    for i in xrange(self.stack.local_vars_num):
+            #        if i < lenargv:
+            #            self.stack.local_vars[i] = argv[i]
+            #        else:
+            #            self.stack.local_vars[i] = (self.mem[self.pc] << 8) + self.mem[self.pc + 1]
+            #        #print self.stack.local_vars[i]
+            #        self.pc = self.pc + 2
             else:
-                for i in xrange(self.stack.local_vars_num):
-                    if i < n:
-                        self.stack.local_vars[i] = argv[i]
-                    else:
-                        self.stack.local_vars[i] = 0
-                    #print self.stack.local_vars[i]
+                stack.local_vars = [0]*15
+                stack.local_vars[0:lenargv] = argv[0:lenargv]
+            #    for i in xrange(self.stack.local_vars_num):
+            #        if i < lenargv:
+            #            self.stack.local_vars[i] = argv[i]
+            #        else:
+            #            self.stack.local_vars[i] = 0
+            #        #print self.stack.local_vars[i]
 
     def got_char(self, char):
         self._zstore(char, self.mem[self.pc])

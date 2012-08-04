@@ -73,7 +73,7 @@ class ZMachine:
         self.plugin.debugprint("@@@@@@@@@@ start @@@@@@@@@@@@@@@@", 2)
         self.input.disconnect_input(self.get_char)
         self.cpu.intr = 0
-        self.cpu._routine(self.cpu.intr_data[1],[],-1,20)
+        self.cpu._routine(self.cpu.intr_data[1],[],0,-1,20)
         self.cpu.start()
         self.plugin.debugprint("@@@@@@@@@@@ end @@@@@@@@@@@@@@@@@", 2)
         self.handle_intr()
@@ -83,7 +83,7 @@ class ZMachine:
         self.plugin.debugprint("@@@@@@@@@@ start @@@@@@@@@@@@@@@@", 2)
         self.input.disconnect_input(self.get_text)
         self.cpu.intr = 0
-        self.cpu._routine(self.cpu.intr_data[3],[],-1,10)
+        self.cpu._routine(self.cpu.intr_data[3],[],0,-1,10)
         self.cpu.start()
         self.plugin.debugprint("@@@@@@@@@@@ end @@@@@@@@@@@@@@@@@", 2)
         self.handle_intr()

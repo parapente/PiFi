@@ -327,8 +327,9 @@ class ZTextWidget(QWidget):
         #print 'Disconnect char'
 
     def prints(self, txt, window):
-        if (len(txt)==1): # print_char got us here...
-            self.draw_text(txt[0],window)
+        txtlen = len(txt)
+        if (txtlen == 1): # print_char got us here...
+            self.draw_text(txt[0],1,window)
         else:
             lastspace = 0
             i = 0
@@ -337,10 +338,10 @@ class ZTextWidget(QWidget):
             for w in txt:
                 if (w == '\n' or w == self.cursor_char):
                     if (tblen>0): # If there is something to print
-                        self.draw_text(textbuffer, window)
+                        self.draw_text(textbuffer, tblen, window)
                         textbuffer = ''
                         tblen = 0
-                    self.draw_text(w, window)
+                    self.draw_text(w, 1, window)
                     if (w == '\n'): # \n is whitespace :-)
                         lastspace = i
                 elif (w == ' '): # Space was found
@@ -348,8 +349,8 @@ class ZTextWidget(QWidget):
                         textbuffer += w
                         tblen += 1
                     else:
-                        self.draw_text(textbuffer, window)
-                        self.draw_text(' ', window)
+                        self.draw_text(textbuffer, tblen, window)
+                        self.draw_text(' ', 1, window)
                         textbuffer = ''
                         tblen = 0
                     lastspace = i
@@ -357,11 +358,11 @@ class ZTextWidget(QWidget):
                     textbuffer += w
                     tblen += 1
                 i += 1
-            if (len(textbuffer)>0): # Buffer not empty
-                self.draw_text(textbuffer, window)
+            if (textbuffer != ''): # Buffer not empty
+                self.draw_text(textbuffer, tblen, window)
 
-    def draw_text(self, txt, window):
-        if ((len(txt)>0) and not ((txt == self.cursor_char) and (self._cursor_visible == False))): # If there IS something to print
+    def draw_text(self, txt, txtlen, window):
+        if ((txtlen>0) and not ((txt == self.cursor_char) and (self._cursor_visible == False))): # If there IS something to print
             if (self.pbuffer_painter[window.id] == None):
                 self.brush.setColor(self.ztoq_color[self.cur_bg])
                 self.pbuffer_painter[window.id] = QPainter(self.pbuffer[window.id])
@@ -402,7 +403,7 @@ class ZTextWidget(QWidget):
                     #print rect.x(), rect.y(), rect.width(),rect.height(), txt, bounding_rect
                     painter.drawText(bounding_rect, txt)
                     if txt != self.cursor_char:
-                        window.set_cursor_position(window.cursor[0]+len(txt), window.cursor[1])
+                        window.set_cursor_position(window.cursor[0]+txtlen, window.cursor[1])
                         window.set_cursor_real_position(rect.x()+bounding_rect.width(), rect.y())
                 else: # There is not enough space
                     #print "Not enough space to print:", txt
@@ -416,7 +417,7 @@ class ZTextWidget(QWidget):
                     bounding_rect = painter.boundingRect(rect,txt)
                     painter.drawText(bounding_rect, txt)
                     if txt != self.cursor_char:
-                        window.set_cursor_position(window.cursor[0]+len(txt), window.cursor[1])
+                        window.set_cursor_position(window.cursor[0]+txtlen, window.cursor[1])
                         window.set_cursor_real_position(rect.x()+bounding_rect.width(), rect.y())
 
     def buffered_string(self, txt, window):

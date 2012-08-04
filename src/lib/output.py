@@ -1,5 +1,5 @@
-import sys
 # -*- coding: utf-8
+import sys
 
 __author__="Theofilos Intzoglou"
 __date__ ="$1 Ιουλ 2009 5:20:39 μμ$"
@@ -9,6 +9,7 @@ class ZOutput:
     version = 0
     plugin = None
     table_list = []
+    table_list_len = 0
     mem = None
 
     def __init__(self,ver,mem,plugin):
@@ -20,21 +21,25 @@ class ZOutput:
     def select_stream(self,n,table):
         self.plugin.select_ostream(n)
         if table <> -1:
-            if len(self.table_list) < 33: # We keep 2 ints for every ostream 3 (addr,offset)
+            if self.table_list_len < 33: # We keep 2 ints for every ostream 3 (addr,offset)
                 self.table_list.append(table)
                 self.table_list.append(0)
+                self.table_list_len += 2
             else:
                 sys.exit("Output stream 3 is selected too many times!")
 
     def deselect_stream(self,n):
         if n == 3:
-            addr = self.table_list[len(self.table_list) - 2]
-            numbytes = self.table_list[len(self.table_list) - 1]
+            tl = self.table_list
+            tbl = self.table_list_len
+            addr = tl[tbl - 2]
+            numbytes = tl[tbl - 1]
             self.mem[addr] = numbytes >> 8
             self.mem[addr + 1] = numbytes & 0xff
-            del self.table_list[len(self.table_list) - 1]
-            del self.table_list[len(self.table_list) - 1]
-            if len(self.table_list) == 0:
+            del tl[tbl - 1]
+            del tl[tbl - 2]
+            self.table_list_len -= 2
+            if self.table_list_len == 0:
                 self.plugin.deselect_ostream(n)
         else:
             self.plugin.deselect_ostream(n)
@@ -49,18 +54,23 @@ class ZOutput:
         # TODO: Buffering
         #print "Output streams:", self.plugin.selected_ostreams()
         if 3 in self.plugin.selected_ostreams():
-            addr = self.table_list[len(self.table_list) - 2]
+            tbl = self.table_list_len
+            tl = self.table_list
+            addr = tl[tbl - 2]
             addr += 2
             l = len(s)
-            chars = self.table_list[len(self.table_list) - 1]
+            chars = tl[tbl - 1]
             addr += chars
-            self.table_list[len(self.table_list) - 1] = chars + l
+            tl[tbl - 1] = chars + l
+            mem = self.mem
             #print 'Printing in memory {',addr,'} -- "', s,'"'
-            for i in xrange(l):
-                if ord(s[i]) == 10:
-                    self.mem[addr + i] = 13
+            x = addr
+            for i in map(ord, s):
+                if i == 10:
+                    mem[x] = 13
                 else:
-                    self.mem[addr + i] = ord(s[i])
+                    mem[x] = i
+                x += 1
         else:
             self.plugin.prints(s)
 
