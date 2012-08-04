@@ -1553,7 +1553,21 @@ class ZCpu:
         pc = self.pc
         self._read_operands_short_1op()
         ops = self.ops
-        uaddr = self._unpack_addr(ops[0])
+        #uaddr = self._unpack_addr(ops[0])
+        # Inline _unpack_addr
+        usage = 0
+        if self.zver < 4:
+            uaddr = 2*ops[0]
+        elif self.zver < 6:
+            uaddr = 4*ops[0]
+        elif self.zver < 8:
+            if usage == 0:
+                uaddr = 4*ops[0] + 8*self.header.routines()
+            else:
+                uaddr = 4*ops[0] + 8*self.header.strings()
+        else:
+            uaddr = 8*ops[0]
+
         mem = self.mem
         #print uaddr
         buf = []
@@ -2695,8 +2709,47 @@ class ZCpu:
                 return 0
 
     def start(self):
+        t0op = self.t0op
+        t1op = self.t1op
+        t2op = self.t2op
+        text = self.text
+        tvar = self.tvar
         while(self.intr == 0):
-            self.command()
+            #self.command()
+            value = self.mem[self.pc]
+            try:
+                cmd = self.command_dict[value]
+                if value == 0xbe:
+                    self.pc += 1
+                cmd()
+            except KeyError:
+                if value < 0x80: # LONG 2OP
+                    code = (value & 31)
+                    if value == 0:
+                        sys.exit("Invalid opcode!")
+                    self.command_dict[value] = t2op[code]
+                    t2op[code]()
+                elif value < 0xb0: # SHORT 1OP
+                    code = (value & 15) + 128
+                    self.command_dict[value] = t1op[code]
+                    t1op[code]()
+                elif (value < 0xc0) and (value != 0xbe): # SHORT 0OP
+                    code = (value & 15) + 176
+                    self.command_dict[value] = t0op[code]
+                    t0op[code]()
+                elif value == 0xbe: # EXTENDED VAR
+                    self.pc += 1
+                    code = self.mem[self.pc]
+                    self.command_dict[value] = text[code]
+                    text[code]()
+                elif value < 0xe0: # VARIABLE 2OP
+                    code = value & 31
+                    self.command_dict[value] = t2op[code]
+                    t2op[code]()
+                else:
+                    code = (value & 31) + 224
+                    self.command_dict[value] = tvar[code]
+                    tvar[code]()
 
     def start6(self):
         print self.pc
@@ -2747,7 +2800,21 @@ class ZCpu:
 
     def _prepare_routine(self, r, argv):
         # Jump to routine address
-        self.pc = self._unpack_addr(r)
+        #self.pc = self._unpack_addr(r)
+        # Inline _unpack_addr
+        usage = 0
+        if self.zver < 4:
+            self.pc = 2*r
+        elif self.zver < 6:
+            self.pc = 4*r
+        elif self.zver < 8:
+            if usage == 0:
+                self.pc = 4*r + 8*self.header.routines()
+            else:
+                self.pc = 4*r + 8*self.header.strings()
+        else:
+            self.pc = 8*r
+
         #print "Max:", self.header.length_of_file()
         #print self.pc
         if self.pc > self.header.length_of_file:

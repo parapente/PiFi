@@ -53,6 +53,7 @@ class ZTextWidget(QWidget):
     game_area_painter = QPainter(game_area)
     chartimer = None
     linetimer = None
+    brush = QBrush(Qt.SolidPattern)
     ztoq_color = dict({2:Qt.black,
                        3:Qt.red,
                        4:Qt.green,
@@ -257,7 +258,8 @@ class ZTextWidget(QWidget):
         if (self.pbuffer_painter[win] == None):
             self.pbuffer_painter[win] = QPainter(self.pbuffer[win])
         painter = self.pbuffer_painter[win]
-        painter.setBackground(QBrush(self.ztoq_color[self.cur_bg]))
+        self.brush.setColor(self.ztoq_color[self.cur_bg])
+        painter.setBackground(self.brush)
 
     def set_font_style(self,s,win):
         if s == 0:
@@ -361,9 +363,10 @@ class ZTextWidget(QWidget):
     def draw_text(self, txt, window):
         if ((len(txt)>0) and not ((txt == self.cursor_char) and (self._cursor_visible == False))): # If there IS something to print
             if (self.pbuffer_painter[window.id] == None):
+                self.brush.setColor(self.ztoq_color[self.cur_bg])
                 self.pbuffer_painter[window.id] = QPainter(self.pbuffer[window.id])
                 self.pbuffer_painter[window.id].setPen(self.ztoq_color[self.cur_fg])
-                self.pbuffer_painter[window.id].setBackground(QBrush(self.ztoq_color[self.cur_bg]))
+                self.pbuffer_painter[window.id].setBackground(self.brush)
 
             painter = self.pbuffer_painter[window.id]
 
@@ -465,7 +468,8 @@ class ZTextWidget(QWidget):
             if (self.pbuffer_painter[w.id] == None):
                 self.pbuffer_painter[w.id] = QPainter(self.pbuffer[w.id])
             self.pbuffer_painter[w.id].setPen(self.ztoq_color[self.cur_fg])
-            self.pbuffer_painter[w.id].setBackground(QBrush(self.ztoq_color[self.cur_bg]))
+            self.brush.setColor(self.ztoq_color[self.cur_bg])
+            self.pbuffer_painter[w.id].setBackground(self.brush)
             self.pbuffer_painter[w.id].setBackgroundMode(Qt.OpaqueMode)
             self.pbuffer_painter[w.id].eraseRect(QRectF(0, 0, self.pbuffer[w.id].width(), w.line_count*self.linesize))
             print 2, 0, self.pbuffer[w.id].width()-2, w.line_count*self.linesize
