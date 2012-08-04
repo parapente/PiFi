@@ -35,7 +35,7 @@ class ZTextWidget(QWidget):
     start_pos = 0
     #cursor_char = 0x258f
     #cursor_char = 0x005f
-    cursor_char = 0x2017
+    cursor_char = unichr(0x2017)
     #cursor_char = 0x2582
     input_buf = []
     just_scrolled = False
@@ -53,6 +53,17 @@ class ZTextWidget(QWidget):
     game_area_painter = QPainter(game_area)
     chartimer = None
     linetimer = None
+    ztoq_color = dict({2:Qt.black,
+                       3:Qt.red,
+                       4:Qt.green,
+                       5:Qt.yellow,
+                       6:Qt.blue,
+                       7:Qt.magenta,
+                       8:Qt.cyan,
+                       9:Qt.white,
+                       10:Qt.lightGray,
+                       11:Qt.gray,
+                       12:Qt.darkGray})
 
     def __init__(self,parent = None,flags = Qt.Widget):
         super(ZTextWidget,self).__init__(parent,flags)
@@ -85,6 +96,8 @@ class ZTextWidget(QWidget):
         self.height = self.pbuffer[0].height() / self.linesize
 
         self.pbuffer_painter[0].setFont(self.normal_font)
+        self.set_text_colour(self.cur_fg, 0)
+        self.set_text_background_colour(self.cur_bg, 0)
 
     def paintEvent(self,e):
         painter = QPainter(self)
@@ -99,7 +112,7 @@ class ZTextWidget(QWidget):
     def scroll(self,painter):
         part = self.pbuffer[0].copy(0,self.linesize,self.pbuffer[0].width(),self.pbuffer[0].height()-self.linesize)
         #print 'Part height:', part.height(), 'width:', part.width()
-        self.pbuffer[0].fill(self.ztoq_color(self.cur_bg))
+        self.pbuffer[0].fill(self.ztoq_color[self.cur_bg])
         #print 'pbuffer[0] height:', self.pbuffer[0].height(), 'width:', self.pbuffer[0].width()
         painter.drawImage(0,0,part)
         #print 'pbuffer[0] height:', self.pbuffer[0].height(), 'width:', self.pbuffer[0].width()
@@ -112,30 +125,6 @@ class ZTextWidget(QWidget):
         size.setHeight(480)
         return size
 
-    def ztoq_color(self,c):
-        if c == 2:
-            return Qt.black
-        elif c == 3:
-            return Qt.red
-        elif c == 4:
-            return Qt.green
-        elif c == 5:
-            return Qt.yellow
-        elif c == 6:
-            return Qt.blue
-        elif c == 7:
-            return Qt.magenta
-        elif c == 8:
-            return Qt.cyan
-        elif c == 9:
-            return Qt.white
-        elif c == 10:
-            return Qt.lightGray
-        elif c == 11:
-            return Qt.gray
-        elif c == 12:
-            return Qt.darkGray
-
     def set_max_input(self,m):
         self.max_char = m
 
@@ -146,7 +135,7 @@ class ZTextWidget(QWidget):
         self.insert_pos = window.cursor
         self.insert_real_pos = window.cursor_real_pos
         if (self._cursor_visible != True): # If the cursor is already visible avoid multiplying it...
-            self.input_buf.insert(self._input_cursor_pos, unichr(self.cursor_char))
+            self.input_buf.insert(self._input_cursor_pos, self.cursor_char)
         self._cursor_visible = True
         self.clean_input_buffer_from_screen()
         self.draw_input_buffer()
@@ -261,14 +250,14 @@ class ZTextWidget(QWidget):
         if (self.pbuffer_painter[win] == None):
             self.pbuffer_painter[win] = QPainter(self.pbuffer[win])
         painter = self.pbuffer_painter[win]
-        painter.setPen(self.ztoq_color(self.cur_fg))
+        painter.setPen(self.ztoq_color[self.cur_fg])
 
     def set_text_background_colour(self,bg, win):
         self.cur_bg = bg
         if (self.pbuffer_painter[win] == None):
             self.pbuffer_painter[win] = QPainter(self.pbuffer[win])
         painter = self.pbuffer_painter[win]
-        painter.setBackground(QBrush(self.ztoq_color(self.cur_bg)))
+        painter.setBackground(QBrush(self.ztoq_color[self.cur_bg]))
 
     def set_font_style(self,s,win):
         if s == 0:
@@ -336,35 +325,46 @@ class ZTextWidget(QWidget):
         print 'Disconnect char'
 
     def prints(self, txt, window):
-        lastspace = 0
-        i = 0
-        textbuffer = ''
-        for w in txt:
-            if (w == '\n' or w == unichr(self.cursor_char)):
-                if (len(textbuffer)>0): # If there is something to print
-                    self.draw_text(textbuffer, window)
-                    textbuffer = ''
-                self.draw_text(w, window)
-                if (w == '\n'): # \n is whitespace :-)
+        if (len(txt)==1): # print_char got us here...
+            self.draw_text(txt[0],window)
+        else:
+            lastspace = 0
+            i = 0
+            textbuffer = ''
+            tblen = 0
+            for w in txt:
+                if (w == '\n' or w == self.cursor_char):
+                    if (tblen>0): # If there is something to print
+                        self.draw_text(textbuffer, window)
+                        textbuffer = ''
+                        tblen = 0
+                    self.draw_text(w, window)
+                    if (w == '\n'): # \n is whitespace :-)
+                        lastspace = i
+                elif (w == ' '): # Space was found
+                    if (lastspace == i-1): # Continuous spaces
+                        textbuffer += w
+                        tblen += 1
+                    else:
+                        self.draw_text(textbuffer, window)
+                        self.draw_text(' ', window)
+                        textbuffer = ''
+                        tblen = 0
                     lastspace = i
-            elif (w == ' '): # Space was found
-                if (lastspace == i-1): # Continuous spaces
-                    textbuffer += w
                 else:
-                    self.draw_text(textbuffer, window)
-                    self.draw_text(' ', window)
-                    textbuffer = ''
-                lastspace = i
-            else:
-                textbuffer += w
-            i += 1
-        if (len(textbuffer)>0): # Buffer not empty
-            self.draw_text(textbuffer, window)
+                    textbuffer += w
+                    tblen += 1
+                i += 1
+            if (len(textbuffer)>0): # Buffer not empty
+                self.draw_text(textbuffer, window)
 
     def draw_text(self, txt, window):
-        if ((len(txt)>0) and not ((txt == unichr(self.cursor_char)) and (self._cursor_visible == False))): # If there IS something to print
+        if ((len(txt)>0) and not ((txt == self.cursor_char) and (self._cursor_visible == False))): # If there IS something to print
             if (self.pbuffer_painter[window.id] == None):
                 self.pbuffer_painter[window.id] = QPainter(self.pbuffer[window.id])
+                self.pbuffer_painter[window.id].setPen(self.ztoq_color[self.cur_fg])
+                self.pbuffer_painter[window.id].setBackground(QBrush(self.ztoq_color[self.cur_bg]))
+
             painter = self.pbuffer_painter[window.id]
 
             # @type window ZWindow
@@ -398,7 +398,7 @@ class ZTextWidget(QWidget):
                 if (rect.contains(bounding_rect)):
                     #print rect.x(), rect.y(), rect.width(),rect.height(), txt, bounding_rect
                     painter.drawText(bounding_rect, txt)
-                    if txt != unichr(self.cursor_char):
+                    if txt != self.cursor_char:
                         window.set_cursor_position(window.cursor[0]+len(txt), window.cursor[1])
                         window.set_cursor_real_position(rect.x()+bounding_rect.width(), rect.y())
                 else: # There is not enough space
@@ -412,7 +412,7 @@ class ZTextWidget(QWidget):
                     rect.setHeight(self.linesize)
                     bounding_rect = painter.boundingRect(rect,txt)
                     painter.drawText(bounding_rect, txt)
-                    if txt != unichr(self.cursor_char):
+                    if txt != self.cursor_char:
                         window.set_cursor_position(window.cursor[0]+len(txt), window.cursor[1])
                         window.set_cursor_real_position(rect.x()+bounding_rect.width(), rect.y())
 
@@ -451,10 +451,10 @@ class ZTextWidget(QWidget):
 
     def clear(self):
         print 'clearing...'
-        self.game_area.fill(self.ztoq_color(self.cur_bg))
+        self.game_area.fill(self.ztoq_color[self.cur_bg])
         for i in xrange(8):
             if (self.pbuffer[i] != None):
-                self.pbuffer[i].fill(self.ztoq_color(self.cur_bg))
+                self.pbuffer[i].fill(self.ztoq_color[self.cur_bg])
 
     def update_real_cursor_position(self, w):
         w.set_cursor_real_position(2+(w.cursor[0]-1)*self.avgwidth, (w.cursor[1]-1)*self.linesize)
@@ -464,8 +464,8 @@ class ZTextWidget(QWidget):
         if ((w.id >= 0) and (w.id < 8)):
             if (self.pbuffer_painter[w.id] == None):
                 self.pbuffer_painter[w.id] = QPainter(self.pbuffer[w.id])
-            self.pbuffer_painter[w.id].setPen(self.ztoq_color(self.cur_fg))
-            self.pbuffer_painter[w.id].setBackground(QBrush(self.ztoq_color(self.cur_bg)))
+            self.pbuffer_painter[w.id].setPen(self.ztoq_color[self.cur_fg])
+            self.pbuffer_painter[w.id].setBackground(QBrush(self.ztoq_color[self.cur_bg]))
             self.pbuffer_painter[w.id].setBackgroundMode(Qt.OpaqueMode)
             self.pbuffer_painter[w.id].eraseRect(QRectF(0, 0, self.pbuffer[w.id].width(), w.line_count*self.linesize))
             print 2, 0, self.pbuffer[w.id].width()-2, w.line_count*self.linesize
@@ -497,7 +497,7 @@ class ZTextWidget(QWidget):
                 self.pbuffer[1] = QImage(self.pbuffer[0].width(),lines*self.linesize,QImage.Format_RGB32)
                 self.pbuffer[1].fill(0)
             if ver == 3:
-                self.pbuffer[1].fill(self.ztoq_color(self.cur_bg))
+                self.pbuffer[1].fill(self.ztoq_color[self.cur_bg])
 
     def stop_line_timer(self):
         if (self.linetimer != None):

@@ -90,14 +90,15 @@ class PlugSkel(object):
 
     def set_colour(self,fg,bg):
         win = self.current_window
+        widget = self.widget
         if fg == 1:
-            self.widget.set_text_colour(self.def_fg, win)
-        elif fg > 1 and fg < 13:
-            self.widget.set_text_colour(fg, win)
+            widget.set_text_colour(self.def_fg, win)
+        else:
+            widget.set_text_colour(fg, win)
         if bg == 1:
-            self.widget.set_text_background_colour(self.def_bg, win)
-        elif bg > 1 and bg < 13:
-            self.widget.set_text_background_colour(bg, win)
+            widget.set_text_background_colour(self.def_bg, win)
+        else:
+            widget.set_text_background_colour(bg, win)
 
     def width(self):
         return self.widget.width
