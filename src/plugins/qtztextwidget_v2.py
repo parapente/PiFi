@@ -201,7 +201,7 @@ class ZTextWidget(QWidget):
             for i in self.input_buf:
                 text += i
             #print text
-            self.draw_text('\n', self.lastwindow)
+            self.draw_text('\n', 1, self.lastwindow)
             self.keyPressed.emit(13)
             self._input_cursor_pos = 0
             self.input_buf = []
