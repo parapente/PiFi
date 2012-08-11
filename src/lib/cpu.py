@@ -2827,10 +2827,11 @@ class ZCpu:
             # Initialize local variables
             if self.zver < 5:
                 stack.local_vars[0:lenargv] = argv[0:lenargv]
+                self.pc += 2*lenargv
                 while lenargv < stack.local_vars_num:
                     stack.local_vars[lenargv] = (mem[self.pc] << 8) + mem[self.pc + 1]
                     lenargv += 1
-                    self.pc = self.pc + 2
+                    self.pc += 2
             #    for i in xrange(self.stack.local_vars_num):
             #        if i < lenargv:
             #            self.stack.local_vars[i] = argv[i]
