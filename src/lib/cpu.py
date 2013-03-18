@@ -2414,37 +2414,32 @@ class ZCpu:
         sys.exit("Not implemented yet!")
 
     def _read_operands_short_1op(self):
-        num = 0
         if (self.mem[self.pc] & 48) == 0:
             #print "Long const"
             self.pc += 1
-            self.ops[num] = ( self.mem[self.pc] << 8 ) + self.mem[self.pc+1]
-            num += 1
+            self.ops[0] = ( self.mem[self.pc] << 8 ) + self.mem[self.pc+1]
             self.pc += 2
         elif (self.mem[self.pc] & 48) == 16:
             #print "Small const"
             self.pc += 1
-            self.ops[num] = self.mem[self.pc]
-            num += 1
+            self.ops[0] = self.mem[self.pc]
             self.pc += 1
         else:
             self.pc += 1
             if self.mem[self.pc] == 0:
                 #print "Got stack!"
-                self.ops[num] = self.stack.pop()
-                num += 1
+                self.ops[0] = self.stack.pop()
             elif self.mem[self.pc] < 0x10:
                 #print "Got local variable", self.mem[self.pc]
-                self.ops[num] = self.stack.local_vars[self.mem[self.pc] - 1]
-                num += 1
+                self.ops[0] = self.stack.local_vars[self.mem[self.pc] - 1]
             else:
                 #print "Got global var", (self.mem[self.pc] - 15)
-                b1 = self.mem[ self.header.global_table + (self.mem[self.pc] - 16) * 2 ]
-                b2 = self.mem[ self.header.global_table + (self.mem[self.pc] - 16) * 2 + 1]
-                self.ops[num] = (b1 << 8) + b2
-                num += 1
+                addr = self.header.global_table + (self.mem[self.pc] - 16) * 2
+                b1 = self.mem[ addr ]
+                b2 = self.mem[ addr + 1]
+                self.ops[0] = (b1 << 8) + b2
             self.pc += 1
-        self.numops = num
+        self.numops = 1
 
 
     def _read_operands_var_2op(self):
@@ -2547,7 +2542,7 @@ class ZCpu:
     def _read_operands_long_2op(self):
         #num = 0
         code = self.mem[self.pc]
-        self.pc = self.pc + 1
+        self.pc += 1
         code2 = self.mem[self.pc]
         if (code & 64) == 0:
             #self.ops[num] = code2
@@ -2563,14 +2558,13 @@ class ZCpu:
                 #num += 1
                 self.ops[0] = self.stack.local_vars[code2 - 1]
             else:
-                gt = self.header.global_table
-                pos = gt + (code2 - 16) * 2
+                pos = self.header.global_table + (code2 - 16) * 2
                 val = self.mem[ pos ] << 8
-                val = val + self.mem[ pos + 1]
+                val += self.mem[ pos + 1]
                 #self.ops[num] = val
                 #num += 1
                 self.ops[0] = val
-        self.pc = self.pc + 1
+        self.pc += 1
         code2 = self.mem[self.pc]
         if (code & 32) == 0:
             #self.ops[num] = code2
@@ -2586,14 +2580,13 @@ class ZCpu:
                 #num += 1
                 self.ops[1] = self.stack.local_vars[code2 - 1]
             else:
-                gt = self.header.global_table
-                pos = gt + (code2 - 16) * 2
+                pos = self.header.global_table + (code2 - 16) * 2
                 val = self.mem[ pos ] << 8
-                val = val + self.mem[ pos + 1]
+                val += self.mem[ pos + 1]
                 #self.ops[num] = val
                 #num += 1
                 self.ops[1] = val
-        self.pc = self.pc + 1
+        self.pc += 1
         self.numops = 2
 
 
