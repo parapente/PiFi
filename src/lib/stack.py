@@ -56,11 +56,11 @@ class ZStack:
     def push_local_vars(self):
         if (self.framespos < self.framesmaxpos):
             #self.frames[self.framespos] = self.local_vars.tolist()
-            self.frames[self.framespos] = list(self.local_vars)
+            self.frames[self.framespos] = self.local_vars[:]
             self.framespos += 1
         else:
             #self.frames.append(self.local_vars.tolist())
-            self.frames.append(list(self.local_vars))
+            self.frames.append(self.local_vars[:])
             self.framespos += 1
             self.framesmaxpos += 1
 

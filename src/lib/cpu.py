@@ -348,7 +348,7 @@ class ZCpu:
         if (mem[pc] & 128) == 128: # Jump if true
             n = self.numops
             if n == 1: # Nothing to compare
-                self.pc = self.pc + gf
+                self.pc += gf
             else:
                 j = 2
                 #s2i = self._s2i
@@ -366,14 +366,14 @@ class ZCpu:
                     elif offset == 1: # Return true
                         self._return(1)
                     else:
-                        self.pc = self.pc + gf + offset - 2
+                        self.pc += gf + offset - 2
                 else:
-                    self.pc = self.pc + gf
+                    self.pc += gf
         else:
             jif = 'False'
             n = self.numops
             if n == 1: # Nothing to compare
-                self.pc = self.pc + gf
+                self.pc += gf
             else:
                 j = 2
                 #s2i = self._s2i
@@ -391,9 +391,9 @@ class ZCpu:
                     elif offset == 1: # Return true
                         self._return(1)
                     else:
-                        self.pc = self.pc + gf + offset - 2
+                        self.pc += gf + offset - 2
                 else:
-                    self.pc = self.pc + gf
+                    self.pc += gf
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: jg {1} [{2}] {3}'.format(format(pc,'X'),ops[0:self.numops],jif,offset), 2 )
 
@@ -1836,7 +1836,8 @@ class ZCpu:
         ops = self.ops
         n = self.numops
         #i = 1
-        argv = list(ops[1:self.numops])
+        #argv = list(ops[1:self.numops])
+        argv = ops[1:self.numops]
         #del argv[0]
         #while i < n:
         #    argv.append(ops[i])
@@ -2150,7 +2151,7 @@ class ZCpu:
         self._read_operands_var_2op()
         ops = self.ops
         n = self.numops
-        argv = list(ops[1:self.numops])
+        argv = ops[1:self.numops]
         self._routine(ops[0], argv, self.numops-1, -1)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: call_vn {1}'.format(format(pc,'X'),ops[0:self.numops]), 2 )
@@ -2160,7 +2161,7 @@ class ZCpu:
         self._read_operands_var_2op2()
         ops = self.ops
         n = self.numops
-        argv = list(ops[1:self.numops])
+        argv = ops[1:self.numops]
         self._routine(ops[0], argv, self.numops-1, -1)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: call_vn2 {1}'.format(format(pc,'X'),ops[0:self.numops]), 2 )
@@ -2544,48 +2545,56 @@ class ZCpu:
         self.numops = num
 
     def _read_operands_long_2op(self):
-        num = 0
+        #num = 0
         code = self.mem[self.pc]
         self.pc = self.pc + 1
         code2 = self.mem[self.pc]
         if (code & 64) == 0:
-            self.ops[num] = code2
-            num += 1
+            #self.ops[num] = code2
+            #num += 1
+            self.ops[0] = code2
         else:
             if code2 == 0:
-                self.ops[num] = self.stack.pop()
-                num += 1
+                #self.ops[num] = self.stack.pop()
+                #num += 1
+                self.ops[0] = self.stack.pop()
             elif code2 < 0x10:
-                self.ops[num] = self.stack.local_vars[code2 - 1]
-                num += 1
+                #self.ops[num] = self.stack.local_vars[code2 - 1]
+                #num += 1
+                self.ops[0] = self.stack.local_vars[code2 - 1]
             else:
                 gt = self.header.global_table
                 pos = gt + (code2 - 16) * 2
                 val = self.mem[ pos ] << 8
                 val = val + self.mem[ pos + 1]
-                self.ops[num] = val
-                num += 1
+                #self.ops[num] = val
+                #num += 1
+                self.ops[0] = val
         self.pc = self.pc + 1
         code2 = self.mem[self.pc]
         if (code & 32) == 0:
-            self.ops[num] = code2
-            num += 1
+            #self.ops[num] = code2
+            #num += 1
+            self.ops[1] = code2
         else:
             if code2 == 0:
-                self.ops[num] = self.stack.pop()
-                num += 1
+                #self.ops[num] = self.stack.pop()
+                #num += 1
+                self.ops[1] = self.stack.pop()
             elif code2 < 0x10:
-                self.ops[num] = self.stack.local_vars[code2 - 1]
-                num += 1
+                #self.ops[num] = self.stack.local_vars[code2 - 1]
+                #num += 1
+                self.ops[1] = self.stack.local_vars[code2 - 1]
             else:
                 gt = self.header.global_table
                 pos = gt + (code2 - 16) * 2
                 val = self.mem[ pos ] << 8
                 val = val + self.mem[ pos + 1]
-                self.ops[num] = val
-                num += 1
+                #self.ops[num] = val
+                #num += 1
+                self.ops[1] = val
         self.pc = self.pc + 1
-        self.numops = num
+        self.numops = 2
 
 
     def _unpack_addr(self,addr,usage=0):
@@ -2714,11 +2723,12 @@ class ZCpu:
         t2op = self.t2op
         text = self.text
         tvar = self.tvar
+        cmddict = self.command_dict
         while(self.intr == 0):
             #self.command()
             value = self.mem[self.pc]
             try:
-                cmd = self.command_dict[value]
+                cmd = cmddict[value]
                 if value == 0xbe:
                     self.pc += 1
                 cmd()
@@ -2727,28 +2737,28 @@ class ZCpu:
                     code = (value & 31)
                     if value == 0:
                         sys.exit("Invalid opcode!")
-                    self.command_dict[value] = t2op[code]
+                    cmddict[value] = t2op[code]
                     t2op[code]()
                 elif value < 0xb0: # SHORT 1OP
                     code = (value & 15) + 128
-                    self.command_dict[value] = t1op[code]
+                    cmddict[value] = t1op[code]
                     t1op[code]()
                 elif (value < 0xc0) and (value != 0xbe): # SHORT 0OP
                     code = (value & 15) + 176
-                    self.command_dict[value] = t0op[code]
+                    cmddict[value] = t0op[code]
                     t0op[code]()
                 elif value == 0xbe: # EXTENDED VAR
                     self.pc += 1
                     code = self.mem[self.pc]
-                    self.command_dict[value] = text[code]
+                    cmddict[value] = text[code]
                     text[code]()
                 elif value < 0xe0: # VARIABLE 2OP
                     code = value & 31
-                    self.command_dict[value] = t2op[code]
+                    cmddict[value] = t2op[code]
                     t2op[code]()
                 else:
                     code = (value & 31) + 224
-                    self.command_dict[value] = tvar[code]
+                    cmddict[value] = tvar[code]
                     tvar[code]()
 
     def start6(self):
