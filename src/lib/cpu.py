@@ -2603,8 +2603,8 @@ class ZCpu:
 
     def _zstore(self,value,where):
         # Deal with overflow
-        if value >= 0x10000:
-            value = value % 0x10000
+        #if value >= 0x10000:
+        #    value = value % 0x10000
         # Check where to save the value
         if where == 0:
             self.stack.push(value)
@@ -2613,8 +2613,9 @@ class ZCpu:
             self.stack.local_vars[where - 1] = value
             #print "Local var", where, "has now value", value
         elif where < 256:
-            self.mem[self.header.global_table + (where - 16) * 2] = (value >> 8)
-            self.mem[self.header.global_table + (where - 16) * 2 + 1] = (value & 0xff)
+            addr = self.header.global_table + 2*where - 32
+            self.mem[addr] = (value >> 8)
+            self.mem[addr + 1] = (value & 0xff)
             #print "Global var", where - 15, "has now value", value
         else:
             self.mem[where] = value >> 8
