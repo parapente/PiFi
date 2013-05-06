@@ -1530,6 +1530,7 @@ class ZCpu:
         stack.pop_frame() # We don't need the number of args
         data = stack.pop_frame()
         prev_pc, return_var, self.intr, self.intr_data = data
+        stack.pop_eval_stack()
         stack.pop_local_vars()
         if return_var <> -1: # If we want the returned value...
             self._zstore(value,return_var)
@@ -1725,6 +1726,7 @@ class ZCpu:
         self.stack.push_local_vars()
         self.stack.push_frame(self.pc)
         self.stack.push_frame(self.mem[self.pc])
+        print 'catch!'
         sys.exit()
 
     def _quit(self):
@@ -2797,6 +2799,7 @@ class ZCpu:
         # Save local vars, pc and return address in stack
         data = [self.pc, res, intr_on_return, self.intr_data]
         self.stack.push_local_vars()
+        self.stack.push_eval_stack()
         self.stack.push_frame(data)
         self.stack.push_frame(lenargv)
         self._prepare_routine(r, argv, lenargv)
