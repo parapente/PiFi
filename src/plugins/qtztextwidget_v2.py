@@ -298,13 +298,25 @@ class ZTextWidget(QWidget):
             self.cur_pos = 0
         self.reading_line = True
         self.update_game_area()
-        QObject.connect(self, SIGNAL("returnPressed(QString)"), callback)
+        self.callback_object = callback
+        QObject.connect(self, SIGNAL("returnPressed(QString)"), self.read_line_callback)
         if (self.linetimer == None):
             self.linetimer = QTimer()
             self.linetimer.setSingleShot(True)
-            QObject.connect(self.linetimer, SIGNAL('timeout()'), timeout_callback)
         if (time <> 0):
+            self.timeout_callback_object = timeout_callback
+            QObject.connect(self.linetimer, SIGNAL('timeout()'), self.read_line_timeout_callback)
             self.linetimer.start(time * 100)
+
+    def read_line_callback(self, string):
+        if (self.linetimer != None):
+            self.linetimer.stop()
+        self.returnPressed.disconnect()
+        self.callback_object(string)
+
+    def read_line_timeout_callback(self):
+        self.linetimer.timeout.disconnect()
+        self.timeout_callback_object()
 
     def disconnect_read_line(self, callback):
         self.reading_line = False
@@ -313,14 +325,26 @@ class ZTextWidget(QWidget):
     def read_char(self, window, callback, time, timeout_callback):
         self.update_game_area()
         self.lastwindow = window
-        QObject.connect(self, SIGNAL("keyPressed(int)"), callback)
+        self.callback_object = callback
+        QObject.connect(self, SIGNAL("keyPressed(int)"), self.read_char_callback)
         #print 'Connect char'
         if (self.chartimer == None):
             self.chartimer = QTimer()
             self.chartimer.setSingleShot(True)
-            QObject.connect(self.chartimer, SIGNAL('timeout()'), timeout_callback)
         if (time <> 0):
+            self.timeout_callback_object = timeout_callback
+            QObject.connect(self.chartimer, SIGNAL('timeout()'), self.read_char_timeout_callback)
             self.chartimer.start(time * 100)
+
+    def read_char_callback(self, key):
+        if (self.chartimer != None):
+            self.chartimer.stop()
+        self.keyPressed.disconnect()
+        self.callback_object(key)
+
+    def read_char_timeout_callback(self):
+        self.chartimer.timeout.disconnect()
+        self.timeout_callback_object()
 
     def disconnect_read_char(self, callback):
         QObject.disconnect(self, SIGNAL("keyPressed(int)"), callback)
