@@ -208,59 +208,17 @@ class ZCpu:
         else: # Long 2OP
             self._read_operands_long_2op()
         ops = self.ops
-        if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
-            offset = self.mem[self.pc] & 63
-            gf = 1
-        else: # Offset is 2 byte long
-            if self.mem[self.pc] & 32 == 32: # Negative offset
-                offset = (((self.mem[self.pc] | 0xc0) << 8) + self.mem[self.pc + 1] - 65536)
-            else:
-                offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
-            gf = 2
-        jif = 'True'
-        if (self.mem[self.pc] & 128) == 128: # Jump if true
-            n = self.numops
-            if n == 1: # Nothing to compare
-                self.pc = self.pc + gf
-            else:
-                j = 2
-                #r = self._s2i(ops[0]) == self._s2i(ops[1])
-                r = ops[0] == ops[1]
-                while j < n:
-                    #r = r or (self._s2i(ops[0]) == self._s2i(ops[j]))
-                    r = r or (ops[0] == ops[j])
-                    j += 1
-                if r: # Jump to label
-                    if offset == 0: # Return false
-                        self._return(0)
-                    elif offset == 1: # Return true
-                        self._return(1)
-                    else:
-                        self.pc = self.pc + gf + offset - 2
-                else:
-                    self.pc = self.pc + gf
-        else:
-            jif = 'False'
-            n = self.numops
-            if n == 1: # Nothing to compare
-                self.pc = self.pc + gf
-            else:
-                j = 2
-                #r = self._s2i(ops[0]) == self._s2i(ops[1])
-                r = ops[0] == ops[1]
-                while j < n:
-                    #r = r or (self._s2i(ops[0]) == self._s2i(ops[j]))
-                    r = r or (ops[0] == ops[j])
-                    j += 1
-                if not r: # Jump to label
-                    if offset == 0: # Return false
-                        self._return(0)
-                    elif offset == 1: # Return true
-                        self._return(1)
-                    else:
-                        self.pc = self.pc + gf + offset - 2
-                else:
-                    self.pc = self.pc + gf
+        condition = False
+        n = self.numops
+        if (n >= 2):
+            j = 2
+            #r = self._s2i(ops[0]) == self._s2i(ops[1])
+            condition = (ops[0] == ops[1])
+            while j < n:
+                #r = r or (self._s2i(ops[0]) == self._s2i(ops[j]))
+                condition = condition or (ops[0] == ops[j])
+                j += 1
+        jif, offset = self.branch(condition)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: je {1} [{2}] {3}'.format(format(pc,'X'),ops[0:self.numops],jif,offset), 2 )
 
@@ -271,59 +229,8 @@ class ZCpu:
         else: # Long 2OP
             self._read_operands_long_2op()
         ops = self.ops
-        if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
-            offset = self.mem[self.pc] & 63
-            gf = 1
-        else: # Offset is 2 byte long
-            if self.mem[self.pc] & 32 == 32: # Negative offset
-                offset = (((self.mem[self.pc] | 0xc0) << 8) + self.mem[self.pc + 1] - 65536)
-            else:
-                offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
-            gf = 2
-        jif = 'True'
-        if (self.mem[self.pc] & 128) == 128: # Jump if true
-            n = self.numops
-            if n == 1: # Nothing to compare
-                self.pc = self.pc + gf
-            else:
-                j = 2
-                #r = self._s2i(ops[0]) < self._s2i(ops[1])
-                r = ((ops[0] & 0x8000) > (ops[1] & 0x8000)) or (((ops[0] & 0x8000) == (ops[1] & 0x8000)) and (ops[0] < ops[1]))
-                while j < n:
-                    #r = r or (self._s2i(ops[0]) < self._s2i(ops[j]))
-                    r = r or ((ops[0] & 0x8000) > (ops[j] & 0x8000)) or (((ops[0] & 0x8000) == (ops[j] & 0x8000)) and (ops[0] < ops[j]))
-                    j += 1
-                if r: # Jump to label
-                    if offset == 0: # Return false
-                        self._return(0)
-                    elif offset == 1: # Return true
-                        self._return(1)
-                    else:
-                        self.pc = self.pc + gf + offset - 2
-                else:
-                    self.pc = self.pc + gf
-        else:
-            jif = 'False'
-            n = self.numops
-            if n == 1: # Nothing to compare
-                self.pc = self.pc + gf
-            else:
-                j = 2
-                #r = self._s2i(ops[0]) < self._s2i(ops[1])
-                r = ((ops[0] & 0x8000) > (ops[1] & 0x8000)) or (((ops[0] & 0x8000) == (ops[1] & 0x8000)) and (ops[0] < ops[1]))
-                while j < n:
-                    #r = r or (self._s2i(ops[0]) < self._s2i(ops[j]))
-                    r = r or ((ops[0] & 0x8000) > (ops[j] & 0x8000)) or (((ops[0] & 0x8000) == (ops[j] & 0x8000)) and (ops[0] < ops[j]))
-                    j += 1
-                if not r: # Jump to label
-                    if offset == 0: # Return false
-                        self._return(0)
-                    elif offset == 1: # Return true
-                        self._return(1)
-                    else:
-                        self.pc = self.pc + gf + offset - 2
-                else:
-                    self.pc = self.pc + gf
+        condition = ((ops[0] & 0x8000) > (ops[1] & 0x8000)) or (((ops[0] & 0x8000) == (ops[1] & 0x8000)) and (ops[0] < ops[1]))
+        jif, offset = self.branch(condition)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: jl {1} [{2}] {3}'.format(format(pc,'X'),ops[0:self.numops],jif,offset), 2 )
 
@@ -335,65 +242,8 @@ class ZCpu:
             self._read_operands_long_2op()
         pc = self.pc
         ops = self.ops
-        if (mem[pc] & 64) == 64: # Offset is 1 byte long
-            offset = mem[pc] & 63
-            gf = 1
-        else: # Offset is 2 byte long
-            if mem[pc] & 32 == 32: # Negative offset
-                offset = (((mem[pc] | 0xc0) << 8) + mem[pc + 1] - 65536)
-            else:
-                offset = ((mem[pc] & 63) << 8) + mem[pc + 1]
-            gf = 2
-        jif = 'True'
-        if (mem[pc] & 128) == 128: # Jump if true
-            n = self.numops
-            if n == 1: # Nothing to compare
-                self.pc += gf
-            else:
-                j = 2
-                #s2i = self._s2i
-                #siops0 = s2i(ops[0])
-                #siops1 = s2i(ops[1])
-                #r = siops0 > siops1
-                r = ((ops[0] & 0x8000) < (ops[1] & 0x8000)) or (((ops[0] & 0x8000) == (ops[1] & 0x8000)) and (ops[0] > ops[1]))
-                while j < n:
-                    #r = r or (siops0 > s2i(ops[j]))
-                    r = r or ((ops[0] & 0x8000) < (ops[j] & 0x8000)) or (((ops[0] & 0x8000) == (ops[j] & 0x8000)) and (ops[0] > ops[j]))
-                    j += 1
-                if r: # Jump to label
-                    if offset == 0: # Return false
-                        self._return(0)
-                    elif offset == 1: # Return true
-                        self._return(1)
-                    else:
-                        self.pc += gf + offset - 2
-                else:
-                    self.pc += gf
-        else:
-            jif = 'False'
-            n = self.numops
-            if n == 1: # Nothing to compare
-                self.pc += gf
-            else:
-                j = 2
-                #s2i = self._s2i
-                #siops0 = s2i(ops[0])
-                #siops1 = s2i(ops[1])
-                #r = siops0 > siops1
-                r = ((ops[0] & 0x8000) < (ops[1] & 0x8000)) or (((ops[0] & 0x8000) == (ops[1] & 0x8000)) and (ops[0] > ops[1]))
-                while j < n:
-                    #r = r or (siops0 > s2i(ops[j]))
-                    r = r or ((ops[0] & 0x8000) < (ops[j] & 0x8000)) or (((ops[0] & 0x8000) == (ops[j] & 0x8000)) and (ops[0] > ops[j]))
-                    j += 1
-                if not r: # Jump to label
-                    if offset == 0: # Return false
-                        self._return(0)
-                    elif offset == 1: # Return true
-                        self._return(1)
-                    else:
-                        self.pc += gf + offset - 2
-                else:
-                    self.pc += gf
+        condition = ((ops[0] & 0x8000) < (ops[1] & 0x8000)) or (((ops[0] & 0x8000) == (ops[1] & 0x8000)) and (ops[0] > ops[1]))
+        jif, offset = self.branch(condition)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: jg {1} [{2}] {3}'.format(format(pc,'X'),ops[0:self.numops],jif,offset), 2 )
 
@@ -404,57 +254,9 @@ class ZCpu:
         else: # Long 2OP
             self._read_operands_long_2op()
         ops = self.ops
-        if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
-            offset = self.mem[self.pc] & 63
-            gf = 1
-        else: # Offset is 2 byte long
-            if self.mem[self.pc] & 32 == 32: # Negative offset
-                offset = (((self.mem[self.pc] | 0xc0) << 8) + self.mem[self.pc + 1] - 65536)
-            else:
-                offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
-            gf = 2
-        jif = 'True'
-        if (self.mem[self.pc] & 128) == 128: # Jump if true
-            n = self.numops
-            if n == 1: # Nothing to compare
-                self.pc = self.pc + gf
-            else:
-                j = 2
-                val = self._s2i(self._dec2(ops[0]))
-                r = val < self._s2i(ops[1])
-                while j < n:
-                    r = r or (val < self._s2i(ops[j]))
-                    j += 1
-                if r: # Jump to label
-                    if offset == 0: # Return false
-                        self._return(0)
-                    elif offset == 1: # Return true
-                        self._return(1)
-                    else:
-                        self.pc = self.pc + gf + offset - 2
-                else:
-                    self.pc = self.pc + gf
-        else:
-            jif = 'False'
-            n = self.numops
-            if n == 1: # Nothing to compare
-                self.pc = self.pc + gf
-            else:
-                j = 2
-                val = self._s2i(self._dec2(ops[0]))
-                r = val >= self._s2i(ops[1])
-                while j < n:
-                    r = r or (val >= self._s2i(ops[j]))
-                    j += 1
-                if not r: # Jump to label
-                    if offset == 0: # Return false
-                        self._return(0)
-                    elif offset == 1: # Return true
-                        self._return(1)
-                    else:
-                        self.pc = self.pc + gf + offset - 2
-                else:
-                    self.pc = self.pc + gf
+        val = self._s2i(self._dec2(ops[0]))
+        condition = val < self._s2i(ops[1])
+        jif, offset = self.branch(condition)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: dec_chk {1} [{2}] {3}'.format(format(pc,'X'),ops[0:self.numops],jif,offset), 2 )
 
@@ -465,57 +267,9 @@ class ZCpu:
         else: # Long 2OP
             self._read_operands_long_2op()
         ops = self.ops
-        if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
-            offset = self.mem[self.pc] & 63
-            gf = 1
-        else: # Offset is 2 byte long
-            if self.mem[self.pc] & 32 == 32: # Negative offset
-                offset = (((self.mem[self.pc] | 0xc0) << 8) + self.mem[self.pc + 1] - 65536)
-            else:
-                offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
-            gf = 2
-        jif = 'True'
-        if (self.mem[self.pc] & 128) == 128: # Jump if true
-            n = self.numops
-            if n == 1: # Nothing to compare
-                self.pc = self.pc + gf
-            else:
-                j = 2
-                val = self._s2i(self._inc2(ops[0]))
-                r = val > self._s2i(ops[1])
-                while j < n:
-                    r = r or (val > self._s2i(ops[j]))
-                    j += 1
-                if r: # Jump to label
-                    if offset == 0: # Return false
-                        self._return(0)
-                    elif offset == 1: # Return true
-                        self._return(1)
-                    else:
-                        self.pc = self.pc + gf + offset - 2
-                else:
-                    self.pc = self.pc + gf
-        else:
-            jif = 'False'
-            n = self.numops
-            if n == 1: # Nothing to compare
-                self.pc = self.pc + gf
-            else:
-                j = 2
-                val = self._s2i(self._inc2(ops[0]))
-                r = val <= self._s2i(ops[1])
-                while j < n:
-                    r = r or (val <= self._s2i(ops[j]))
-                    j += 1
-                if not r: # Jump to label
-                    if offset == 0: # Return false
-                        self._return(0)
-                    elif offset == 1: # Return true
-                        self._return(1)
-                    else:
-                        self.pc = self.pc + gf + offset - 2
-                else:
-                    self.pc = self.pc + gf
+        val = self._s2i(self._inc2(ops[0]))
+        condition = val > self._s2i(ops[1])
+        jif, offset = self.branch(condition)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: inc_chk {1} [{2}] {3}'.format(format(pc,'X'),ops[0:self.numops],jif,offset), 2 )
 
@@ -526,46 +280,13 @@ class ZCpu:
         else: # Long 2OP
             self._read_operands_long_2op()
         ops = self.ops
-        if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
-            offset = self.mem[self.pc] & 63
-            gf = 1
-        else: # Offset is 2 byte long
-            if self.mem[self.pc] & 32 == 32: # Negative offset
-                offset = (((self.mem[self.pc] | 0xc0) << 8) + self.mem[self.pc + 1] - 65536)
-            else:
-                offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
-            gf = 2
         obj = self._find_object(ops[0])
-        jif = 'True'
-        if (self.mem[self.pc] & 128) == 128: # Jump if true
-            if self.zver < 4:
-                b = self.mem[obj+4]
-            else:
-                b = (self.mem[obj+6] << 8) + self.mem[obj+7]
-            if b == ops[1]:
-                if offset == 0: # Return false
-                    self._return(0)
-                elif offset == 1: # Return true
-                    self._return(1)
-                else:
-                    self.pc = self.pc + gf + offset - 2
-            else:
-                self.pc = self.pc + gf
+        if self.zver < 4:
+            b = self.mem[obj+4]
         else:
-            jif = 'False'
-            if self.zver < 4:
-                b = self.mem[obj+4]
-            else:
-                b = (self.mem[obj+6] << 8) + self.mem[obj+7]
-            if b <> ops[1]:
-                if offset == 0: # Return false
-                    self._return(0)
-                elif offset == 1: # Return true
-                    self._return(1)
-                else:
-                    self.pc = self.pc + gf + offset - 2
-            else:
-                self.pc = self.pc + gf
+            b = (self.mem[obj+6] << 8) + self.mem[obj+7]
+        condition = (b == ops[1])
+        jif, offset = self.branch(condition)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: jin {1} [{2}] {3}'.format(format(pc,'X'),ops[0:self.numops],jif,offset), 2 )
 
@@ -576,47 +297,8 @@ class ZCpu:
         else: # Long 2OP
             self._read_operands_long_2op()
         ops = self.ops
-        if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
-            offset = self.mem[self.pc] & 63
-            gf = 1
-        else: # Offset is 2 byte long
-            if self.mem[self.pc] & 32 == 32: # Negative offset
-                offset = (((self.mem[self.pc] | 0xc0) << 8) + self.mem[self.pc + 1] - 65536)
-            else:
-                offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
-            gf = 2
-        jif = 'True'
-        if (self.mem[self.pc] & 128) == 128: # Jump if true
-            n = self.numops
-            if n == 1: # Nothing to compare
-                self.pc = self.pc + gf
-            else:
-                r = ((ops[0] & ops[1]) == ops[1])
-                if r: # Jump to label
-                    if offset == 0: # Return false
-                        self._return(0)
-                    elif offset == 1: # Return true
-                        self._return(1)
-                    else:
-                        self.pc = self.pc + gf + offset - 2
-                else:
-                    self.pc = self.pc + gf
-        else:
-            jif = 'False'
-            n = self.numops
-            if n == 1: # Nothing to compare
-                self.pc = self.pc + gf
-            else:
-                r = ((ops[0] & ops[1]) == ops[1])
-                if not r: # Jump to label
-                    if offset == 0: # Return false
-                        self._return(0)
-                    elif offset == 1: # Return true
-                        self._return(1)
-                    else:
-                        self.pc = self.pc + gf + offset - 2
-                else:
-                    self.pc = self.pc + gf
+        condition = ((ops[0] & ops[1]) == ops[1])
+        jif, offset = self.branch(condition)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: test {1} [{2}] {3}'.format(format(pc,'X'),ops[0:self.numops],jif,offset), 2 )
 
@@ -665,37 +347,8 @@ class ZCpu:
             #print "b:",format(b,"X")
             mask = 1 << (47 - ops[1])
             #print "mask:",format(mask,"X")
-        if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
-            offset = self.mem[self.pc] & 63
-            gf = 1
-        else: # Offset is 2 byte long
-            if self.mem[self.pc] & 32 == 32: # Negative offset
-                offset = (((self.mem[self.pc] | 0xc0) << 8) + self.mem[self.pc + 1] - 65536)
-            else:
-                offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
-            gf = 2
-        jif = 'True'
-        if (self.mem[self.pc] & 128) == 128: # Jump if true
-            if (b & mask) == mask: # Jump to label
-                if offset == 0: # Return false
-                    self._return(0)
-                elif offset == 1: # Return true
-                    self._return(1)
-                else:
-                    self.pc = self.pc + gf + offset - 2
-            else:
-                self.pc = self.pc + gf
-        else:
-            jif = 'False'
-            if (b & mask) == 0: # Jump to label
-                if offset == 0: # Return false
-                    self._return(0)
-                elif offset == 1: # Return true
-                    self._return(1)
-                else:
-                    self.pc = self.pc + gf + offset - 2
-            else:
-                self.pc = self.pc + gf
+        condition = ((b & mask) == mask)
+        jif, offset = self.branch(condition)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: test_attr {1} [{2}] {3}'.format(format(pc,'X'),ops[0:self.numops],jif,offset), 2 )
 
@@ -1167,37 +820,7 @@ class ZCpu:
         pc = self.pc
         self._read_operands_short_1op()
         ops = self.ops
-        if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
-            offset = self.mem[self.pc] & 63
-            gf = 1
-        else: # Offset is 2 byte long
-            if self.mem[self.pc] & 32 == 32: # Negative offset
-                offset = (((self.mem[self.pc] | 0xc0) << 8) + self.mem[self.pc + 1] - 65536)
-            else:
-                offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
-            gf = 2
-        jif = 'True'
-        if (self.mem[self.pc] & 128) == 128: # Jump if true
-            if ops[0] == 0: # Jump to label
-                if offset == 0: # Return false
-                    self._return(0)
-                elif offset == 1: # Return true
-                    self._return(1)
-                else:
-                    self.pc = self.pc + gf + offset - 2
-            else:
-                self.pc = self.pc + gf
-        else:
-            jif = 'False'
-            if ops[0] <> 0: # Jump to label
-                if offset == 0: # Return false
-                    self._return(0)
-                elif offset == 1: # Return true
-                    self._return(1)
-                else:
-                    self.pc = self.pc + gf + offset - 2
-            else:
-                self.pc = self.pc + gf
+        jif, offset = self.branch(ops[0] == 0)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: jz {1} [{2}] {3}'.format(format(pc,'X'),ops[0:self.numops],jif,offset), 2 )
 
@@ -1207,48 +830,14 @@ class ZCpu:
         ops = self.ops
         return_var = self.mem[self.pc]
         self.pc += 1
-        #print self.mem[self.pc]
-        if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
-            offset = self.mem[self.pc] & 63
-            gf = 1
-        else: # Offset is 2 byte long
-            if self.mem[self.pc] & 32 == 32: # Negative offset
-                offset = (((self.mem[self.pc] | 0xc0) << 8) + self.mem[self.pc + 1] - 65536)
-            else:
-                offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
-            gf = 2
-        #print "Offset -", offset, " Gf -", gf
         obj = self._find_object(ops[0])
         if self.zver < 4:
             sibl = self.mem[obj + 5]
         else:
             sibl = (self.mem[obj + 8] << 8) + self.mem[obj + 9]
-        #print "Sibli -", sibl
-        jif = 'True'
-        if (self.mem[self.pc] & 128) == 128: # Jump if true
-            if sibl <> 0: # Jump to label
-                if offset == 0: # Return false
-                    self._return(0)
-                elif offset == 1: # Return true
-                    self._return(1)
-                else:
-                    self.pc = self.pc + gf + offset - 2
-            else:
-                self.pc += gf
-        else:
-            jif = 'False'
-            if sibl == 0: # Jump to label
-                if offset == 0: # Return false
-                    self._return(0)
-                elif offset == 1: # Return true
-                    self._return(1)
-                else:
-                    self.pc = self.pc + gf + offset - 2
-            else:
-                self.pc += gf
+        condition = (sibl <> 0)
+        jif, offset = self.branch(condition)
         self._zstore(sibl, return_var)
-        #print self.pc
-        #print self.mem[self.pc]
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: get_sibling {1} [{2}] {3}'.format(format(pc,'X'),ops[0:self.numops],jif,offset), 2 )
 
@@ -1258,47 +847,14 @@ class ZCpu:
         ops = self.ops
         return_var = self.mem[self.pc]
         self.pc += 1
-        if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
-            offset = self.mem[self.pc] & 63
-            gf = 1
-        else: # Offset is 2 byte long
-            if self.mem[self.pc] & 32 == 32: # Negative offset
-                offset = (((self.mem[self.pc] | 0xc0) << 8) + self.mem[self.pc + 1] - 65536)
-            else:
-                offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
-            gf = 2
-        #print "Offset -", offset, " Gf -", gf
         obj = self._find_object(ops[0])
         if self.zver < 4:
             child = self.mem[obj + 6]
         else:
             child = (self.mem[obj + 10] << 8) + self.mem[obj + 11]
-        #print "Child:", child
-        jif = 'True'
-        if (self.mem[self.pc] & 128) == 128: # Jump if true
-            if child <> 0: # Jump to label
-                if offset == 0: # Return false
-                    self._return(0)
-                elif offset == 1: # Return true
-                    self._return(1)
-                else:
-                    self.pc = self.pc + gf + offset - 2
-            else:
-                self.pc += gf
-        else:
-            jif = 'False'
-            if child == 0: # Jump to label
-                if offset == 0: # Return false
-                    self._return(0)
-                elif offset == 1: # Return true
-                    self._return(1)
-                else:
-                    self.pc = self.pc + gf + offset - 2
-            else:
-                self.pc += gf
+        condition = (child <> 0)
+        jif, offset = self.branch(condition)
         self._zstore(child, return_var)
-        #print self.pc
-        #print self.mem[self.pc]
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: get_child {1} [{2}] {3}'.format(format(pc,'X'),ops[0:self.numops],jif,offset), 2 )
 
@@ -1689,8 +1245,10 @@ class ZCpu:
             self.plugin.debugprint( '{0}: nop'.format(format(pc,'X')), 2 )
 
     def _save(self):
-        self.plugin.debugprint( ': save', 0 )
-        sys.exit("Not implemented yet!")
+        pc = self.pc
+        self.pc += 1
+        self.intr = 5
+        self.plugin.debugprint( '{0}: save'.format(format(pc,'X')), 2 )
 
     def _restore(self):
         self.plugin.debugprint( ': restore', 0 )
@@ -1773,64 +1331,16 @@ class ZCpu:
         chksum %= 0x10000
 
         # Check offset
-        if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
-            offset = self.mem[self.pc] & 63
-            gf = 1
-        else: # Offset is 2 byte long
-            if self.mem[self.pc] & 32 == 32: # Negative offset
-                offset = (((self.mem[self.pc] | 0xc0) << 8) + self.mem[self.pc + 1] - 65536)
-            else:
-                offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
-            gf = 2
-        jif = 'True'
-        if (self.mem[self.pc] & 128) == 128: # Jump if true
-            if chksum == self.header.checksum(): # Jump to label
-                if offset == 0: # Return false
-                    self._return(0)
-                elif offset == 1: # Return true
-                    self._return(1)
-                else:
-                    self.pc = self.pc + gf + offset - 2
-            else:
-                self.pc = self.pc + gf
-        else:
-            jif = 'False'
-            if not (chksum == self.header.checksum()): # Jump to label
-                if offset == 0: # Return false
-                    self._return(0)
-                elif offset == 1: # Return true
-                    self._return(1)
-                else:
-                    self.pc = self.pc + gf + offset - 2
-            else:
-                self.pc = self.pc + gf
+        condition = (chksum == self.header.checksum())
+        jif, offset = self.branch(condition)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint( '{0}: verify {1} [{2}] {3}'.format(format(pc,'X'),ops[0:self.numops],jif,offset), 2 )
+            self.plugin.debugprint( '{0}: verify '.format(format(pc,'X'),jif,offset), 2 )
 
     def _piracy(self):
         pc = self.pc
-        if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
-            offset = self.mem[self.pc] & 63
-            gf = 1
-        else: # Offset is 2 byte long
-            if self.mem[self.pc] & 32 == 32: # Negative offset
-                offset = (((self.mem[self.pc] | 0xc0) << 8) + self.mem[self.pc + 1] - 65536)
-            else:
-                offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
-            gf = 2
-        jif = 'True'
-        if (self.mem[self.pc] & 128) == 128: # Jump if true
-            if offset == 0: # Return false
-                self._return(0)
-            elif offset == 1: # Return true
-                self._return(1)
-            else:
-                self.pc = self.pc + gf + offset - 2
-        else:
-            jif = 'False'
-            self.pc = self.pc + gf
+        jif, offset = self.branch(True)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint( '{0}: piracy {1} [{2}] {3}'.format(format(pc,'X'),ops[0:self.numops],jif,offset), 2 )
+            self.plugin.debugprint( '{0}: piracy '.format(format(pc,'X'),jif,offset), 2 )
 
     def _call(self):
         pc = self.pc
@@ -2222,41 +1732,8 @@ class ZCpu:
         noa = self.stack.pop_frame()
         #print "Number of args:",noa
         self.stack.push_frame(noa)
-        r = False
-        for i in xrange(n):
-            r = r or (ops[i] <= noa)
-
-        if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
-            offset = self.mem[self.pc] & 63
-            gf = 1
-        else: # Offset is 2 byte long
-            if self.mem[self.pc] & 32 == 32: # Negative offset
-                offset = (((self.mem[self.pc] | 0xc0) << 8) + self.mem[self.pc + 1] - 65536)
-            else:
-                offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
-            gf = 2
-        jif = 'True'
-        if (self.mem[self.pc] & 128) == 128: # Jump if true
-            if r: # Jump to label
-                if offset == 0: # Return false
-                    self._return(0)
-                elif offset == 1: # Return true
-                    self._return(1)
-                else:
-                    self.pc = self.pc + gf + offset - 2
-            else:
-                self.pc = self.pc + gf
-        else:
-            jif = 'False'
-            if not r: # Jump to label
-                if offset == 0: # Return false
-                    self._return(0)
-                elif offset == 1: # Return true
-                    self._return(1)
-                else:
-                    self.pc = self.pc + gf + offset - 2
-            else:
-                self.pc = self.pc + gf
+        condition = (ops[0] <= noa)
+        jif, offset = self.branch(condition)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: check_arg_count {1} [{2}] {3}'.format(format(pc,'X'),ops[0:self.numops],jif,offset), 2 )
 
@@ -2859,3 +2336,37 @@ class ZCpu:
     def got_char(self, char):
         self._zstore(char, self.mem[self.pc])
         self.pc += 1
+
+    def branch(self, condition):
+        if (self.mem[self.pc] & 64) == 64: # Offset is 1 byte long
+            offset = self.mem[self.pc] & 63
+            gf = 1
+        else: # Offset is 2 byte long
+            if self.mem[self.pc] & 32 == 32: # Negative offset
+                offset = (((self.mem[self.pc] | 0xc0) << 8) + self.mem[self.pc + 1] - 65536)
+            else:
+                offset = ((self.mem[self.pc] & 63) << 8) + self.mem[self.pc + 1]
+            gf = 2
+        jif = 'True'
+        if (self.mem[self.pc] & 128) == 128: # Jump if true
+            if condition: # Jump to label
+                if offset == 0: # Return false
+                    self._return(0)
+                elif offset == 1: # Return true
+                    self._return(1)
+                else:
+                    self.pc = self.pc + gf + offset - 2
+            else:
+                self.pc = self.pc + gf
+        else:
+            jif = 'False'
+            if not(condition): # Jump to label
+                if offset == 0: # Return false
+                    self._return(0)
+                elif offset == 1: # Return true
+                    self._return(1)
+                else:
+                    self.pc = self.pc + gf + offset - 2
+            else:
+                self.pc = self.pc + gf
+        return [jif,offset]
