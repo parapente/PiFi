@@ -52,6 +52,17 @@ class ZMachine:
             self.cpu.intr = 0
             self.cpu.start()
             self.handle_intr()
+        elif self.cpu.intr == 5: # Save state interrupt
+            self.plugin.prints('Enter filename:')
+            self.mutex.acquire()
+            self.input.read_line(100, self.save_state, 0, None)
+            #self.mutex.acquire() # We should wait here for the result of save_state
+            #self.mutex.release()
+            #self.cpu.intr = 0
+            #self.cpu.start()
+            #self.handle_intr()
+        elif self.cpu.intr == 6: # Load state interrupt
+            pass
         elif self.cpu.intr == 10: # Return from routine, back to sread
             self.mutex.release()
             if (self.cpu.last_return == 1): # Routine returned true, we must bail out
@@ -206,6 +217,192 @@ class ZMachine:
             self.plugin.quit()
             #sys.exit('Quit')
 
+    def save_state(self, filename):
+        print "Here!"
+        # Test if file already exists
+        try:
+            self.savefile = open(filename)
+            # File exists! Ask if user wants to overwrite file.
+            self.plugin.prints('Overwrite?(Y/N)')
+            self.input.read_char(self.overwrite_yn)
+        except IOError:
+            # File doesn't exist
+            try:
+                self.savefile = open(filename,'wb')
+                self.do_save_state()
+            except IOError as (errno,strerror):
+                print "I/O error ({0}): {1}".format(errno,strerror)
+                self.plugin.prints('Save failed!\n')
+                self.mutex.release()
+                self.save_state_return_fail()
+
+    def overwrite_yn(self,key):
+        if key == 'y' or key == 'Y':
+            self.do_save_state()
+        elif key == 'n' or key == 'N':
+            self.save_state_return_fail()
+        else:
+            self.input.read_char(self.overwrite_yn)
+
+    def do_save_state(self):
+        self.savefile.write('IFF\x00\x00\x00\x00IFZS')
+        savefile_size = 4
+
+        # Save dynamic memory ('CMem')
+        membuff = self.mem.mem[:self.mem.static_beg]
+        print membuff
+        self.file.seek(0)
+        filebuff = list(self.file.read(self.mem.static_beg))
+        print filebuff
+        diffbuff = [0] * self.mem.static_beg
+        for i in membuff:
+            if (membuff[i] == filebuff[i]):
+                diffbuff[i] = 0
+            else:
+                diffbuff[i] = membuff[i]
+        rlebuff = []
+        self.rle_encode(diffbuff, rlebuff)
+        self.savefile.write('CMem')
+        tmp = array('B')
+        tmpsize = len(rlebuff)
+        sizebyte4 = tmpsize & 255
+        sizebyte3 = (tmpsize >> 8) & 255
+        sizebyte2 = (tmpsize >> 16) & 255
+        sizebyte1 = 0
+        tmp.fromlist([sizebyte1, sizebyte2, sizebyte3, sizebyte4]+rlebuff)
+        self.savefile.write(tmp)
+        savefile_size += 8 + len(rlebuff)
+
+        # Save stack ('Stks')
+        self.savefile.write('Stks')
+        savefile_size += 4
+        stks_size = 0
+        stks = [0, 0, 0, 0]
+        stack = self.cpu.stack
+        frames = stack.framespos / 4
+        for i in xrange(frames):
+            # Get necessary data from stack
+            localvars = stack.frames[i*4]
+            evalstack = stack.frames[i*4+1]
+            pc, res, intr_on_return, intr_data = stack.frames[i*4+2]
+            lenargv = stack.frames[i*4+3]
+
+            # Prepare the data
+            pcbyte3 = pc & 255
+            pcbyte2 = (pc >> 8) & 255
+            pcbyte1 = (pc >> 16) & 255
+            stks += [pcbyte1, pcbyte2, pcbyte3]
+            stks_size += 3
+
+            flags = len(localvars)
+            if (res == -1):
+                flags |= 16
+            stks += [flags]
+            if (res != -1):
+                stks += [res]
+            else:
+                stks += [0]
+            args = 0
+            for j in xrange(lenargv):
+                args = args << 1
+                args += 1
+            stks += [args]
+            stks_size += 3
+            evalstacklen = len(evalstack)
+            stks += [(evalstacklen >> 8) & 255, evalstacklen & 255]
+            stks_size += 2
+
+            print 'Local vars:',len(localvars)
+            for j in xrange(len(localvars)):
+                stks += [(localvars[j] >> 8) & 255, localvars[j] & 255]
+                stks_size += 2
+            print 'Evalstack:',len(evalstack)
+            for j in xrange(len(evalstack)):
+                stks += [(evalstack[j] >> 8) & 255, evalstack[j] & 255]
+                stks_size += 2
+
+            stkslenbyte4 = stks_size & 255
+            stkslenbyte3 = (stks_size >> 8) & 255
+            stkslenbyte2 = (stks_size >> 16) & 255
+            stkslenbyte1 = (stks_size >> 24) & 255
+            stks[0] = stkslenbyte1
+            stks[1] = stkslenbyte2
+            stks[2] = stkslenbyte3
+            stks[3] = stkslenbyte4
+
+        tmp = array('B')
+        tmp.fromlist(stks)
+        savefile_size += len(stks)
+        self.savefile.write(tmp)
+
+        #Save Story File info ('IFhd')
+        self.savefile.write('IFhd\x0d')
+        ifhd = []
+        ifhd += [membuff[2], membuff[3]]
+        for i in xrange(6):
+            ifhd += [membuff[18+i]]
+        ifhd += [membuff[0x1c], membuff[0x1d]]
+        ifhd += [(self.cpu.pc >> 16) & 255, (self.cpu.pc >> 8) & 255, self.cpu.pc & 255]
+        tmp = array('B')
+        tmp.fromlist(ifhd)
+        self.savefile.write(tmp)
+        self.savefile.seek(3)
+        savefile_size += 21
+        tmp = array('B')
+        tmp.fromlist([(savefile_size >> 24) & 255, (savefile_size >> 16) & 255, (savefile_size >> 8) & 255, savefile_size & 255])
+        self.savefile.write(tmp)
+
+        self.savefile.close()
+        if (self.zver >= 4):
+            self.cpu._zstore(1,self.cpu.pc)
+            self.cpu.pc += 1
+            self.cpu.start()
+            self.handle_intr()
+        else:
+            self.cpu.branch(True)
+            self.cpu.start()
+            self.handle_intr()
+
+    def save_state_return_fail(self):
+        if (self.zver >= 5):
+            self.cpu._zstore(0,self.cpu.pc)
+            self.cpu.pc += 1
+            self.cpu.start()
+        else:
+            self.cpu.branch(False)
+            self.cpu.start()
+
+    def rle_encode(self, buffer, rle):
+        bufferlen = len(buffer)
+        i = 0
+        seqzeros = 0
+        lastbyte = -1
+        while (i<bufferlen):
+            if (buffer[i] == 0):
+                if (lastbyte != 0):
+                    rle.append(buffer[i])
+                    lastbyte = 0
+                    seqzeros = 0
+                else:
+                    seqzeros += 1
+            else:
+                if (lastbyte == 0):
+                    remain = seqzeros % 256
+                    times = seqzeros // 256
+                    while (times>0):
+                        rle.append(255)
+                        if (times != 1 or (times == 1 and remain != 0)):
+                            rle.append(0)
+                        times -= 1
+                    if (remain!=0):
+                        rle.append(remain)
+                rle.append(buffer[i])
+                lastbyte = buffer[i]
+            i += 1
+        if (lastbyte == 0):
+            rle.pop()
+
+
     def load_story(self,f):
         # @type f file
         # Read the first byte of the file to determine the version of the story
@@ -234,6 +431,7 @@ class ZMachine:
         self.dict = ZDictionary(self.mem.mem, self.header)
         self.plugin.debugprint('Version of story file: {0}'.format(self.zver), 1)
         self.plugin.debugprint('Length of file: {0}'.format(self.header.length_of_file), 1)
+        self.plugin.debugprint('Static memory begins at: {0}'.format(self.mem.static_beg), 1)
 
     def init(self):
         # Set the default options

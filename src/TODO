@@ -7,7 +7,6 @@ o Ops:
   * catch
 
   -- 0op --
-  * save
   * restore
 
   -- var --
@@ -51,9 +50,11 @@ o Reimplement window handling
 
 Minor
 -----
+o disconnect_input is probably unnecessary
 o Implement the specification of character graphics
   (maybe there is a bitmap font already in the net we can use)
 o 8.1.5.1 part of spec for char graphics in v5
+o Propose save game filename
 o Optimize:
     * _je (23337 0.397 1.243 -->command)
     * draw_text (24027 1.083 2.471 -->prints)

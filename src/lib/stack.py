@@ -22,7 +22,8 @@ class ZStack:
         self.frames = [0]*3000
         self.framespos = 0
         self.framesmaxpos = 3000
-        self.local_vars = [0]*15
+        self.local_vars = []
+        self.local_vars_num = 0
         #self.local_vars = array('H')
         #for i in xrange(15):
         #    self.local_vars.append(0)
@@ -72,7 +73,6 @@ class ZStack:
         #    self.local_vars[i] = data[i]
 
     def push_eval_stack(self):
-        self.push_frame(self.queuepos)
         self.push_frame(list(self.queue[:self.queuepos]))
         self.queuepos = 0
         self.queuemaxpos = 1000
@@ -80,5 +80,5 @@ class ZStack:
 
     def pop_eval_stack(self):
         self.queue = self.pop_frame()
-        self.queuepos = self.pop_frame()
+        self.queuepos = len(self.queue)
         self.queuemaxpos = self.queuepos

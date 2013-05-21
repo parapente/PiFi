@@ -2305,33 +2305,24 @@ class ZCpu:
         #print self.mem[self.pc]
         stack = self.stack
         mem = self.mem
+        stack.queue = [0]*1000
+        stack.queuepos = 0
+        stack.queuemaxpos = 1000
         stack.local_vars_num = mem[self.pc]
+        stack.local_vars = [0]*stack.local_vars_num
         self.pc = self.pc + 1
         if stack.local_vars_num > 0:
             # Initialize local variables
-            if self.zver < 5:
+            if (lenargv<=stack.local_vars_num):
                 stack.local_vars[0:lenargv] = argv[0:lenargv]
+            else:
+                stack.local_vars[0:stack.local_vars_num] = argv[0:stack.local_vars_num]
+            if self.zver < 5:
                 self.pc += 2*lenargv
                 while lenargv < stack.local_vars_num:
                     stack.local_vars[lenargv] = (mem[self.pc] << 8) + mem[self.pc + 1]
                     lenargv += 1
                     self.pc += 2
-            #    for i in xrange(self.stack.local_vars_num):
-            #        if i < lenargv:
-            #            self.stack.local_vars[i] = argv[i]
-            #        else:
-            #            self.stack.local_vars[i] = (self.mem[self.pc] << 8) + self.mem[self.pc + 1]
-            #        #print self.stack.local_vars[i]
-            #        self.pc = self.pc + 2
-            else:
-                stack.local_vars = [0]*15
-                stack.local_vars[0:lenargv] = argv[0:lenargv]
-            #    for i in xrange(self.stack.local_vars_num):
-            #        if i < lenargv:
-            #            self.stack.local_vars[i] = argv[i]
-            #        else:
-            #            self.stack.local_vars[i] = 0
-            #        #print self.stack.local_vars[i]
 
     def got_char(self, char):
         self._zstore(char, self.mem[self.pc])
