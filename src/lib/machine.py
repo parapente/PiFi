@@ -245,7 +245,7 @@ class ZMachine:
             self.input.read_char(self.overwrite_yn)
 
     def do_save_state(self):
-        self.savefile.write('IFF\x00\x00\x00\x00IFZS')
+        self.savefile.write('FORM\x00\x00\x00\x00IFZS')
         savefile_size = 4
 
         # Save dynamic memory ('CMem')
