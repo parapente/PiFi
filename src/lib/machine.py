@@ -336,7 +336,7 @@ class ZMachine:
         self.savefile.write(tmp)
 
         #Save Story File info ('IFhd')
-        self.savefile.write('IFhd\x0d')
+        self.savefile.write('IFhd\x00\x00\x00\x0d')
         ifhd = []
         ifhd += [membuff[2], membuff[3]]
         for i in xrange(6):
@@ -351,6 +351,7 @@ class ZMachine:
         tmp = array('B')
         tmp.fromlist([(savefile_size >> 24) & 255, (savefile_size >> 16) & 255, (savefile_size >> 8) & 255, savefile_size & 255])
         self.savefile.write(tmp)
+        self.savefile.write('\x00')
 
         self.savefile.close()
         if (self.zver >= 4):
