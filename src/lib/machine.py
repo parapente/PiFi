@@ -248,12 +248,26 @@ class ZMachine:
         self.savefile.write('FORM\x00\x00\x00\x00IFZS')
         savefile_size = 4
 
-        # Save dynamic memory ('CMem')
         membuff = self.mem.mem[:self.mem.static_beg]
         print membuff
         self.file.seek(0)
         filebuff = list(self.file.read(self.mem.static_beg))
         print filebuff
+
+        #Save Story File info ('IFhd') - MUST be first
+        self.savefile.write('IFhd\x00\x00\x00\x0d')
+        ifhd = []
+        ifhd += [membuff[2], membuff[3]]
+        for i in xrange(6):
+            ifhd += [membuff[18+i]]
+        ifhd += [membuff[0x1c], membuff[0x1d]]
+        ifhd += [(self.cpu.pc >> 16) & 255, (self.cpu.pc >> 8) & 255, self.cpu.pc & 255, 0]
+        tmp = array('B')
+        tmp.fromlist(ifhd)
+        self.savefile.write(tmp)
+        savefile_size += 22
+
+        # Save dynamic memory ('CMem')
         diffbuff = [0] * self.mem.static_beg
         for i in membuff:
             if (membuff[i] == filebuff[i]):
@@ -271,7 +285,11 @@ class ZMachine:
         sizebyte1 = 0
         tmp.fromlist([sizebyte1, sizebyte2, sizebyte3, sizebyte4]+rlebuff)
         self.savefile.write(tmp)
-        savefile_size += 8 + len(rlebuff)
+        if ((tmpsize % 2) == 1):
+            self.savefile.write('\x00');
+            savefile_size += 8 + len(rlebuff) + 1
+        else:
+            savefile_size += 8 + len(rlebuff)
 
         # Save stack ('Stks')
         self.savefile.write('Stks')
@@ -335,23 +353,11 @@ class ZMachine:
         savefile_size += len(stks)
         self.savefile.write(tmp)
 
-        #Save Story File info ('IFhd')
-        self.savefile.write('IFhd\x00\x00\x00\x0d')
-        ifhd = []
-        ifhd += [membuff[2], membuff[3]]
-        for i in xrange(6):
-            ifhd += [membuff[18+i]]
-        ifhd += [membuff[0x1c], membuff[0x1d]]
-        ifhd += [(self.cpu.pc >> 16) & 255, (self.cpu.pc >> 8) & 255, self.cpu.pc & 255]
-        tmp = array('B')
-        tmp.fromlist(ifhd)
-        self.savefile.write(tmp)
-        self.savefile.seek(3)
-        savefile_size += 21
+        #Complete the FORM chunk with the data length
+        self.savefile.seek(4)
         tmp = array('B')
         tmp.fromlist([(savefile_size >> 24) & 255, (savefile_size >> 16) & 255, (savefile_size >> 8) & 255, savefile_size & 255])
         self.savefile.write(tmp)
-        self.savefile.write('\x00')
 
         self.savefile.close()
         if (self.zver >= 4):
