@@ -18,6 +18,8 @@ from PyQt4.QtCore import QRectF
 from PyQt4.QtCore import QTimer
 from PyQt4.QtGui import QImage
 from PyQt4.QtGui import QTextEdit
+from PyQt4.QtGui import QTextCursor
+from PyQt4.QtGui import QMouseEvent
 from lib.window import ZWindow
 from lib.stream import ZStream
 import traceback
@@ -75,6 +77,7 @@ class ZTextWidget(QTextEdit):
         #self.setSizePolicy(sp)
         self.setFixedWidth(640)
         self.setFixedHeight(480)
+        self.setAcceptRichText(False)
 
         #self.setFocusPolicy(Qt.StrongFocus)
         #self.pbuffer[0] = QImage(640,480,QImage.Format_RGB32)
@@ -85,6 +88,7 @@ class ZTextWidget(QTextEdit):
         self.fixed_font = QFont(font)
         self.fixed_font.setStyleHint(QFont.Monospace)
         self.fixed_font.setFamily(self.fixed_font.defaultFamily())
+        self.normal_font.setPointSize(14)
         #self.fixed_font.setPointSize(9)
         print self.fixed_font.family()
         self.setFont(self.normal_font)
@@ -102,7 +106,7 @@ class ZTextWidget(QTextEdit):
         #self.pbuffer_painter[0].setFont(self.normal_font)
         self.set_text_colour(self.cur_fg, 0)
         self.set_text_background_colour(self.cur_bg, 0)
-        self.setStyleSheet('background-color:black;color:grey')
+        self.setStyleSheet('QTextEdit {background-color:black;color:grey}')
 
     def set_max_input(self,m):
         self.max_char = m
@@ -127,25 +131,41 @@ class ZTextWidget(QTextEdit):
         #del self.input_buf[self._input_cursor_pos]
         #self.draw_cursor(window,False)
 
-    #def keyPressEvent(self,e):
-        #if e.key() == Qt.Key_Left:
-            #if self._input_cursor_pos>0:
+    def keyPressEvent(self,e):
+        if e.key() == Qt.Key_Left:
+            if self._input_cursor_pos>0:
                 #c = self.input_buf.pop(self._input_cursor_pos)
-                #self._input_cursor_pos -= 1
+                self._input_cursor_pos -= 1
+                self.moveCursor(QTextCursor.PreviousCharacter)
                 #self.input_buf.insert(self._input_cursor_pos, c)
                 #self.clean_input_buffer_from_screen()
                 #self.draw_input_buffer()
-            #e.accept()
-            #self.keyPressed.emit(131)
-        #elif e.key() == Qt.Key_Right:
-            #if self._input_cursor_pos<(len(self.input_buf)-1):
+            e.accept()
+            self.keyPressed.emit(131)
+        elif e.key() == Qt.Key_Right:
+            if self._input_cursor_pos<(len(self.input_buf)):
                 #c = self.input_buf.pop(self._input_cursor_pos)
-                #self._input_cursor_pos += 1
+                self._input_cursor_pos += 1
+                self.moveCursor(QTextCursor.NextCharacter)
                 #self.input_buf.insert(self._input_cursor_pos, c)
                 #self.clean_input_buffer_from_screen()
                 #self.draw_input_buffer()
-            #e.accept()
-            #self.keyPressed.emit(132)
+            e.accept()
+            self.keyPressed.emit(132)
+        elif e.key() == Qt.Key_Home:
+            tc = self.textCursor()
+            tc.movePosition(QTextCursor.Left, QTextCursor.MoveAnchor, self._input_cursor_pos)
+            self.setTextCursor(tc)
+            self._input_cursor_pos = 0
+            e.accept()
+            # self.keyPressed.emit() # No keycode available for zscii
+        elif e.key() == Qt.Key_End:
+            tc = self.textCursor()
+            tc.movePosition(QTextCursor.Right, QTextCursor.MoveAnchor, len(self.input_buf) - self._input_cursor_pos)
+            self.setTextCursor(tc)
+            self._input_cursor_pos = len(self.input_buf)
+            e.accept()
+            # self.keyPressed.emit() # No keycode available for zscii
         #elif e.key() == Qt.Key_Up:
             ## TODO: Up in history
             #e.accept()
@@ -156,55 +176,55 @@ class ZTextWidget(QTextEdit):
             #e.accept()
             #self.keyPressed.emit(130)
             #pass
-        #elif e.key() == Qt.Key_Backspace:
-            #if len(self.input_buf)>1: # If there IS something to delete
-                #self.clean_input_buffer_from_screen()
-                #del self.input_buf[self._input_cursor_pos-1]
-                #self._input_cursor_pos -= 1
-                #self.draw_input_buffer()
-            ## self.keyPressed.emit() # No keycode available for zscii
-            #e.accept()
-        #elif e.key() == Qt.Key_Delete:
-            #if self._input_cursor_pos < (len(self.input_buf) - 1):
-                #self.clean_input_buffer_from_screen()
-                #del self.input_buf[self._input_cursor_pos+1]
-                #self.draw_input_buffer()
-            #e.accept()
-            #self.keyPressed.emit(8)
-        #elif (e.key() == Qt.Key_Return) or (e.key() == Qt.Key_Enter):
+        elif e.key() == Qt.Key_Backspace:
+            if len(self.input_buf)>1: # If there IS something to delete
+                del self.input_buf[self._input_cursor_pos-1]
+                self._input_cursor_pos -= 1
+                self.textCursor().deletePreviousChar()
+            # self.keyPressed.emit() # No keycode available for zscii
+            e.accept()
+        elif e.key() == Qt.Key_Delete:
+            if self._input_cursor_pos < (len(self.input_buf) - 1):
+                del self.input_buf[self._input_cursor_pos+1]
+                self.textCursor().deleteChar()
+            e.accept()
+            self.keyPressed.emit(8)
+        elif (e.key() == Qt.Key_Return) or (e.key() == Qt.Key_Enter):
             #self.clean_input_buffer_from_screen()
             #if (self._cursor_visible == True):
                 #self.hide_cursor(self.lastwindow)
             #if (self.reading_line == True):
                 #self.draw_input_buffer()
-            #text = ''
-            #for i in self.input_buf:
-                #text += i
-            ##print text
+            text = ''
+            for i in self.input_buf:
+                text += i
+            print text
+            self.insertPlainText('\n')
             #self.draw_text('\n', 1, self.lastwindow)
-            #self.keyPressed.emit(13)
-            #self._input_cursor_pos = 0
-            #self.input_buf = []
-            #self.returnPressed.emit(text)
-            #e.accept()
-        #elif ((e.key() >= Qt.Key_F1) and (e.key() <= Qt.Key_F12)):
-            #e.accept()
-            #self.keyPressed.emit(133 + e.key() - Qt.Key_F1)
-        #elif e.key() == Qt.Key_Escape:
-            #e.accept()
-            #self.keyPressed.emit(27)
-        #elif (e.text().isEmpty() == False):
-            #if (self.reading_line) and (len(self.input_buf) < self.max_char+1):
+            self.keyPressed.emit(13)
+            self._input_cursor_pos = 0
+            self.input_buf = []
+            self.returnPressed.emit(text)
+            e.accept()
+        elif ((e.key() >= Qt.Key_F1) and (e.key() <= Qt.Key_F12)):
+            e.accept()
+            self.keyPressed.emit(133 + e.key() - Qt.Key_F1)
+        elif e.key() == Qt.Key_Escape:
+            e.accept()
+            self.keyPressed.emit(27)
+        elif (e.text().isEmpty() == False):
+            if (self.reading_line) and (len(self.input_buf) < self.max_char+1):
                 #self.clean_input_buffer_from_screen()
-                #self.input_buf.insert(self._input_cursor_pos, unicode(e.text()))
-                #self._input_cursor_pos += 1
+                self.input_buf.insert(self._input_cursor_pos, unicode(e.text()))
+                self._input_cursor_pos += 1
+                self.insertPlainText(unicode(e.text()))
                 #self.draw_input_buffer()
-            #e.accept()
-            #t = ord(str(e.text()[0])) # TODO: Check if we can handle multiple events at once
-            #if ((t > 31) and (t < 127)) or ((t > 154) and (t <252)):
-                #self.keyPressed.emit(t)
-        #else:
-            #e.ignore()
+            e.accept()
+            t = ord(str(e.text()[0])) # TODO: Check if we can handle multiple events at once
+            if ((t > 31) and (t < 127)) or ((t > 154) and (t <252)):
+                self.keyPressed.emit(t)
+        else:
+            e.ignore()
 
     #def draw_input_buffer(self):
         ## Prepare for redraw by setting appropriate cursor position
@@ -296,13 +316,13 @@ class ZTextWidget(QTextEdit):
         self.returnPressed.disconnect()
         self.callback_object(string)
 
-    #def read_line_timeout_callback(self):
-        #self.linetimer.timeout.disconnect()
-        #self.timeout_callback_object()
+    def read_line_timeout_callback(self):
+        self.linetimer.timeout.disconnect()
+        self.timeout_callback_object()
 
-    #def disconnect_read_line(self, callback):
-        #self.reading_line = False
-        #QObject.disconnect(self, SIGNAL("returnPressed(QString)"), callback)
+    def disconnect_read_line(self, callback):
+        self.reading_line = False
+        QObject.disconnect(self, SIGNAL("returnPressed(QString)"), callback)
 
     #def read_char(self, window, callback, time, timeout_callback):
         #self.update_game_area()
@@ -366,6 +386,7 @@ class ZTextWidget(QTextEdit):
                 i += 1
             if (textbuffer != ''): # Buffer not empty
                 self.draw_text(textbuffer, tblen, window)
+        self.ensureCursorVisible()
 
     def draw_text(self, txt, txtlen, window):
         if ((txtlen>0) and not ((txt == self.cursor_char) and (self._cursor_visible == False))): # If there IS something to print
@@ -512,10 +533,16 @@ class ZTextWidget(QTextEdit):
             #if ver == 3:
                 #self.pbuffer[1].fill(self.ztoq_color[self.cur_bg])
 
-    #def stop_line_timer(self):
-        #if (self.linetimer != None):
-            #self.linetimer.stop()
+    def stop_line_timer(self):
+        if (self.linetimer != None):
+            self.linetimer.stop()
 
-    #def stop_char_timer(self):
-        #if (self.chartimer != None):
-            #self.chartimer.stop()
+    def stop_char_timer(self):
+        if (self.chartimer != None):
+            self.chartimer.stop()
+
+    def mousePressEvent (self, e):
+        pass
+
+    def mouseDoubleClickEvent(self, e):
+        pass
