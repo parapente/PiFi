@@ -6,6 +6,7 @@
 from lib.machine import ZMachine
 from plugins.qtplugin import QtPlugin
 from plugins.qtplugin_v2 import QtPluginV2
+from plugins.qtplugin_v3 import QtPluginV3
 import sys
 import argparse
 import signal

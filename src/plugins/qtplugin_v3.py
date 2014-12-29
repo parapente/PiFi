@@ -1,6 +1,6 @@
 # -*- coding: utf-8
 
-from plugins.qtztextwidget_v2 import ZTextWidget
+from plugins.qtztextwidget_v3 import ZTextWidget
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 from plugskel import PlugSkel
@@ -10,7 +10,7 @@ import sys
 __author__="Theofilos Intzoglou"
 __date__ ="$20 Σεπ 2009 2:39:20 μμ$"
 
-class QtPluginV2(PlugSkel):
+class QtPluginV3(PlugSkel):
     win = None
     zver = None
     rline = False
