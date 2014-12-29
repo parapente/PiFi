@@ -269,8 +269,8 @@ class ZMachine:
 
         # Save dynamic memory ('CMem')
         diffbuff = [0] * self.mem.static_beg
-        for i in membuff:
-            if (membuff[i] == filebuff[i]):
+        for i in xrange(self.mem.static_beg):
+            if (membuff[i] == ord(filebuff[i])):
                 diffbuff[i] = 0
             else:
                 diffbuff[i] = membuff[i]
@@ -293,17 +293,28 @@ class ZMachine:
 
         # Save stack ('Stks')
         self.savefile.write('Stks')
+
+        # To get a complete stack dump we need to push local data to stack
+        self.cpu.stack.push_local_vars()
+        self.cpu.stack.push_eval_stack()
+        self.cpu.stack.push_frame(0)
+        self.cpu.stack.push_frame(0)
+
         savefile_size += 4
         stks_size = 0
         stks = [0, 0, 0, 0]
         stack = self.cpu.stack
-        frames = stack.framespos / 4
+        frames = stack.framespos // 4
         for i in xrange(frames):
             # Get necessary data from stack
             localvars = stack.frames[i*4]
             evalstack = stack.frames[i*4+1]
-            pc, res, intr_on_return, intr_data = stack.frames[i*4+2]
-            lenargv = stack.frames[i*4+3]
+            if (i == 0): # Fix: In v6 this shouldn't be all zeroes
+                pc, res, intr_on_return, intr_data = [0, 0, 0, 0]
+                lenargv = 0
+            else:
+                pc, res, intr_on_return, intr_data = stack.frames[(i-1)*4+2]
+                lenargv = stack.frames[(i-1)*4+3]
 
             # Prepare the data
             pcbyte3 = pc & 255
@@ -360,6 +371,13 @@ class ZMachine:
         self.savefile.write(tmp)
 
         self.savefile.close()
+
+        # Drop temporary frames. Not needed any more
+        self.cpu.stack.pop_frame()
+        self.cpu.stack.pop_frame()
+        self.cpu.stack.pop_frame()
+        self.cpu.stack.pop_frame()
+
         if (self.zver >= 4):
             self.cpu._zstore(1,self.cpu.pc)
             self.cpu.pc += 1
@@ -389,20 +407,24 @@ class ZMachine:
                 if (lastbyte != 0):
                     rle.append(buffer[i])
                     lastbyte = 0
-                    seqzeros = 0
+                    seqzeros = 1
                 else:
                     seqzeros += 1
             else:
                 if (lastbyte == 0):
+                    seqzeros -= 1
                     remain = seqzeros % 256
                     times = seqzeros // 256
-                    while (times>0):
-                        rle.append(255)
-                        if (times != 1 or (times == 1 and remain != 0)):
-                            rle.append(0)
-                        times -= 1
-                    if (remain!=0):
+                    if (times == 0):
                         rle.append(remain)
+                    else:
+                        while (times>0):
+                            rle.append(255)
+                            if (times != 1 or (times == 1 and remain != 0)):
+                                rle.append(0)
+                            times -= 1
+                        if (remain!=0):
+                            rle.append(remain)
                 rle.append(buffer[i])
                 lastbyte = buffer[i]
             i += 1
@@ -442,17 +464,22 @@ class ZMachine:
 
     def init(self):
         # Set the default options
-        # Interpreter number and version
-        self.mem.mem[0x1e] = 1
-        self.mem.mem[0x1f] = 0x41 # revision A
-        # Width and height of window
-        self.plugin.update_screen_size()
+        if self.zver > 3:
+            # Interpreter number and version
+            self.mem.mem[0x1e] = 1
+            self.mem.mem[0x1f] = 0x41 # revision A
+            # Width and height of window
+            self.plugin.update_screen_size()
+
         # Standard revision number
         self.mem.mem[0x32] = 1
-        # Font width in units
-        self.mem.mem[0x26] = 1
-        # Font height in units
-        self.mem.mem[0x27] = 1
+
+        if self.zver > 4:
+            # Font width in units
+            self.mem.mem[0x26] = 1
+            # Font height in units
+            self.mem.mem[0x27] = 1
+
         # Default supported options
         if self.zver < 4:
             # Split window is available
@@ -460,9 +487,12 @@ class ZMachine:
         else:
             # Color, Bold, Italic, Fixed is available
             self.mem.mem[0x1] = 0x9d
-        # Default background color
-        self.mem.mem[0x2c] = 2
-        # Default foreground color
-        self.mem.mem[0x2d] = 9
+
+        if self.zver > 4:
+            # Default background color
+            self.mem.mem[0x2c] = 2
+            # Default foreground color
+            self.mem.mem[0x2d] = 9
         self.plugin.set_default_bg(2)
         self.plugin.set_default_fg(9)
+
