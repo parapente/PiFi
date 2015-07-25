@@ -1,8 +1,8 @@
 # -*- coding: utf-8
 
-from ztext import *
-from stack import ZStack
-from zrandom import ZRandom
+from .ztext import *
+from .stack import ZStack
+from .zrandom import ZRandom
 
 import sys
 
@@ -362,7 +362,7 @@ class ZCpu:
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: set_attr {1}'.format(format(pc,'X'),ops[0:self.numops]), 2 )
         if ops[0] == 0:
-            print "set_attr: Cannot set attr of object 0!"
+            print("set_attr: Cannot set attr of object 0!")
             return
         obj = self._find_object(ops[0])
         if self.zver < 4:
@@ -394,13 +394,13 @@ class ZCpu:
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: clear_attr {1}'.format(format(pc,'X'),ops[0:self.numops]), 2 )
         if ops[0] == 0:
-            print "clear_attr: Cannot clear attr of object 0!"
+            print("clear_attr: Cannot clear attr of object 0!")
             return
         obj = self._find_object(ops[0])
         if self.zver < 4:
             b = (self.mem[obj] << 24) + (self.mem[obj + 1] << 16) + (self.mem[obj + 2] << 8) + self.mem[obj + 3]
             mask = 1 << (31 - ops[1])
-            if (b & mask) <> 0:
+            if (b & mask) != 0:
                 b ^= mask
                 self.mem[obj] = b >> 24
                 self.mem[obj + 1] = (b & 0xff0000) >> 16
@@ -409,7 +409,7 @@ class ZCpu:
         else:
             b = (self.mem[obj] << 40) + (self.mem[obj + 1] << 32) + (self.mem[obj + 2] << 24) + (self.mem[obj + 3] << 16) + (self.mem[obj + 4] << 8) + self.mem[obj + 5]
             mask = 1 << (47 - ops[1])
-            if (b & mask) <> 0:
+            if (b & mask) != 0:
                 b ^= mask
                 self.mem[obj] = b >> 40
                 self.mem[obj + 1] = (b & 0xff00000000) >> 32
@@ -441,14 +441,14 @@ class ZCpu:
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: insert_obj {1}'.format(format(pc,'X'),ops[0:self.numops]), 2 )
         if ops[1] == 0 or ops[0] == 0:
-            print "insert_obj: Cannot use 0 as source or destination!"
+            print("insert_obj: Cannot use 0 as source or destination!")
             return
         d = self._find_object(ops[1])
         o = self._find_object(ops[0])
         if self.zver < 4:
             dchild = self.mem[d+6]
             self.mem[d+6] = ops[0] # Set child of d
-            if self.mem[o+4] <> 0: # If the object to move has a parent
+            if self.mem[o+4] != 0: # If the object to move has a parent
                 f = self._find_object(self.mem[o+4]) # Find the addr of parent
                 if self.mem[f+6] == ops[0]: # If the object to move is the first child
                     self.mem[f+6] = self.mem[o+5]
@@ -457,7 +457,7 @@ class ZCpu:
                     t = self._find_object(self.mem[f+6]) # Get the first child of the father
                     #print "^^", self.mem[t+5], "^^"
                     #tn = self.mem[f+6]
-                    while (self.mem[t+5] <> ops[0]): # While the object t isn't a sibling of o
+                    while (self.mem[t+5] != ops[0]): # While the object t isn't a sibling of o
                         #tn = self.mem[t+5]
                         t = self._find_object(self.mem[t+5])
                     #print "Got ", self.mem[o+5], "as sibling of", tn
@@ -467,12 +467,12 @@ class ZCpu:
             #print "Sibling of", ops[0], "is", dchild
         else:
             n = (self.mem[o+6] << 8) + self.mem[o+7]
-            if n <> ops[1]: # If the parent of o isn't already d
+            if n != ops[1]: # If the parent of o isn't already d
                 dchild_p1 = self.mem[d+10]
                 dchild_p2 = self.mem[d+11]
                 self.mem[d+10] = ops[0] >> 8 # Set child of d
                 self.mem[d+11] = ops[0] & 0xff
-                if n <> 0: # If the object to move has a parent
+                if n != 0: # If the object to move has a parent
                     f = self._find_object(n) # Find the addr of parent
                     cn = (self.mem[f+10] << 8) + self.mem[f+11]
                     if cn == ops[0]: # If the object to move is the first child
@@ -484,7 +484,7 @@ class ZCpu:
                         sn = (self.mem[t+8] << 8) + self.mem[t+9]
                         #print "^^", sn, "^^"
                         #tn = cn
-                        while (sn <> ops[0]): # While the object t isn't a sibling of o
+                        while (sn != ops[0]): # While the object t isn't a sibling of o
                             #tn = sn
                             t = self._find_object(sn)
                             sn = (self.mem[t+8] << 8) + self.mem[t+9]
@@ -536,7 +536,7 @@ class ZCpu:
         ops = self.ops
         if ops[0] == 0:
             # Failing gracefully...
-            print "get_prop: Can't get property of nothing!"
+            print("get_prop: Can't get property of nothing!")
             self._zstore(0, self.mem[self.pc])
             self.pc += 1
             return
@@ -593,12 +593,12 @@ class ZCpu:
             if self.zver < 4:
                 addr = (self.mem[obj + 7] << 8) + self.mem[obj + 8]
                 prop = self._find_prop(addr, ops[1])
-                if prop <> 0:
+                if prop != 0:
                     prop += 1
             else:
                 addr = (self.mem[obj + 12] << 8) + self.mem[obj + 13]
                 prop = self._find_prop(addr, ops[1])
-                if prop <> 0:
+                if prop != 0:
                     if (self.mem[prop] & 128) == 128:
                         prop += 2
                     else:
@@ -618,7 +618,7 @@ class ZCpu:
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: get_next_prop {1}'.format(format(pc,'X'),ops[0:self.numops]), 2 )
         if ops[0] == 0:
-            print "get_next_prop: Can't get property of nothing!"
+            print("get_next_prop: Can't get property of nothing!")
             self._zstore(0, self.mem[self.pc])
             self.pc += 1
             return
@@ -637,7 +637,7 @@ class ZCpu:
             else:
                 addr = (self.mem[obj + 7] << 8) + self.mem[obj + 8]
                 prop_addr = self._find_prop(addr, ops[1])
-                if prop_addr <> 0: # Property found!
+                if prop_addr != 0: # Property found!
                     nob = (prop_addr // 32) + 1
                     prop_addr += nob + 1
                     prop = prop_addr % 32
@@ -650,15 +650,15 @@ class ZCpu:
             else:
                 addr = (self.mem[obj + 12] << 8) + self.mem[obj + 13]
                 prop_addr = self._find_prop(addr, ops[1])
-                if prop_addr <> 0: # Property found!
-                    if (self.mem[prop_addr] & 0x80) <> 0: # Top bit is 1 so there is a second byte
+                if prop_addr != 0: # Property found!
+                    if (self.mem[prop_addr] & 0x80) != 0: # Top bit is 1 so there is a second byte
                         #print "There is a second byte!"
                         prop_addr += 1
                         num = self.mem[prop_addr] & 0x3f
                         if num == 0:
                             num = 64
                         prop_addr += num + 1
-                    elif (self.mem[prop_addr] & 0x40) <> 0: # 6th bit is 1 so there are 2 bytes of data
+                    elif (self.mem[prop_addr] & 0x40) != 0: # 6th bit is 1 so there are 2 bytes of data
                         prop_addr += 3
                     else: # Only 1 byte of data
                         prop_addr += 2
@@ -722,7 +722,7 @@ class ZCpu:
             self._read_operands_long_2op()
         ops = self.ops
         if ops[1] == 0: # Division by zero
-            print "Divide by zero!"
+            print("Divide by zero!")
             exit(20)
         a = self._s2i(ops[0])
         b = self._s2i(ops[1])
@@ -749,7 +749,7 @@ class ZCpu:
             self._read_operands_long_2op()
         ops = self.ops
         if ops[1] == 0: # Division by zero
-            print "Divide by zero!"
+            print("Divide by zero!")
             exit(20)
         a = self._s2i(ops[0])
         b = self._s2i(ops[1])
@@ -835,7 +835,7 @@ class ZCpu:
             sibl = self.mem[obj + 5]
         else:
             sibl = (self.mem[obj + 8] << 8) + self.mem[obj + 9]
-        condition = (sibl <> 0)
+        condition = (sibl != 0)
         jif, offset = self.branch(condition)
         self._zstore(sibl, return_var)
         if (self.plugin.level >= 2):
@@ -852,7 +852,7 @@ class ZCpu:
             child = self.mem[obj + 6]
         else:
             child = (self.mem[obj + 10] << 8) + self.mem[obj + 11]
-        condition = (child <> 0)
+        condition = (child != 0)
         jif, offset = self.branch(condition)
         self._zstore(child, return_var)
         if (self.plugin.level >= 2):
@@ -1015,7 +1015,7 @@ class ZCpu:
             else:
                 t = self._find_object(self.mem[f+6]) # Get the first child of the father
                 #print "^^", self.mem[t+5], "^^"
-                while (self.mem[t+5] <> ops[0]): # While the object t isn't a sibling of o
+                while (self.mem[t+5] != ops[0]): # While the object t isn't a sibling of o
                     t = self._find_object(self.mem[t+5])
                 #print "Got ", self.mem[obj+5], "as sibling of", tn
                 self.mem[t+5] = self.mem[obj+5]
@@ -1035,7 +1035,7 @@ class ZCpu:
                     #print "^^", (self.mem[t+8] << 8) + self.mem[t+9], "^^"
                     #tn = cn
                     sn = (self.mem[t+8] << 8) + self.mem[t+9]
-                    while (sn <> ops[0]): # While the object t isn't a sibling of o
+                    while (sn != ops[0]): # While the object t isn't a sibling of o
                         #print fn,sn,ops[0]
                         #tn = sn
                         t = self._find_object(sn)
@@ -1088,7 +1088,7 @@ class ZCpu:
         prev_pc, return_var, self.intr, self.intr_data = data
         stack.pop_eval_stack()
         stack.pop_local_vars()
-        if return_var <> -1: # If we want the returned value...
+        if return_var != -1: # If we want the returned value...
             self._zstore(value,return_var)
         self.last_return = value # Keep last value (used in timed input)
         self.pc = prev_pc
@@ -1284,7 +1284,7 @@ class ZCpu:
         self.stack.push_local_vars()
         self.stack.push_frame(self.pc)
         self.stack.push_frame(self.mem[self.pc])
-        print 'catch!'
+        print('catch!')
         sys.exit()
 
     def _quit(self):
@@ -1393,7 +1393,7 @@ class ZCpu:
             #print prop_addr
             prop = self._find_prop(prop_addr,ops[1])
             if prop == 0: # Property not found!
-                print "Property ",ops[1]," not found for object ",ops[0]
+                print(("Property ",ops[1]," not found for object ",ops[0]))
                 sys.exit()
             else:
                 #print self.mem[prop] / 32
@@ -1408,7 +1408,7 @@ class ZCpu:
             #print prop_addr
             prop = self._find_prop(prop_addr,ops[1])
             if prop == 0: # Property not found!
-                print "Property ",ops[1]," not found for object ",ops[0]
+                print(("Property ",ops[1]," not found for object ",ops[0]))
                 sys.exit()
             else:
                 if ((self.mem[prop] & 0x80) == 0) and ((self.mem[prop] & 0x40) == 0): # Only 1 byte
@@ -1479,7 +1479,7 @@ class ZCpu:
         if ops[0] > 0x7fff: # Change seed
             self.random.set_seed(0x10000 - ops[0])
             r = 0
-        elif ops[0] <> 0: # Get a random num between 1 and ops[0]
+        elif ops[0] != 0: # Get a random num between 1 and ops[0]
             self.random.set_range(ops[0])
             r = self.random.get_random()
         else: # Get random seed
@@ -1503,7 +1503,7 @@ class ZCpu:
         pc = self.pc
         self._read_operands_var_2op()
         ops = self.ops
-        if self.zver <> 6:
+        if self.zver != 6:
             n = self.stack.pop()
             self._zstore(n, ops[0])
             if (self.plugin.level >= 2):
@@ -1607,7 +1607,7 @@ class ZCpu:
         self._read_operands_var_2op()
         ops = self.ops
         #print 'Output stream:', ops
-        if ops[0] <> 0:
+        if ops[0] != 0:
             if ops[0] == 3:
                 table = ops[1]
             else:
@@ -1705,19 +1705,19 @@ class ZCpu:
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: copy_table {1}'.format(format(pc,'X'),ops[0:self.numops]), 2 )
         if (ops[1] == 0): # Copy zeros to the first variable
-            for i in xrange(abs(ops[2])):
+            for i in range(abs(ops[2])):
                 self.mem[ops[0]+i] = 0
         else: # Copy first to second
             tmplist = []
             if (ops[2]>0): # Make sure that the first isn't destroyed
-                for i in xrange(ops[2]):
+                for i in range(ops[2]):
                     tmplist.append(self.mem[ops[0]+i])
-                for i in xrange(ops[2]):
+                for i in range(ops[2]):
                     self.mem[ops[1]+i] = tmplist[i]
-                for i in xrange(ops[2]):
+                for i in range(ops[2]):
                     self.mem[ops[0]+i] = tmplist[i]
             else:
-                for i in xrange(abs(ops[2])):
+                for i in range(abs(ops[2])):
                     self.mem[ops[1]+i] = self.mem[ops[0]+i]
 
     def _print_table(self):
@@ -1927,7 +1927,7 @@ class ZCpu:
         mask = 192
         type_byte = self.mem[self.pc]
         self.pc = self.pc + 1
-        for i in xrange(4):
+        for i in range(4):
             optype = ( type_byte & mask) >> (3-i)*2
             if optype == 0: # Large constant (2 bytes)
                 #print "PC:",hex(self.pc),"--",hex(self.mem[self.pc]),",",hex(self.mem[self.pc+1])
@@ -1963,7 +1963,7 @@ class ZCpu:
         type_byte = self.mem[self.pc]
         type_byte2 = self.mem[self.pc + 1]
         self.pc = self.pc + 2
-        for i in xrange(4):
+        for i in range(4):
             optype = ( type_byte & mask) >> (3-i)*2
             if optype == 0: # Large constant (2 bytes)
                 self.ops[num] = ( self.mem[self.pc] << 8 ) + self.mem[self.pc+1]
@@ -1990,7 +1990,7 @@ class ZCpu:
                 pass
             mask = mask >> 2
         mask = 192
-        for i in xrange(4):
+        for i in range(4):
             optype = ( type_byte2 & mask) >> (3-i)*2
             if optype == 0: # Large constant (2 bytes)
                 self.ops[num] = ( self.mem[self.pc] << 8 ) + self.mem[self.pc+1]
@@ -2172,14 +2172,14 @@ class ZCpu:
         else:
             #print "++",format(p,"X"),"++"
             while (self.mem[p] & 0x3f) > prop:
-                if (self.mem[p] & 0x80) <> 0: # Top bit is 1 so there is a second byte
+                if (self.mem[p] & 0x80) != 0: # Top bit is 1 so there is a second byte
                     #print "There is a second byte!"
                     p = p + 1
                     num = self.mem[p] & 0x3f
                     if num == 0:
                         num = 64
                     p = p + num + 1
-                elif (self.mem[p] & 0x40) <> 0: # 6th bit is 1 so there are 2 bytes of data
+                elif (self.mem[p] & 0x40) != 0: # 6th bit is 1 so there are 2 bytes of data
                     p = p + 3
                 else: # Only 1 byte of data
                     p = p + 2
@@ -2234,9 +2234,9 @@ class ZCpu:
                     tvar[code]()
 
     def start6(self):
-        print self.pc
+        print((self.pc))
         self._prepare_routine(self.pc, [], 0, 0)
-        print self.pc
+        print((self.pc))
 
     def _show_status2(self):
         if self.zver < 4:
@@ -2249,7 +2249,7 @@ class ZCpu:
                 prop_addr = (self.mem[obj + 12] << 8) + self.mem[obj + 13]
             nob = 2 * self.mem[prop_addr]
             buf = []
-            for i in xrange(nob):
+            for i in range(nob):
                 buf.append(self.mem[prop_addr + i + 1])
             text = decode_text(buf, self.zver, self.mem, self.header.abbrev_table(), False, self.header.alphabet_table(), 0)
 

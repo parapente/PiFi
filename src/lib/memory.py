@@ -19,7 +19,7 @@ class ZMemory:
         try:
             self.mem.fromfile(f,max_length)
         except EOFError:
-            print 'file size:', f.tell()
+            print(('file size:', f.tell()))
             need = max_length - f.tell()
             self.mem.extend([0]*need)
             #if ( need ) > 0:
@@ -42,13 +42,13 @@ class ZMemory:
             else:
                 part = 3;
         else:
-            print "Memory:read:Error! Negative offset!";
+            print("Memory:read:Error! Negative offset!");
             sys.exit(1);
 
         if part == 1 or part == 2:
             return self.mem[offset];
         else:
-            print "Memory:read:Error! Trying to access high memory!";
+            print("Memory:read:Error! Trying to access high memory!");
             sys.exit(1);
 
     def write(self,offset,data):
@@ -61,22 +61,22 @@ class ZMemory:
             else:
                 part = 3;
         else:
-            print "Memory:write:Error! Negative offset!";
+            print("Memory:write:Error! Negative offset!");
             sys.exit(1);
 
         if part == 1:
             self.mem[offset] = data;
         elif part == 2:
-            print "Memory:write:Error! Static memory is read only!"
+            print("Memory:write:Error! Static memory is read only!")
             sys.exit(2);
         else:
-            print "Memory:write:Error! Trying to access high memory!";
+            print("Memory:write:Error! Trying to access high memory!");
             sys.exit(1);
 
     def p_read(self,offset):
         """Generic function for reading bytes from Z memory"""
         if offset < 0:
-            print "Memory:p_read:Error! Negative offset!";
+            print("Memory:p_read:Error! Negative offset!");
             sys.exit(1);
         else:
             return self.mem[offset];
@@ -84,7 +84,7 @@ class ZMemory:
     def p_write(self,offset,data):
         """Generic function for writing bytes to Z memory"""
         if offset < 0:
-            print "Memory:p_write:Error! Negative offset!";
+            print("Memory:p_write:Error! Negative offset!");
             sys.exit(1);
         else:
             self.mem[offset] = data;

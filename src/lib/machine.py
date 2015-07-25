@@ -1,12 +1,12 @@
 # -*- coding: utf-8
 
-from memory import ZMemory
-from cpu import ZCpu
-from header import ZHeader
-from input import ZInput
-from output import ZOutput
-from ztext import *
-from dictionary import ZDictionary
+from .memory import ZMemory
+from .cpu import ZCpu
+from .header import ZHeader
+from .input import ZInput
+from .output import ZOutput
+from .ztext import *
+from .dictionary import ZDictionary
 import sys
 from threading import Lock
 
@@ -112,7 +112,7 @@ class ZMachine:
             self.plugin.debugprint("gt -> '"+text+"'", 2)
             if self.zver < 5:
                 i = 0
-                for i in xrange(len(text)):
+                for i in range(len(text)):
                     if (i == (len(text) - 1)) and text[i] == '\n':
                         self.mem.mem[taddr + 1 + i] = 0
                     else:
@@ -123,7 +123,7 @@ class ZMachine:
             else:
                 if taddr != 0:
                     skip = self.mem.mem[taddr + 1]
-                    for i in xrange(len(text)):
+                    for i in range(len(text)):
                         self.mem.mem[taddr + 2 + i + skip] = ord(str(text[i]))
                     self.mem.mem[taddr + 1] = len(text) + skip
                     self.lex(taddr,paddr,0,0)
@@ -139,27 +139,27 @@ class ZMachine:
         self.handle_intr()
 
     def lex(self,text,parse,dictionary,flag):
-        if dictionary <> 0 or flag <> 0:
+        if dictionary != 0 or flag != 0:
             sys.exit("LEX: Not supported yet!")
         txt = ""
         if self.zver < 5:
             i = 0
-            while self.mem.mem[text + 1 + i ] <> 0:
-                txt += unichr(self.mem.mem[text + 1 + i])
+            while self.mem.mem[text + 1 + i ] != 0:
+                txt += chr(self.mem.mem[text + 1 + i])
                 i += 1
         else:
-            for i in xrange(self.mem.mem[text + 1]):
-                txt += unichr(self.mem.mem[text + 2 + i])
+            for i in range(self.mem.mem[text + 1]):
+                txt += chr(self.mem.mem[text + 2 + i])
         l = len(txt)
         self.plugin.debugprint("txt='"+txt+"' Len:"+str(l), 2)
         words = []
         w = ""
         i = 0
         while (i < l):
-            while (i < l) and ((txt[i] not in self.dict.separators) and (txt[i] <> " ")):
+            while (i < l) and ((txt[i] not in self.dict.separators) and (txt[i] != " ")):
                 w += txt[i]
                 i += 1
-            if (w <> "") and (w <> " "):
+            if (w != "") and (w != " "):
                 pos = i - len(w)
                 words.append(str(w))
                 if self.zver < 5:
@@ -183,12 +183,12 @@ class ZMachine:
             w1 = ""
             # If the word is too large we need to cut it down
             if len(words[i]) > (self.dict.word_length * 3 / 2):
-                for j in xrange(self.dict.word_length * 3 / 2):
+                for j in range(self.dict.word_length * 3 / 2):
                     w1 += words[i][j]
             else:
                 w1 = words[i]
             self.plugin.debugprint(w1+"- len -"+str(len(w1)), 2)
-            if self.cpu.intr_data[1] <> 0: # No parsing is required
+            if self.cpu.intr_data[1] != 0: # No parsing is required
                 # Find the data for the record
                 addr = self.dict.find_word(w1)
                 l = len(words[i])
@@ -218,7 +218,7 @@ class ZMachine:
             #sys.exit('Quit')
 
     def save_state(self, filename):
-        print "Here!"
+        print("Here!")
         # Test if file already exists
         try:
             self.savefile = open(filename)
@@ -230,8 +230,9 @@ class ZMachine:
             try:
                 self.savefile = open(filename,'wb')
                 self.do_save_state()
-            except IOError as (errno,strerror):
-                print "I/O error ({0}): {1}".format(errno,strerror)
+            except IOError as cannot_save_file:
+                (errno,strerror) = cannot_save_file.args
+                print("I/O error ({0}): {1}".format(errno,strerror))
                 self.plugin.prints('Save failed!\n')
                 self.mutex.release()
                 self.save_state_return_fail()
@@ -249,16 +250,16 @@ class ZMachine:
         savefile_size = 4
 
         membuff = self.mem.mem[:self.mem.static_beg]
-        print membuff
+        print(membuff)
         self.file.seek(0)
         filebuff = list(self.file.read(self.mem.static_beg))
-        print filebuff
+        print(filebuff)
 
         #Save Story File info ('IFhd') - MUST be first
         self.savefile.write('IFhd\x00\x00\x00\x0d')
         ifhd = []
         ifhd += [membuff[2], membuff[3]]
-        for i in xrange(6):
+        for i in range(6):
             ifhd += [membuff[18+i]]
         ifhd += [membuff[0x1c], membuff[0x1d]]
         ifhd += [(self.cpu.pc >> 16) & 255, (self.cpu.pc >> 8) & 255, self.cpu.pc & 255, 0]
@@ -269,7 +270,7 @@ class ZMachine:
 
         # Save dynamic memory ('CMem')
         diffbuff = [0] * self.mem.static_beg
-        for i in xrange(self.mem.static_beg):
+        for i in range(self.mem.static_beg):
             if (membuff[i] == ord(filebuff[i])):
                 diffbuff[i] = 0
             else:
@@ -305,7 +306,7 @@ class ZMachine:
         stks = [0, 0, 0, 0]
         stack = self.cpu.stack
         frames = stack.framespos // 4
-        for i in xrange(frames):
+        for i in range(frames):
             # Get necessary data from stack
             localvars = stack.frames[i*4]
             evalstack = stack.frames[i*4+1]
@@ -332,7 +333,7 @@ class ZMachine:
             else:
                 stks += [0]
             args = 0
-            for j in xrange(lenargv):
+            for j in range(lenargv):
                 args = args << 1
                 args += 1
             stks += [args]
@@ -341,12 +342,12 @@ class ZMachine:
             stks += [(evalstacklen >> 8) & 255, evalstacklen & 255]
             stks_size += 2
 
-            print 'Local vars:',len(localvars)
-            for j in xrange(len(localvars)):
+            print('Local vars:',len(localvars))
+            for j in range(len(localvars)):
                 stks += [(localvars[j] >> 8) & 255, localvars[j] & 255]
                 stks_size += 2
-            print 'Evalstack:',len(evalstack)
-            for j in xrange(len(evalstack)):
+            print('Evalstack:',len(evalstack))
+            for j in range(len(evalstack)):
                 stks += [(evalstack[j] >> 8) & 255, evalstack[j] & 255]
                 stks_size += 2
 
@@ -444,7 +445,7 @@ class ZMachine:
         elif (b == 6 or b == 7 or b == 8):
             max_length = 512 * 1024
         else:
-            print 'Not a valid story file'
+            print('Not a valid story file')
             sys.exit(10)
 
         # Now that we checked the file size we rewind the file and read the data into memory

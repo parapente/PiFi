@@ -3,8 +3,8 @@
 # and open the template in the editor.
 
 from plugins.qtztextwidget import ZTextWidget
-from PyQt4 import QtGui
-from PyQt4 import QtCore
+from PyQt5 import QtWidgets
+from PyQt5 import QtCore
 from plugins.plugskel import PlugSkel
 
 __author__="Theofilos Intzoglou"
@@ -20,21 +20,21 @@ class QtPlugin(PlugSkel):
     zfont = 1 # Normal z-font
 
     def prepare_gui(self):
-        self.a = QtGui.QApplication([])
-        mainframe = QtGui.QFrame()
-        hbl = QtGui.QHBoxLayout()
-        hbl.addWidget(QtGui.QLabel())
-        hbl.addWidget(QtGui.QLabel())
+        self.a = QtWidgets.QApplication([])
+        mainframe = QtWidgets.QFrame()
+        hbl = QtWidgets.QHBoxLayout()
+        hbl.addWidget(QtWidgets.QLabel())
+        hbl.addWidget(QtWidgets.QLabel())
         hbl.itemAt(0).widget().setVisible(False)
         hbl.itemAt(1).widget().setVisible(False)
         hbl.itemAt(1).widget().setAlignment(QtCore.Qt.Alignment(QtCore.Qt.AlignRight))
-        hbl.itemAt(1).widget().setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Preferred)
+        hbl.itemAt(1).widget().setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
         self.widget = ZTextWidget()
-        vbl = QtGui.QVBoxLayout()
+        vbl = QtWidgets.QVBoxLayout()
         vbl.addLayout(hbl)
         vbl.addWidget(self.widget)
         mainframe.setLayout(vbl)
-        self.win = QtGui.QMainWindow()
+        self.win = QtWidgets.QMainWindow()
         self.rline = False
         #rect = QtCore.QRect()
         #rect.setWidth(640)

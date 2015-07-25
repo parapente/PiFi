@@ -1,18 +1,18 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
+""" Python Interactive Fiction Interpreter """
 
 from lib.machine import ZMachine
 from plugins.qtplugin import QtPlugin
 from plugins.qtplugin_v2 import QtPluginV2
 from plugins.qtplugin_v3 import QtPluginV3
+from importlib import reload
 import sys
 import argparse
 import signal
 
-__author__="Theofilos Intzoglou"
-__date__ ="$17 Ιουν 2009 2:24:30 πμ$"
+__author__ = "Theofilos Intzoglou"
+__date__ = "$17 Ιουν 2009 2:24:30 πμ$"
 
 if __name__ == "__main__":
 
@@ -29,19 +29,19 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     try:
-        f = open(args.zfile,'rb');
+        f = open(args.zfile, 'rb')
         #f = open("/home/oscar/games/wcastle.z5",'rb');
-    except IOError as (errno,strerror):
-        print "I/O error ({0}): {1}".format(errno,strerror)
+    except IOError as cannot_open_file:
+        (errno, strerror) = cannot_open_file.args
+        print("I/O error ({0}): {1}".format(errno, strerror))
         sys.exit(2)
 
     reload(sys)
-    sys.setdefaultencoding("utf-8")
     # Initialize the appropriate plugin
     if args.plugin in globals() and isinstance(globals()[args.plugin], type):
         plugin = globals()[args.plugin]()
     else:
-        print "Plugin " + args.plugin + " not found!"
+        print("Plugin " + args.plugin + " not found!")
         sys.exit(3)
 
     plugin.prepare_gui()

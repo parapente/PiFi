@@ -85,7 +85,7 @@ def check_zchar(c, a, ver, mem, alpha_table, unicode_table):
     elif (ver == 1) and (c == 1):
         return "\n"
     else:
-        if (ver >= 5) and (alpha_table <> 0):
+        if (ver >= 5) and (alpha_table != 0):
             return convert_from_zscii(mem[alpha_table+a*26+(c-6)], mem, unicode_table)
         elif (ver == 1):
             a2.remove('\n')
@@ -118,14 +118,14 @@ def convert_from_zscii(tb, mem, uni_table):
     elif (tb >= 32) and (tb <= 126):
         return chr(tb)
     elif (uni_table == 0): # Standard unicode table
-        print "TB -",tb
+        print("TB -",tb)
         if tb <= 255:
             if tb <= 223:
-                return unichr(ut[tb-155])
+                return chr(ut[tb-155])
             else:
                 return '?'
         else:
-            return unichr(tb)
+            return chr(tb)
     else: # Story file's unicode table
         n = mem[uni_table]
         i = 0
@@ -135,7 +135,7 @@ def convert_from_zscii(tb, mem, uni_table):
             ut[i] = uc
             i+=1
             n-=1
-        return unichr(ut[tb-155])
+        return chr(ut[tb-155])
 
 def encode_text(text, version, mem, abbrev, isabbrev, alpha_table, unicode_table):
     a2 = ['\n','0','1','2','3','4','5','6','7','8','9','.',',','!','?','_','#','\'','\"','/','\\','-',':','(',')']
@@ -148,7 +148,7 @@ def encode_text(text, version, mem, abbrev, isabbrev, alpha_table, unicode_table
     if (version == 1):
         a2.remove('\n')
         a2.insert(a2.index('-'),'<')
-    for i in xrange(l):
+    for i in range(l):
         c = t[i].lower()
         if ( c >= 'a') and (c <= 'z'):
             n = (ord(c) - ord('a')) + 6
@@ -204,4 +204,4 @@ def encode_text(text, version, mem, abbrev, isabbrev, alpha_table, unicode_table
         b2 += 5
     buf.append(b1)
     buf.append(b2)
-    print buf
+    print(buf)

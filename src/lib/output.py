@@ -20,7 +20,7 @@ class ZOutput:
 
     def select_stream(self,n,table):
         self.plugin.select_ostream(n)
-        if table <> -1:
+        if table != -1:
             if self.table_list_len < 33: # We keep 2 ints for every ostream 3 (addr,offset)
                 self.table_list.append(table)
                 self.table_list.append(0)
@@ -80,12 +80,12 @@ class ZOutput:
     def printkey(self,key):
         # TODO: Implement printkey properly!
         if self.stream[4].on == 1:
-            print key
+            print(key)
 
     def print_input(self,s):
         if self.stream[1].selected == True:
             # TODO: Buffering
-            print s
+            print(s)
         if (self.stream[2].selected == True and self.stream[2].filename == None):
             # TODO: Do something to get the filename
             pass
