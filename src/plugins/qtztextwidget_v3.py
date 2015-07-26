@@ -184,8 +184,8 @@ class ZTextWidget(QTextEdit):
             self.keyPressed.emit(8)
         elif (e.key() == Qt.Key_Return) or (e.key() == Qt.Key_Enter):
             #self.clean_input_buffer_from_screen()
-            #if (self._cursor_visible == True):
-                #self.hide_cursor(self.lastwindow)
+            if (self._cursor_visible == True):
+                self.hide_cursor(self.lastwindow)
             #if (self.reading_line == True):
                 #self.draw_input_buffer()
             text = ''
@@ -205,7 +205,7 @@ class ZTextWidget(QTextEdit):
         elif e.key() == Qt.Key_Escape:
             e.accept()
             self.keyPressed.emit(27)
-        elif e.text().isEmpty() == False:
+        elif e.text():
             if (self.reading_line) and (len(self.input_buf) < self.max_char+1):
                 #self.clean_input_buffer_from_screen()
                 self.input_buf.insert(self._input_cursor_pos, str(e.text()))
@@ -286,7 +286,7 @@ class ZTextWidget(QTextEdit):
 
     def disconnect_read_line(self, callback):
         self.reading_line = False
-        self.returnPressed.disconnect(callback)
+        self.returnPressed.connect(callback)
 
     def read_char(self, window, callback, time, timeout_callback):
         self.lastwindow = window
@@ -325,7 +325,7 @@ class ZTextWidget(QTextEdit):
             textbuffer = ''
             tblen = 0
             for w in txt:
-                if w == '\n' or w == self.cursor_char:
+                if w == '\n':
                     if (tblen > 0): # If there is something to print
                         self.draw_text(textbuffer, tblen, window)
                         textbuffer = ''
@@ -352,8 +352,7 @@ class ZTextWidget(QTextEdit):
         self.ensureCursorVisible()
 
     def draw_text(self, txt, txtlen, window):
-        if ((txtlen > 0) and not ((txt == self.cursor_char) and
-            (self._cursor_visible == False))): # If there IS something to print
+        if (txtlen > 0) and (self._cursor_visible == False): # If there IS something to print
             #if (self.pbuffer_painter[window.id] == None):
                 #self.brush.setColor(self.ztoq_color[self.cur_bg])
                 #self.pbuffer_painter[window.id] = QPainter(self.pbuffer[window.id])
