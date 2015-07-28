@@ -124,7 +124,7 @@ class ZTextWidget(QTextEdit):
         #del self.input_buf[self._input_cursor_pos]
         #self.draw_cursor(window,False)
 
-    def keyPressEvent(self,e):
+    def keyPressEvent(self, e):
         if e.key() == Qt.Key_Left:
             if self._input_cursor_pos > 0:
                 #c = self.input_buf.pop(self._input_cursor_pos)
@@ -184,7 +184,7 @@ class ZTextWidget(QTextEdit):
             self.keyPressed.emit(8)
         elif (e.key() == Qt.Key_Return) or (e.key() == Qt.Key_Enter):
             #self.clean_input_buffer_from_screen()
-            if (self._cursor_visible == True):
+            if self._cursor_visible == True:
                 self.hide_cursor(self.lastwindow)
             #if (self.reading_line == True):
                 #self.draw_input_buffer()
@@ -213,7 +213,7 @@ class ZTextWidget(QTextEdit):
                 self.insertPlainText(str(e.text()))
                 #self.draw_input_buffer()
             e.accept()
-            t = ord(str(e.text()[0])) # TODO: Check if we can handle multiple events at once
+            t = ord(e.text()) # TODO: Check if we can handle multiple events at once
             if ((t > 31) and (t < 127)) or ((t > 154) and (t < 252)):
                 self.keyPressed.emit(t)
         else:
@@ -277,7 +277,8 @@ class ZTextWidget(QTextEdit):
     def read_line_callback(self, string):
         if self.linetimer != None:
             self.linetimer.stop()
-        self.returnPressed.disconnect()
+        #print('read_line_callback: returnPressed disconnect')
+        #self.returnPressed.disconnect()
         self.callback_object(string)
 
     def read_line_timeout_callback(self):
@@ -286,14 +287,15 @@ class ZTextWidget(QTextEdit):
 
     def disconnect_read_line(self, callback):
         self.reading_line = False
-        self.returnPressed.connect(callback)
+        self.returnPressed.disconnect()
+        #self.returnPressed.disconnect(callback)
 
     def read_char(self, window, callback, time, timeout_callback):
         self.lastwindow = window
         self.callback_object = callback
         self.keyPressed.connect(self.read_char_callback)
         #print 'Connect char'
-        if (self.chartimer == None):
+        if self.chartimer == None:
             self.chartimer = QTimer()
             self.chartimer.setSingleShot(True)
         if time != 0:
@@ -304,7 +306,7 @@ class ZTextWidget(QTextEdit):
     def read_char_callback(self, key):
         if self.chartimer != None:
             self.chartimer.stop()
-        self.keyPressed.disconnect()
+        #self.keyPressed.disconnect()
         self.callback_object(key)
 
     def read_char_timeout_callback(self):
@@ -312,7 +314,8 @@ class ZTextWidget(QTextEdit):
         self.timeout_callback_object()
 
     def disconnect_read_char(self, callback):
-        self.keyPressed.disconnect(callback)
+        self.keyPressed.disconnect()
+        #self.keyPressed.disconnect(callback)
         #print 'Disconnect char'
 
     def prints(self, txt, window):
@@ -326,7 +329,7 @@ class ZTextWidget(QTextEdit):
             tblen = 0
             for w in txt:
                 if w == '\n':
-                    if (tblen > 0): # If there is something to print
+                    if tblen > 0: # If there is something to print
                         self.draw_text(textbuffer, tblen, window)
                         textbuffer = ''
                         tblen = 0
@@ -372,7 +375,7 @@ class ZTextWidget(QTextEdit):
 
             if txt == '\n':
                 if window.cursor[1] == self.height:
-                    if (window.scrolling):
+                    if window.scrolling:
                         self.insertPlainText(txt)
                         #self.scroll(painter)
                     window.set_cursor_position(1, window.cursor[1])
