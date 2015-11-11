@@ -92,8 +92,8 @@ class ZTextWidget(QTextEdit):
         self.avgwidth = self.font_metrics.averageCharWidth()
         print(self.linesize, self.avgwidth)
         print(self.font_metrics.height())
-        self.width = super(ZTextWidget, self).width() / self.avgwidth
-        self.height = super(ZTextWidget, self).height() / self.linesize
+        self.width = super(ZTextWidget, self).width() // self.avgwidth
+        self.height = super(ZTextWidget, self).height() // self.linesize
         print(self.width, self.height)
 
         #self.pbuffer_painter[0].setFont(self.normal_font)
