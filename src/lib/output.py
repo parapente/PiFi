@@ -118,9 +118,9 @@ class ZOutput:
 
     def set_screen_size(self,w,h):
         if (self.version > 4):
-            self.mem[0x22] = w / 256
+            self.mem[0x22] = w // 256
             self.mem[0x23] = w % 256
-            self.mem[0x24] = h / 256
+            self.mem[0x24] = h // 256
             self.mem[0x25] = h % 256
 
         # The above is necessary because we can store only one byte

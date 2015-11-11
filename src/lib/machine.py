@@ -182,8 +182,8 @@ class ZMachine:
         while i < len(words):
             w1 = ""
             # If the word is too large we need to cut it down
-            if len(words[i]) > (self.dict.word_length * 3 / 2):
-                for j in range(self.dict.word_length * 3 / 2):
+            if len(words[i]) > (self.dict.word_length * 3 // 2):
+                for j in range(self.dict.word_length * 3 // 2):
                     w1 += words[i][j]
             else:
                 w1 = words[i]

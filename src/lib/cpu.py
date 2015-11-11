@@ -552,7 +552,7 @@ class ZCpu:
         else: # Property found
             if self.zver < 4:
                 size = self.mem[prop]
-                nob = ((size - ops[1]) / 32) + 1
+                nob = ((size - ops[1]) // 32) + 1
                 #print "Number of bytes:", nob
                 if nob == 1:
                     data = self.mem[prop + 1]
@@ -734,7 +734,7 @@ class ZCpu:
             s2 = -1
         else:
             s2 = 1
-        result = self._i2s(s1*s2*(abs(a)/abs(b)))
+        result = self._i2s(s1*s2*(abs(a)//abs(b)))
         #print "Result:", result
         self._zstore(result, self.mem[self.pc])
         self.pc = self.pc + 1
@@ -881,7 +881,7 @@ class ZCpu:
         ops[0] = ops[0] - 1
         if self.zver < 4:
             prop_num = self.mem[ops[0]] % 32
-            nob = ((self.mem[ops[0]] - prop_num) / 32) + 1
+            nob = ((self.mem[ops[0]] - prop_num) // 32) + 1
         else:
             if (self.mem[ops[0]] & 128) == 128:
                 nob = self.mem[ops[0]] & 63
@@ -1397,7 +1397,7 @@ class ZCpu:
                 sys.exit()
             else:
                 #print self.mem[prop] / 32
-                if (self.mem[prop] / 32) == 0: # Only 1 byte
+                if (self.mem[prop] // 32) == 0: # Only 1 byte
                     self.mem[prop+1] = ops[2] & 0xff
                 else:
                     self.mem[prop+1] = ops[2] >> 8
