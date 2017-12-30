@@ -462,7 +462,7 @@ class ZTextWidget(QWidget):
         rect = QRectF()
         rect.setX(self.lastwindow.cursor_real_pos[0])
         rect.setY(self.lastwindow.cursor_real_pos[1])
-        rect.setWidth(self.pbuffer[0].width()-self.lastwindow.cursor_real_pos[0])
+        rect.setWidth(self.pbuffer[0].width()-self.lastwindow.cursor_real_pos[0]+1)
         rect.setHeight(self.linesize)
         txtbuffer = ''
         for w in self.input_buf:
