@@ -484,10 +484,10 @@ class ZMachine:
         # Default supported options
         if self.zver < 4:
             # Split window is available
-            self.mem.mem[0x1] = 0x20
+            self.mem.mem[0x1] |= 0x20
         else:
             # Color, Bold, Italic, Fixed is available
-            self.mem.mem[0x1] = 0x9d
+            self.mem.mem[0x1] |= 0x9d
 
         if self.zver > 4:
             # Default background color
