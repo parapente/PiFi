@@ -170,19 +170,23 @@ class ZTextWidget(QTextEdit):
             #self.keyPressed.emit(130)
             #pass
         elif e.key() == Qt.Key_Backspace:
-            if len(self.input_buf) > 1: # If there IS something to delete
+            if len(self.input_buf) > 0 and (self._input_cursor_pos !=0): # If there IS something to delete
                 del self.input_buf[self._input_cursor_pos-1]
                 self._input_cursor_pos -= 1
                 self.textCursor().deletePreviousChar()
             # self.keyPressed.emit() # No keycode available for zscii
             e.accept()
         elif e.key() == Qt.Key_Delete:
-            if self._input_cursor_pos < (len(self.input_buf) - 1):
-                del self.input_buf[self._input_cursor_pos+1]
+            if self._input_cursor_pos < len(self.input_buf):
+                del self.input_buf[self._input_cursor_pos]
                 self.textCursor().deleteChar()
             e.accept()
             self.keyPressed.emit(8)
         elif (e.key() == Qt.Key_Return) or (e.key() == Qt.Key_Enter):
+            # Move cursor to the end of the line to avoid transferring text to the new line
+            tc = self.textCursor()
+            tc.movePosition(QTextCursor.Right, QTextCursor.MoveAnchor, len(self.input_buf) - self._input_cursor_pos)
+            self.setTextCursor(tc)
             #self.clean_input_buffer_from_screen()
             if self._cursor_visible == True:
                 self.hide_cursor(self.lastwindow)
