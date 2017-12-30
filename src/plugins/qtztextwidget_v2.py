@@ -317,7 +317,10 @@ class ZTextWidget(QWidget):
 
     def disconnect_read_line(self, callback):
         self.reading_line = False
-        self.returnPressed.connect(callback)
+        try:
+            self.returnPressed.disconnect(callback)
+        except:
+            pass
 
     def read_char(self, window, callback, time, timeout_callback):
         self.update_game_area()
