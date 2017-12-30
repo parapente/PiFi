@@ -90,8 +90,8 @@ class ZTextWidget(QWidget):
         self.avgwidth = self.font_metrics.averageCharWidth()
         print(self.font_metrics.averageCharWidth(), self.linesize, self.avgwidth)
         print(self.font_metrics.height())
-        self.width = (self.pbuffer[0].width() - 4) / self.font_metrics.averageCharWidth()
-        self.height = self.pbuffer[0].height() / self.linesize
+        self.width = (self.pbuffer[0].width() - 4) // self.font_metrics.averageCharWidth()
+        self.height = self.pbuffer[0].height() // self.linesize
 
         self.pbuffer_painter[0].setFont(self.normal_font)
         self.set_text_colour(self.cur_fg, 0)
