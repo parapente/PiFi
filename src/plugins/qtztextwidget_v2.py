@@ -475,6 +475,8 @@ class ZTextWidget(QWidget):
         txtbuffer = ''
         for w in self.input_buf:
             txtbuffer += w
+        if (self.pbuffer_painter[0] == None):
+            self.pbuffer_painter[0] = QPainter(self.pbuffer[0])
         bounding_rect = self.pbuffer_painter[0].boundingRect(rect, txtbuffer)
         if (rect.contains(bounding_rect)): # string fits in this line
             self.pbuffer_painter[0].eraseRect(bounding_rect)
