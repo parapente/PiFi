@@ -347,7 +347,10 @@ class ZTextWidget(QWidget):
         self.timeout_callback_object()
 
     def disconnect_read_char(self, callback):
-        self.keyPressed.disconnect(callback)
+        try:
+            self.keyPressed.disconnect(callback)
+        except:
+            pass
         #print 'Disconnect char'
 
     def prints(self, txt, window):
