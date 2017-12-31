@@ -1338,7 +1338,7 @@ class ZCpu:
 
     def _piracy(self):
         pc = self.pc
-        jif, offset = self.branch(True)
+        jif, offset = self.branch(False)
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: piracy '.format(format(pc,'X'),jif,offset), 2 )
 
@@ -1375,7 +1375,7 @@ class ZCpu:
         self._read_operands_var_2op()
         ops = self.ops
         addr = ops[0] + ops[1]
-        self.mem[addr] = ops[2]
+        self.mem[addr] = ops[2] & 255
         if (self.plugin.level >= 2):
             self.plugin.debugprint( '{0}: storeb {1}'.format(format(pc,'X'),ops[0:self.numops]), 2 )
 
