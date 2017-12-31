@@ -92,3 +92,8 @@ class QtPluginV2(PlugSkel):
 
     def quit(self):
         self.win.close()
+
+    def unsplit(self):
+        self.widget.pbuffer_painter = [None]*8
+        self.widget.pbuffer = [None]*8
+        self.widget.init0()

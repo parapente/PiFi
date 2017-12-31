@@ -1558,10 +1558,11 @@ class ZCpu:
         self._read_operands_var_2op()
         ops = self.ops
         if ops[0] == 0xffff: # Unsplit and clear screen
-            # TODO: Unsplit
-            if (self.plugin.level >= 2):
-                self.plugin.debugprint("TODO:Unsplit", 2)
             self.output.clear_screen()
+            self.output.set_window(0)
+            self.plugin.window[0].cursor = None
+            self.plugin.set_font_style(0)
+            self.plugin.unsplit()
         elif ops[0] == 0xfffe: # Just clear the screen
             pass
         else: # Erase window

@@ -433,19 +433,24 @@ class ZTextWidget(QWidget):
                         window.set_cursor_position(window.cursor[0]+txtlen, window.cursor[1])
                         window.set_cursor_real_position(rect.x()+bounding_rect.width(), rect.y())
                 else: # There is not enough space
-                    #print "Not enough space to print:", txt
-                    self.scroll(painter)
-                    window.set_cursor_position(1, self.height)
-                    window.set_cursor_real_position(2, self.height*(self.linesize-1))
-                    rect.setX(2)
-                    rect.setY(window.cursor_real_pos[1])
-                    rect.setWidth(self.pbuffer[window.id].width()-window.cursor_real_pos[0])
-                    rect.setHeight(self.linesize)
-                    bounding_rect = painter.boundingRect(rect,txt)
-                    painter.drawText(bounding_rect, txt)
-                    if txt != self.cursor_char:
-                        window.set_cursor_position(window.cursor[0]+txtlen, window.cursor[1])
-                        window.set_cursor_real_position(rect.x()+bounding_rect.width(), rect.y())
+                    print("Not enough space to print:", txt)
+                    if window.id == 1 and (window.cursor[1] < window.line_count):
+                        window.set_cursor_position(1, window.cursor[1]+1)
+                        window.set_cursor_real_position(2, (window.cursor[1]+1)*(self.linesize))
+                        self.draw_text(txt, txtlen, window)
+                    if window.id == 0:
+                        self.scroll(painter)
+                        window.set_cursor_position(1, self.height)
+                        window.set_cursor_real_position(2, self.height*(self.linesize-1))
+                        rect.setX(2)
+                        rect.setY(window.cursor_real_pos[1])
+                        rect.setWidth(self.pbuffer[window.id].width()-window.cursor_real_pos[0])
+                        rect.setHeight(self.linesize)
+                        bounding_rect = painter.boundingRect(rect,txt)
+                        painter.drawText(bounding_rect, txt)
+                        if txt != self.cursor_char:
+                            window.set_cursor_position(window.cursor[0]+txtlen, window.cursor[1])
+                            window.set_cursor_real_position(rect.x()+bounding_rect.width(), rect.y())
 
     def buffered_string(self, txt, window):
         # @type window ZWindow
@@ -495,11 +500,18 @@ class ZTextWidget(QWidget):
         if ((w.id >= 0) and (w.id < 8)):
             if (self.pbuffer_painter[w.id] == None):
                 self.pbuffer_painter[w.id] = QPainter(self.pbuffer[w.id])
-            self.pbuffer_painter[w.id].setPen(self.ztoq_color[self.cur_fg])
-            self.brush.setColor(self.ztoq_color[self.cur_bg])
+            if  not self.reverse_video:
+                self.pbuffer_painter[w.id].setPen(self.ztoq_color[self.cur_fg])
+                self.brush.setColor(self.ztoq_color[self.cur_bg])
+            else:
+                self.pbuffer_painter[w.id].setPen(self.ztoq_color[self.cur_bg])
+                self.brush.setColor(self.ztoq_color[self.cur_fg])
             self.pbuffer_painter[w.id].setBackground(self.brush)
             self.pbuffer_painter[w.id].setBackgroundMode(Qt.OpaqueMode)
-            self.pbuffer_painter[w.id].eraseRect(QRectF(0, 0, self.pbuffer[w.id].width(), w.line_count*self.linesize))
+            if w.line_count > 0:
+                self.pbuffer_painter[w.id].eraseRect(QRectF(0, 0, self.pbuffer[w.id].width(), w.line_count*self.linesize))
+            else:
+                self.pbuffer_painter[w.id].eraseRect(QRectF(0, 0, self.pbuffer[w.id].width(), 24*self.linesize)) # TODO: Fix hardcoded linecount
             #print 2, 0, self.pbuffer[w.id].width()-2, w.line_count*self.linesize
         else:
             traceback.print_stack()
@@ -538,3 +550,8 @@ class ZTextWidget(QWidget):
     def stop_char_timer(self):
         if (self.chartimer != None):
             self.chartimer.stop()
+
+    def init0(self):
+        self.pbuffer[0] = QImage(640,480,QImage.Format_RGB32)
+        self.pbuffer[0].fill(0)
+

@@ -155,3 +155,6 @@ class PlugSkel(object):
 
     def quit(self):
         pass
+
+    def unsplit(self):
+        pass
