@@ -245,18 +245,20 @@ class ZTextWidget(QWidget):
 
     def set_text_colour(self,fg, win):
         self.cur_fg = fg
-        if (self.pbuffer_painter[win] == None):
-            self.pbuffer_painter[win] = QPainter(self.pbuffer[win])
-        painter = self.pbuffer_painter[win]
-        painter.setPen(self.ztoq_color[self.cur_fg])
+        if (self.pbuffer[win]):
+            if (self.pbuffer_painter[win] == None):
+                self.pbuffer_painter[win] = QPainter(self.pbuffer[win])
+            painter = self.pbuffer_painter[win]
+            painter.setPen(self.ztoq_color[self.cur_fg])
 
     def set_text_background_colour(self,bg, win):
         self.cur_bg = bg
-        if (self.pbuffer_painter[win] == None):
-            self.pbuffer_painter[win] = QPainter(self.pbuffer[win])
-        painter = self.pbuffer_painter[win]
-        self.brush.setColor(self.ztoq_color[self.cur_bg])
-        painter.setBackground(self.brush)
+        if (self.pbuffer[win]):
+            if (self.pbuffer_painter[win] == None):
+                self.pbuffer_painter[win] = QPainter(self.pbuffer[win])
+            painter = self.pbuffer_painter[win]
+            self.brush.setColor(self.ztoq_color[self.cur_bg])
+            painter.setBackground(self.brush)
 
     def set_font_style(self,s,win):
         if s == 0:
@@ -389,6 +391,9 @@ class ZTextWidget(QWidget):
                 self.draw_text(textbuffer, tblen, window)
 
     def draw_text(self, txt, txtlen, window):
+        if self.pbuffer[window.id] is None:
+            self.pbuffer[window.id] = QImage(640,480,QImage.Format_RGB32)
+            self.pbuffer[window.id].fill(0)
         if ((txtlen>0) and not ((txt == self.cursor_char) and (self._cursor_visible == False))): # If there IS something to print
             if (self.pbuffer_painter[window.id] == None):
                 self.brush.setColor(self.ztoq_color[self.cur_bg])
