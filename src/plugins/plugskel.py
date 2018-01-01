@@ -2,6 +2,7 @@
 
 from lib.window import ZWindow
 from lib.stream import ZStream
+import sys
 
 __author__ = "Theofilos Intzoglou"
 __date__ = "$9 Ιαν 2011 1:56:17 πμ$"
@@ -22,6 +23,7 @@ class PlugSkel(object):
     def debugprint(self,msg,lvl):
         if (lvl <= self.level):
             print(msg)
+            sys.stdout.flush()
 
     def set_zversion(self,zver):
         self.zver = zver
