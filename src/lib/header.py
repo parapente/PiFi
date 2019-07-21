@@ -27,6 +27,10 @@ class ZHeader:
     #    """ Version of story file """
     #    return self.header[0]
 
+    def release_number(self):
+        """ Release Number """
+        return 256*self.header[0x02]+self.header[0x03]
+
     def pc(self):
         """ Program Counter """
         return 256*self.header[0x06]+self.header[0x07]
@@ -42,6 +46,11 @@ class ZHeader:
     #def global_table(self):
         """ Location of the global variables table """
     #    return 256*self.header[0x0c]+self.header[0x0d]
+
+
+    def serial_number(self):
+        """ Serial Number """
+        return ''.join([chr(x) for x in self.header[0x12:0x18]])
 
     def abbrev_table(self):
         """ Location of the abbreviations table """

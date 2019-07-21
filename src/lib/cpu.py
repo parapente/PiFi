@@ -1251,8 +1251,10 @@ class ZCpu:
         self.plugin.debugprint( '{0}: save'.format(format(pc,'X')), 2 )
 
     def _restore(self):
-        self.plugin.debugprint( ': restore', 0 )
-        sys.exit("Not implemented yet!")
+        pc = self.pc
+        self.pc += 1
+        self.intr = 6
+        self.plugin.debugprint( '{0}: restore'.format(format(pc,'X')), 2 )
 
     def _restart(self):
         pc = self.pc
@@ -1584,6 +1586,10 @@ class ZCpu:
 
     def _get_cursor(self):
         self.plugin.debugprint( ': get_cursor', 0 )
+        pc = self.pc
+        self._read_operands_var_2op()
+        ops = self.ops
+        print('ops:', ops)
         sys.exit("Not implemented yet!")
 
     def _set_text_style(self):
