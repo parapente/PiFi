@@ -296,6 +296,12 @@ class ZMachine:
                 chunk_length = (filebuf[pos] << 24) + (filebuf[pos+1] << 16) +\
                                 (filebuf[pos+2] << 8) + filebuf[pos+3]
                 pos += 4
+                if chunk_length < self.mem.static_beg or chunk_length > self.mem.static_beg:
+                    self.plugin.prints('Saved UMem size not matching dynamic memory. Restore failed')
+                    return
+                i = 0
+                for x in filebuf[pos:pos+chunk_length]:
+                    self.mem.mem[i] = x
                 if (chunk_length % 2) == 1:
                     pos += chunk_length + 1
                 else:
@@ -408,6 +414,7 @@ class ZMachine:
         ifhd += [membuff[2], membuff[3]]
         for i in range(6):
             ifhd += [membuff[18+i]]
+        # TODO: Checksum must be calculated if not available
         ifhd += [membuff[0x1c], membuff[0x1d]]
         ifhd += [(self.cpu.pc >> 16) & 255, (self.cpu.pc >> 8) & 255, self.cpu.pc & 255, 0]
         tmp = array('B')
