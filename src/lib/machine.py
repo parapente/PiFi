@@ -280,6 +280,8 @@ class ZMachine:
         self.plugin.debugprint('filebuf size: ' + str(len(filebuf)), 1)
 
         pos = 12
+        self.file.seek(0)
+        gamefilebuf = list(self.file.read(self.mem.static_beg))
         while pos <  savesize:
             nextID = ''.join([chr(x) for x in filebuf[pos:pos+4]])
             self.plugin.debugprint('Found chunk ID: ' + nextID, 1)
@@ -288,6 +290,27 @@ class ZMachine:
                 chunk_length = (filebuf[pos] << 24) + (filebuf[pos+1] << 16) +\
                                 (filebuf[pos+2] << 8) + filebuf[pos+3]
                 pos += 4
+                fbpos = 0
+                mempos = 0
+                while fbpos < chunk_length:
+                    if filebuf[pos+fbpos] != 0:
+                        self.mem.mem[mempos] = filebuf[pos+fbpos]
+                        fbpos += 1
+                        mempos += 1
+                    else:
+                        fbpos += 1
+                        zerocount = filebuf[pos+fbpos]
+                        fbpos += 1
+                        for x in gamefilebuf[mempos:mempos+zerocount]:
+                            self.mem.mem[mempos] = x
+                            mempos += 1
+                if mempos < self.mem.static_beg:
+                    for x in gamefilebuf[mempos:self.mem.static_beg]
+                        self.mem.mem[mempos] = x
+                        mempos += 1
+                elif mempos > self.mem.static_beg:
+                    self.plugin.prints('Savefile overwrites part of static memory. Halting...')
+                    sys.exit("Static memory overwritten!")
                 if (chunk_length % 2) == 1:
                     pos += chunk_length + 1
                 else:
