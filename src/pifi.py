@@ -21,7 +21,7 @@ if __name__ == "__main__":
     # @type f file
     # @type parser argparse.ArgumentParser
     parser = argparse.ArgumentParser(description='PiFi - Python Interactive Fiction Interpreter')
-    parser.add_argument('-p', '--plugin', help='specify the plugin to use; use QtPlugin for now', default='QtPluginV2')
+    parser.add_argument('-p', '--plugin', help='specify the plugin to use; use QtPlugin for now', default='QtPluginV3')
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('-l', '--log-level', type=int, default=0, help='debug log level (0-2); default: %(default)s')
     parser.add_argument('-V', '--version', action='version', version='%(prog)s 0.1')
