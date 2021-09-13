@@ -305,7 +305,7 @@ class ZMachine:
                             self.mem.mem[mempos] = x
                             mempos += 1
                 if mempos < self.mem.static_beg:
-                    for x in gamefilebuf[mempos:self.mem.static_beg]
+                    for x in gamefilebuf[mempos:self.mem.static_beg]:
                         self.mem.mem[mempos] = x
                         mempos += 1
                 elif mempos > self.mem.static_beg:
