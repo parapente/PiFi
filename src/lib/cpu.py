@@ -1437,6 +1437,7 @@ class ZCpu:
         #print "Max parse:", self.mem[ops[1]]
         #if (self.mem[ops[0]] < 7):
         #    exit("Input buffer too small")
+        self.plugin.show_cursor()
         if self.zver < 4:
             self._show_status2()
             pass

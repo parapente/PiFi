@@ -407,7 +407,7 @@ class ZMachine:
                     pos += chunk_length + 1
                 else:
                     pos += chunk_length
-        sys.exit("Exit")
+        #sys.exit("Exit")
 
         # FIX: You should restart to the point where the save was created
         # The following are unnecessary 
@@ -576,6 +576,7 @@ class ZMachine:
             self.cpu.start()
 
     def restore_state_return_fail(self):
+        self.cpu.intr = 0
         if (self.zver >= 5):
             self.cpu._zstore(0,self.cpu.pc)
             self.cpu.pc += 1
