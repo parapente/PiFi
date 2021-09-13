@@ -1,12 +1,12 @@
 # -*- coding: utf-8
 
-from memory import ZMemory
-from cpu import ZCpu
-from header import ZHeader
-from input import ZInput
-from output import ZOutput
-from ztext import *
-from dictionary import ZDictionary
+from .memory import ZMemory
+from .cpu import ZCpu
+from .header import ZHeader
+from .input import ZInput
+from .output import ZOutput
+from .ztext import *
+from .dictionary import ZDictionary
 import sys
 from threading import Lock
 
@@ -62,7 +62,9 @@ class ZMachine:
             #self.cpu.start()
             #self.handle_intr()
         elif self.cpu.intr == 6: # Load state interrupt
-            pass
+            self.plugin.prints('Enter filename:')
+            self.mutex.acquire()
+            self.input.read_line(100, self.restore_state, 0, None)
         elif self.cpu.intr == 10: # Return from routine, back to sread
             self.mutex.release()
             if (self.cpu.last_return == 1): # Routine returned true, we must bail out
@@ -104,7 +106,7 @@ class ZMachine:
         self.input.disconnect_input(self.get_text)
         self.mutex.acquire()
         #self.input.hide_cursor()
-        #print 'get_text:', text, interrupted
+        #print('get_text:', text, interrupted)
         if (interrupted == False): # We got here because user pressed enter
             self.plugin.debugprint("Enter!", 2)
             paddr = self.cpu.intr_data[1]
@@ -112,7 +114,7 @@ class ZMachine:
             self.plugin.debugprint("gt -> '"+text+"'", 2)
             if self.zver < 5:
                 i = 0
-                for i in xrange(len(text)):
+                for i in range(len(text)):
                     if (i == (len(text) - 1)) and text[i] == '\n':
                         self.mem.mem[taddr + 1 + i] = 0
                     else:
@@ -123,7 +125,7 @@ class ZMachine:
             else:
                 if taddr != 0:
                     skip = self.mem.mem[taddr + 1]
-                    for i in xrange(len(text)):
+                    for i in range(len(text)):
                         self.mem.mem[taddr + 2 + i + skip] = ord(str(text[i]))
                     self.mem.mem[taddr + 1] = len(text) + skip
                     self.lex(taddr,paddr,0,0)
@@ -139,27 +141,27 @@ class ZMachine:
         self.handle_intr()
 
     def lex(self,text,parse,dictionary,flag):
-        if dictionary <> 0 or flag <> 0:
+        if dictionary != 0 or flag != 0:
             sys.exit("LEX: Not supported yet!")
         txt = ""
         if self.zver < 5:
             i = 0
-            while self.mem.mem[text + 1 + i ] <> 0:
-                txt += unichr(self.mem.mem[text + 1 + i])
+            while self.mem.mem[text + 1 + i ] != 0:
+                txt += chr(self.mem.mem[text + 1 + i])
                 i += 1
         else:
-            for i in xrange(self.mem.mem[text + 1]):
-                txt += unichr(self.mem.mem[text + 2 + i])
+            for i in range(self.mem.mem[text + 1]):
+                txt += chr(self.mem.mem[text + 2 + i])
         l = len(txt)
         self.plugin.debugprint("txt='"+txt+"' Len:"+str(l), 2)
         words = []
         w = ""
         i = 0
         while (i < l):
-            while (i < l) and ((txt[i] not in self.dict.separators) and (txt[i] <> " ")):
+            while (i < l) and ((txt[i] not in self.dict.separators) and (txt[i] != " ")):
                 w += txt[i]
                 i += 1
-            if (w <> "") and (w <> " "):
+            if (w != "") and (w != " "):
                 pos = i - len(w)
                 words.append(str(w))
                 if self.zver < 5:
@@ -182,13 +184,13 @@ class ZMachine:
         while i < len(words):
             w1 = ""
             # If the word is too large we need to cut it down
-            if len(words[i]) > (self.dict.word_length * 3 / 2):
-                for j in xrange(self.dict.word_length * 3 / 2):
+            if len(words[i]) > (self.dict.word_length * 3 // 2):
+                for j in range(self.dict.word_length * 3 // 2):
                     w1 += words[i][j]
             else:
                 w1 = words[i]
             self.plugin.debugprint(w1+"- len -"+str(len(w1)), 2)
-            if self.cpu.intr_data[1] <> 0: # No parsing is required
+            if self.cpu.intr_data[1] != 0: # No parsing is required
                 # Find the data for the record
                 addr = self.dict.find_word(w1)
                 l = len(words[i])
@@ -218,7 +220,7 @@ class ZMachine:
             #sys.exit('Quit')
 
     def save_state(self, filename):
-        print "Here!"
+        print("Here!")
         # Test if file already exists
         try:
             self.savefile = open(filename)
@@ -230,36 +232,212 @@ class ZMachine:
             try:
                 self.savefile = open(filename,'wb')
                 self.do_save_state()
-            except IOError as (errno,strerror):
-                print "I/O error ({0}): {1}".format(errno,strerror)
+            except IOError as cannot_save_file:
+                (errno,strerror) = cannot_save_file.args
+                print("I/O error ({0}): {1}".format(errno,strerror))
                 self.plugin.prints('Save failed!\n')
                 self.mutex.release()
                 self.save_state_return_fail()
 
+    def restore_state(self, filename):
+        print("Here!")
+        # Test if file already exists
+        try:
+            self.savefile = open(filename,'rb')
+            self.do_restore_state()
+        except IOError as cannot_restore_file:
+            (errno,strerror) = cannot_restore_file.args
+            print("I/O error ({0}): {1}".format(errno,strerror))
+            self.plugin.prints('Restore failed!\n')
+            self.mutex.release()
+            self.restore_state_return_fail()
+
     def overwrite_yn(self,key):
         if key == 'y' or key == 'Y':
-            self.do_save_state()
+            fname = self.savefile.name
+            self.savefile.close()
+            try:
+                self.savefile = open(fname,'wb')
+                self.do_save_state()
+            except IOError as cannot_save_file:
+                (errno,strerror) = cannot_save_file.args
+                print("I/O error ({0}): {1}".format(errno,strerror))
+                self.plugin.prints('Save failed!\n')
+                self.mutex.release()
+                self.save_state_return_fail()
         elif key == 'n' or key == 'N':
             self.save_state_return_fail()
         else:
             self.input.read_char(self.overwrite_yn)
 
+    def do_restore_state(self):
+        # Read at most 1MB of savefile (can it be larger than that?)
+        filebuf = list(self.savefile.read(1024*1024))
+        if ''.join([chr(x) for x in filebuf[:4]]) == 'FORM' and ''.join([chr(x) for x in filebuf[8:12]]) == 'IFZS':
+            self.plugin.debugprint('File looks like a savefile.', 1)
+        savesize = (filebuf[4] << 24) + (filebuf[5] << 16) + (filebuf[6] << 8) + filebuf[7] + 8
+        self.plugin.debugprint('Filesize: ' + str(savesize), 1)
+        self.plugin.debugprint('filebuf size: ' + str(len(filebuf)), 1)
+
+        pos = 12
+        self.file.seek(0)
+        gamefilebuf = list(self.file.read(self.mem.static_beg))
+        while pos <  savesize:
+            nextID = ''.join([chr(x) for x in filebuf[pos:pos+4]])
+            self.plugin.debugprint('Found chunk ID: ' + nextID, 1)
+            pos += 4
+            if nextID == 'CMem':
+                chunk_length = (filebuf[pos] << 24) + (filebuf[pos+1] << 16) +\
+                                (filebuf[pos+2] << 8) + filebuf[pos+3]
+                pos += 4
+                fbpos = 0
+                mempos = 0
+                while fbpos < chunk_length:
+                    if filebuf[pos+fbpos] != 0:
+                        self.mem.mem[mempos] = filebuf[pos+fbpos]
+                        fbpos += 1
+                        mempos += 1
+                    else:
+                        fbpos += 1
+                        zerocount = filebuf[pos+fbpos]
+                        fbpos += 1
+                        for x in gamefilebuf[mempos:mempos+zerocount]:
+                            self.mem.mem[mempos] = x
+                            mempos += 1
+                if mempos < self.mem.static_beg:
+                    for x in gamefilebuf[mempos:self.mem.static_beg]
+                        self.mem.mem[mempos] = x
+                        mempos += 1
+                elif mempos > self.mem.static_beg:
+                    self.plugin.prints('Savefile overwrites part of static memory. Halting...')
+                    sys.exit("Static memory overwritten!")
+                if (chunk_length % 2) == 1:
+                    pos += chunk_length + 1
+                else:
+                    pos += chunk_length
+            elif nextID == 'UMem':
+                chunk_length = (filebuf[pos] << 24) + (filebuf[pos+1] << 16) +\
+                                (filebuf[pos+2] << 8) + filebuf[pos+3]
+                pos += 4
+                if chunk_length < self.mem.static_beg or chunk_length > self.mem.static_beg:
+                    self.plugin.prints('Saved UMem size not matching dynamic memory. Restore failed')
+                    return
+                i = 0
+                for x in filebuf[pos:pos+chunk_length]:
+                    self.mem.mem[i] = x
+                if (chunk_length % 2) == 1:
+                    pos += chunk_length + 1
+                else:
+                    pos += chunk_length
+            elif nextID == 'Stks':
+                chunk_length = (filebuf[pos] << 24) + (filebuf[pos+1] << 16) +\
+                                (filebuf[pos+2] << 8) + filebuf[pos+3]
+                pos += 4
+                if (chunk_length % 2) == 1:
+                    pos += chunk_length + 1
+                else:
+                    pos += chunk_length
+            elif nextID == 'IntD':
+                chunk_length = (filebuf[pos] << 24) + (filebuf[pos+1] << 16) +\
+                                (filebuf[pos+2] << 8) + filebuf[pos+3]
+                pos += 4
+                # Ignore for now
+                if (chunk_length % 2) == 1:
+                    pos += chunk_length + 1
+                else:
+                    pos += chunk_length
+            elif nextID == 'IFhd':
+                chunk_length = (filebuf[pos] << 24) + (filebuf[pos+1] << 16) +\
+                                (filebuf[pos+2] << 8) + filebuf[pos+3]
+                pos += 4
+                self.plugin.debugprint('Chunk len: ' + str(chunk_length), 1)
+                if chunk_length != 13:
+                    self.plugin.prints('Wrong size of chunk. Not restoring\n')
+                    return
+
+                release_number = (filebuf[pos] << 8) + filebuf[pos+1]
+                if release_number != self.header.release_number():
+                    self.plugin.debugprint(str(release_number) + " - " + str(self.header.release_number()), 1)
+                    self.plugin.prints('Different release number. Not restoring')
+                    return
+
+                serial_num = ''.join([chr(x) for x in filebuf[pos+2:pos+8]])
+                if serial_num != self.header.serial_number():
+                    self.plugin.debugprint(serial_num + " - " + self.header.serial_number(), 1)
+                    self.plugin.prints('Different serial number. Not restoring')
+                    return
+
+                checksum = (filebuf[pos+8] << 8) + filebuf[pos+9]
+                if checksum != self.header.checksum():
+                    # TODO: If header checksum is zero we should cacl checksum
+                    self.plugin.debugprint(str(checksum) + " - " + str(self.header.checksum()), 1)
+                    self.plugin.prints('Different checksum. Not restoring')
+                    return
+
+                self.plugin.debugprint('Savefile is for this game. Continue...', 1)
+                if (chunk_length % 2) == 1:
+                    pos += chunk_length + 1
+                else:
+                    pos += chunk_length
+                self.plugin.debugprint(str(filebuf[pos]), 1)
+            elif nextID == 'AUTH':
+                chunk_length = (filebuf[pos] << 24) + (filebuf[pos+1] << 16) +\
+                                (filebuf[pos+2] << 8) + filebuf[pos+3]
+                # Ignore for now
+                pos += 4
+                if (chunk_length % 2) == 1:
+                    pos += chunk_length + 1
+                else:
+                    pos += chunk_length
+            elif nextID == '(c) ':
+                chunk_length = (filebuf[pos] << 24) + (filebuf[pos+1] << 16) +\
+                                (filebuf[pos+2] << 8) + filebuf[pos+3]
+                # Ignore for now
+                pos += 4
+                if (chunk_length % 2) == 1:
+                    pos += chunk_length + 1
+                else:
+                    pos += chunk_length
+            elif nextID == 'ANNO':
+                chunk_length = (filebuf[pos] << 24) + (filebuf[pos+1] << 16) +\
+                                (filebuf[pos+2] << 8) + filebuf[pos+3]
+                # Ignore for now
+                pos += 4
+                if (chunk_length % 2) == 1:
+                    pos += chunk_length + 1
+                else:
+                    pos += chunk_length
+        sys.exit("Exit")
+
+        # FIX: You should restart to the point where the save was created
+        # The following are unnecessary 
+        if (self.zver >= 4):
+            self.cpu._zstore(1,self.cpu.pc)
+            self.cpu.pc += 1
+            self.cpu.start()
+            self.handle_intr()
+        else:
+            self.cpu.branch(False)
+            self.cpu.start()
+            self.handle_intr()
+
     def do_save_state(self):
-        self.savefile.write('FORM\x00\x00\x00\x00IFZS')
+        self.savefile.write('FORM\x00\x00\x00\x00IFZS'.encode())
         savefile_size = 4
 
         membuff = self.mem.mem[:self.mem.static_beg]
-        print membuff
+        print(membuff)
         self.file.seek(0)
         filebuff = list(self.file.read(self.mem.static_beg))
-        print filebuff
+        print(filebuff)
 
         #Save Story File info ('IFhd') - MUST be first
-        self.savefile.write('IFhd\x00\x00\x00\x0d')
+        self.savefile.write('IFhd\x00\x00\x00\x0d'.encode())
         ifhd = []
         ifhd += [membuff[2], membuff[3]]
-        for i in xrange(6):
+        for i in range(6):
             ifhd += [membuff[18+i]]
+        # TODO: Checksum must be calculated if not available
         ifhd += [membuff[0x1c], membuff[0x1d]]
         ifhd += [(self.cpu.pc >> 16) & 255, (self.cpu.pc >> 8) & 255, self.cpu.pc & 255, 0]
         tmp = array('B')
@@ -269,14 +447,14 @@ class ZMachine:
 
         # Save dynamic memory ('CMem')
         diffbuff = [0] * self.mem.static_beg
-        for i in xrange(self.mem.static_beg):
-            if (membuff[i] == ord(filebuff[i])):
+        for i in range(self.mem.static_beg):
+            if (membuff[i] == filebuff[i]):
                 diffbuff[i] = 0
             else:
                 diffbuff[i] = membuff[i]
         rlebuff = []
         self.rle_encode(diffbuff, rlebuff)
-        self.savefile.write('CMem')
+        self.savefile.write('CMem'.encode())
         tmp = array('B')
         tmpsize = len(rlebuff)
         sizebyte4 = tmpsize & 255
@@ -286,13 +464,13 @@ class ZMachine:
         tmp.fromlist([sizebyte1, sizebyte2, sizebyte3, sizebyte4]+rlebuff)
         self.savefile.write(tmp)
         if ((tmpsize % 2) == 1):
-            self.savefile.write('\x00');
+            self.savefile.write('\x00'.encode());
             savefile_size += 8 + len(rlebuff) + 1
         else:
             savefile_size += 8 + len(rlebuff)
 
         # Save stack ('Stks')
-        self.savefile.write('Stks')
+        self.savefile.write('Stks'.encode())
 
         # To get a complete stack dump we need to push local data to stack
         self.cpu.stack.push_local_vars()
@@ -305,7 +483,7 @@ class ZMachine:
         stks = [0, 0, 0, 0]
         stack = self.cpu.stack
         frames = stack.framespos // 4
-        for i in xrange(frames):
+        for i in range(frames):
             # Get necessary data from stack
             localvars = stack.frames[i*4]
             evalstack = stack.frames[i*4+1]
@@ -332,7 +510,7 @@ class ZMachine:
             else:
                 stks += [0]
             args = 0
-            for j in xrange(lenargv):
+            for j in range(lenargv):
                 args = args << 1
                 args += 1
             stks += [args]
@@ -341,12 +519,12 @@ class ZMachine:
             stks += [(evalstacklen >> 8) & 255, evalstacklen & 255]
             stks_size += 2
 
-            print 'Local vars:',len(localvars)
-            for j in xrange(len(localvars)):
+            print('Local vars:',len(localvars))
+            for j in range(len(localvars)):
                 stks += [(localvars[j] >> 8) & 255, localvars[j] & 255]
                 stks_size += 2
-            print 'Evalstack:',len(evalstack)
-            for j in xrange(len(evalstack)):
+            print('Evalstack:',len(evalstack))
+            for j in range(len(evalstack)):
                 stks += [(evalstack[j] >> 8) & 255, evalstack[j] & 255]
                 stks_size += 2
 
@@ -389,6 +567,15 @@ class ZMachine:
             self.handle_intr()
 
     def save_state_return_fail(self):
+        if (self.zver >= 5):
+            self.cpu._zstore(0,self.cpu.pc)
+            self.cpu.pc += 1
+            self.cpu.start()
+        else:
+            self.cpu.branch(False)
+            self.cpu.start()
+
+    def restore_state_return_fail(self):
         if (self.zver >= 5):
             self.cpu._zstore(0,self.cpu.pc)
             self.cpu.pc += 1
@@ -444,7 +631,7 @@ class ZMachine:
         elif (b == 6 or b == 7 or b == 8):
             max_length = 512 * 1024
         else:
-            print 'Not a valid story file'
+            print('Not a valid story file')
             sys.exit(10)
 
         # Now that we checked the file size we rewind the file and read the data into memory

@@ -1,6 +1,6 @@
 # -*- coding: utf-8
 
-from stream import ZStream
+from .stream import ZStream
 
 __author__="Theofilos Intzoglou"
 __date__ ="$1 Ιουλ 2009 6:24:20 μμ$"

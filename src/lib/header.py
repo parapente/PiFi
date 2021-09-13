@@ -13,7 +13,7 @@ class ZHeader:
         self.global_table = 256*h[0x0c]+h[0x0d]
         self.version = h[0]
         length = 256*self.header[0x1a]+self.header[0x1b]
-        if length <> 0:
+        if length != 0:
             if self.version <= 3:
                 self.length_of_file = length*2
             elif self.version < 6:
@@ -26,6 +26,10 @@ class ZHeader:
     #def version(self):
     #    """ Version of story file """
     #    return self.header[0]
+
+    def release_number(self):
+        """ Release Number """
+        return 256*self.header[0x02]+self.header[0x03]
 
     def pc(self):
         """ Program Counter """
@@ -42,6 +46,11 @@ class ZHeader:
     #def global_table(self):
         """ Location of the global variables table """
     #    return 256*self.header[0x0c]+self.header[0x0d]
+
+
+    def serial_number(self):
+        """ Serial Number """
+        return ''.join([chr(x) for x in self.header[0x12:0x18]])
 
     def abbrev_table(self):
         """ Location of the abbreviations table """

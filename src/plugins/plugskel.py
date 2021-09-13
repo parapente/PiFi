@@ -2,25 +2,28 @@
 
 from lib.window import ZWindow
 from lib.stream import ZStream
+import sys
 
-__author__="Theofilos Intzoglou"
-__date__ ="$9 Ιαν 2011 1:56:17 πμ$"
+__author__ = "Theofilos Intzoglou"
+__date__ = "$9 Ιαν 2011 1:56:17 πμ$"
 
 class PlugSkel(object):
 
     def __init__(self):
         self._ostream = [ZStream(), ZStream(), ZStream(), ZStream()]
         self._ostream[0].selected = True
+        self.level = 0 # Default debug level
 
     def prepare_gui(self):
         pass
 
-    def set_debug_level(self,lvl):
+    def set_debug_level(self, lvl):
         self.level = lvl
 
     def debugprint(self,msg,lvl):
         if (lvl <= self.level):
-            print msg
+            print(msg)
+            sys.stdout.flush()
 
     def set_zversion(self,zver):
         self.zver = zver
@@ -127,13 +130,13 @@ class PlugSkel(object):
 
     def selected_ostreams(self):
         s = []
-        for i in xrange(4):
+        for i in range(4):
             if self._ostream[i].selected == True:
                 s.append(i+1)
         return s
 
     def select_ostream(self,n):
-        if n <> 0:
+        if n != 0:
             self._ostream[n - 1].selected = True
 
     def deselect_ostream(self,n):
@@ -141,7 +144,7 @@ class PlugSkel(object):
 
     def update_screen_size(self):
         self.screen_size_callback(self.width(),self.height())
-        print self.width(), self.height()
+        print(self.width(), self.height())
 
     def erase_window(self,w):
         self.widget.erase_window(self.window[w])
@@ -153,4 +156,7 @@ class PlugSkel(object):
         self.widget.stop_char_timer()
 
     def quit(self):
+        pass
+
+    def unsplit(self):
         pass

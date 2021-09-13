@@ -2,18 +2,16 @@
 # To change this template, choose Tools | Templates
 # and open the template in the editor.
 
-from PyQt4.QtGui import QWidget
-from PyQt4.QtGui import QPainter
-from PyQt4.QtGui import QBrush
-from PyQt4.QtGui import QFont
-from PyQt4.QtGui import QFontMetrics
-from PyQt4.QtGui import QSizePolicy
-from PyQt4.QtCore import QObject
-from PyQt4.QtCore import Qt
-from PyQt4.QtCore import SIGNAL
-from PyQt4.QtCore import QSize
-from PyQt4.QtCore import QString
-from PyQt4.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QWidget
+from PyQt5.QtGui import QPainter
+from PyQt5.QtGui import QBrush
+from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFontMetrics
+from PyQt5.QtWidgets import QSizePolicy
+from PyQt5.QtCore import QObject
+from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QSize
+from PyQt5.QtCore import pyqtSignal
 from lib.stream import ZStream
 import sys
 
@@ -43,7 +41,7 @@ class ZTextWidget(QWidget):
     input_buf = []
     _cursor_visible = False
     _ostream = None
-    returnPressed = pyqtSignal(QString)
+    returnPressed = pyqtSignal(str)
     keyPressed = pyqtSignal(int)
 
     def __init__(self,parent = None,flags = Qt.Widget):
@@ -56,7 +54,7 @@ class ZTextWidget(QWidget):
         self.setFocusPolicy(Qt.StrongFocus)
         self._ostream = [ZStream(), ZStream(), ZStream(), ZStream()]
         self._ostream[0].selected = True
-        for i in xrange(self.width *  self.height * 4):
+        for i in range(self.width *  self.height * 4):
             self.buf.append(0)
 
     def paintEvent(self,e):
@@ -99,13 +97,13 @@ class ZTextWidget(QWidget):
                     f = painter.font()
                     f.setItalic(True)
                     painter.setFont(f)
-                if self.buf[((((self.height - l) * self.width) + c - 1) * 4) + 3] <> 0:
+                if self.buf[((((self.height - l) * self.width) + c - 1) * 4) + 3] != 0:
                     painter.drawText(x,y,self.buf[((((self.height - l) * self.width) + c - 1) * 4) + 3])
                 c += 1
             l -= 1
             c = 1
         # Print upper window
-        if self.upper_buf <> []:
+        if self.upper_buf != []:
             l = 1
             while (l <= self.upper_buf_height):
                 c = 1
@@ -113,7 +111,7 @@ class ZTextWidget(QWidget):
                     y = self.fixed_font_metrics.ascent() + (l - 1) * self.fixed_font_height
                     x = 1 + ((c - 1) * self.fixed_font_width)
                     #print "**",l,"**",c
-                    if self.upper_buf[((((l - 1) * self.width) + c - 1) * 4) + 3] <> 0:
+                    if self.upper_buf[((((l - 1) * self.width) + c - 1) * 4) + 3] != 0:
                         painter.setPen(self.ztoq_color(self.upper_buf[(((l - 1) * self.width) + c - 1) * 4]))
                         painter.setBackground(QBrush(self.ztoq_color(self.upper_buf[((((l - 1) * self.width) + c - 1) * 4) + 1])))
                         # Set appropriate font style
@@ -198,7 +196,7 @@ class ZTextWidget(QWidget):
                 #print "Total -", total
                 while (i < total):
                     s = ""
-                    while (i < total) and (txt[i] <> '\n') and (c <= self.width):
+                    while (i < total) and (txt[i] != '\n') and (c <= self.width):
                         s += txt[i]
                         i += 1
                         c += 1
@@ -223,7 +221,7 @@ class ZTextWidget(QWidget):
                 #print "-", i, l, "-", txt
                 #print "len upperbuf=", len(self.upper_buf)
                 while (i <= self.width) and (j < len(txt)):
-                    if txt[j] <> '\n':
+                    if txt[j] != '\n':
                         self.upper_buf[(((l - 1) * self.width) + (i - 1)) * 4] = self.cur_fg
                         self.upper_buf[((((l - 1) * self.width) + (i - 1)) * 4) + 1] = self.cur_bg
                         self.upper_buf[((((l - 1) * self.width) + (i - 1)) * 4) + 2] = self.cur_style
@@ -242,7 +240,7 @@ class ZTextWidget(QWidget):
         col = self.lower_win_cursor
         #print "Column:", col, txt
         if self.cur_win == 0: # Lower win
-            for i in xrange(len(txt)):
+            for i in range(len(txt)):
                 self.buf[(col - 1 + i) * 4] = self.cur_fg
                 self.buf[((col - 1 + i) * 4) + 1] = self.cur_bg
                 self.buf[((col - 1 + i) * 4) + 2] = self.cur_style
@@ -251,7 +249,7 @@ class ZTextWidget(QWidget):
     def print_char(self,c):
         col = self.lower_win_cursor
         if self.cur_win == 0: # Lower win
-            if c <> '\n':
+            if c != '\n':
                 self.buf[(col - 1) * 4] = self.cur_fg
                 self.buf[((col - 1) * 4) + 1] = self.cur_bg
                 self.buf[((col - 1) * 4) + 2] = self.cur_style
@@ -288,7 +286,7 @@ class ZTextWidget(QWidget):
         x = 1 + ((col - 1) * self.fixed_font_width)
         painter.setPen(self.ztoq_color(self.cur_fg))
         painter.setBackground(QBrush(self.ztoq_color(self.cur_bg)))
-        painter.drawText(x,y,unichr(0x2581))
+        painter.drawText(x,y,chr(0x2581))
 
     def keyPressEvent(self,e):
         if e.key() == Qt.Key_Left:
@@ -318,7 +316,7 @@ class ZTextWidget(QWidget):
                 self.cur_pos -= 1
                 self.top_pos -= 1
                 col = self.cur_pos - 1
-                for i in xrange(4):
+                for i in range(4):
                     self.buf[col * 4 + i] = 0
                 del self.input_buf[self.cur_pos - self.start_pos]
                 #print self.input_buf
@@ -331,7 +329,7 @@ class ZTextWidget(QWidget):
             if self.cur_pos < self.top_pos:
                 self.top_pos -= 1
                 col = self.cur_pos - 1
-                for i in xrange(4):
+                for i in range(4):
                     self.buf[col * 4 + i] = 0
                 del self.input_buf[self.cur_pos - self.start_pos]
                 self.lower_win_cursor -= 1
@@ -341,7 +339,7 @@ class ZTextWidget(QWidget):
         elif (e.key() == Qt.Key_Return) or (e.key() == Qt.Key_Enter):
             # TODO: Learn how to properly convert a list of chars to a string. There MUST be another way! >:-S
             text = ""
-            for i in xrange(len(self.input_buf)):
+            for i in range(len(self.input_buf)):
                 text += self.input_buf[i]
             #print text
             self.print_char('\n')
@@ -361,16 +359,16 @@ class ZTextWidget(QWidget):
                 self.cur_pos += 1
                 self.top_pos += 1
                 if (self.cur_pos - self.start_pos) <= len(self.input_buf):
-                    self.input_buf.insert(self.cur_pos - self.start_pos - 1, unicode(e.text()))
+                    self.input_buf.insert(self.cur_pos - self.start_pos - 1, str(e.text()))
                     #print "CurPos:", self.cur_pos
                     col = self.cur_pos - 2
-                    self.buf[col * 4 + 3] = unicode(e.text())
+                    self.buf[col * 4 + 3] = str(e.text())
                     self.buf[col * 4 + 2] = 0
                     self.buf[col * 4 + 1] = self.cur_bg
                     self.buf[col * 4] = self.cur_fg
                     self.lower_win_cursor += 1
                 else:
-                    self.input_buf.append(unicode(e.text()))
+                    self.input_buf.append(str(e.text()))
                     self.print_char(e.text())
                 #print self.input_buf
                 self.update()
@@ -394,7 +392,7 @@ class ZTextWidget(QWidget):
             self.cur_style |= s
 
     def clear(self):
-        for i in xrange(self.width *  self.height * 4):
+        for i in range(self.width *  self.height * 4):
             self.buf[i] = 0
         self.upper_buf = []
         self.upper_buf_height = 0
@@ -407,18 +405,18 @@ class ZTextWidget(QWidget):
             #print "Copying..."
             l = lines + 1
             while l <= self.upper_buf_height:
-                for i in xrange(self.width * 4):
+                for i in range(self.width * 4):
                     self.buf[(((self.height - l + 1) * self.width) * 4) + i] = self.upper_buf[(((l - 1) * self.width) * 4) + i]
                 l += 1
         self.upper_buf_height = lines
         if (self.upper_buf == []) or (ver == 3):
-            for i in xrange(self.upper_buf_height*self.width*4): # It isn't necessary to occupy that much memory but it helps to be prepared! :-P
+            for i in range(self.upper_buf_height*self.width*4): # It isn't necessary to occupy that much memory but it helps to be prepared! :-P
                 self.upper_buf.append(0)
         if (self.upper_win_cursor == []) or (self.upper_win_cursor[1] > lines):
             self.upper_win_cursor = [1,1]
 
     def select_ostream(self,n):
-        if n <> 0:
+        if n != 0:
             self._ostream[n - 1].selected = True
 
     def deselect_ostream(self,n):
@@ -427,7 +425,7 @@ class ZTextWidget(QWidget):
     def insert_new_line(self):
         #print "New line"
         # TODO: Not just insert new lines but also remove old unwanted ones
-        for i in xrange(self.width * 4):
+        for i in range(self.width * 4):
             self.buf.insert(0, 0)
 
     def read_line(self, callback):
@@ -438,15 +436,15 @@ class ZTextWidget(QWidget):
 
     def read_char(self, callback):
         QObject.connect(self, SIGNAL("keyPressed(int)"), callback)
-        print 'Connect char'
+        print('Connect char')
 
     def disconnect_read_char(self, callback):
         QObject.disconnect(self, SIGNAL("keyPressed(int)"), callback)
-        print 'Disconnect char'
+        print('Disconnect char')
 
     def selected_ostreams(self):
         s = []
-        for i in xrange(4):
+        for i in range(4):
             if self._ostream[i].selected == True:
                 s.append(i+1)
         return s

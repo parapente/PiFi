@@ -3,7 +3,7 @@
 __author__="Theofilos Intzoglou"
 __date__ ="$29 Σεπ 2010 10:46:21 πμ$"
 
-import Queue
+import queue
 
 class ZUndo:
     pcstk = None
@@ -12,10 +12,10 @@ class ZUndo:
     retval = None
 
     def __init__(self):
-        self.pcstk = Queue.LifoQueue(0) # Infinite queue
-        self.stackstk = Queue.LifoQueue(0)
-        self.changestk = Queue.LifoQueue(0)
-        self.retval = Queue.LifoQueue(3)
+        self.pcstk = queue.LifoQueue(0) # Infinite queue
+        self.stackstk = queue.LifoQueue(0)
+        self.changestk = queue.LifoQueue(0)
+        self.retval = queue.LifoQueue(3)
 
     def push(self,pc,stack,changes):
         self.pcstk.put(pc)
