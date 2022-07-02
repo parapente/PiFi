@@ -3,8 +3,9 @@
 from array import array
 #import Queue
 
-__author__="Theofilos Intzoglou"
-__date__ ="$7 Ιουλ 2009 3:35:43 μμ$"
+__author__ = "Theofilos Intzoglou"
+__date__ = "$7 Ιουλ 2009 3:35:43 μμ$"
+
 
 class ZStack:
     top = None
@@ -25,10 +26,10 @@ class ZStack:
         self.local_vars = []
         self.local_vars_num = 0
         #self.local_vars = array('H')
-        #for i in xrange(15):
+        # for i in xrange(15):
         #    self.local_vars.append(0)
 
-    def push(self,n):
+    def push(self, n):
         if (self.queuepos < self.queuemaxpos):
             self.queue[self.queuepos] = n
             self.queuepos += 1
@@ -39,9 +40,9 @@ class ZStack:
 
     def pop(self):
         self.queuepos -= 1
-        return  self.queue[self.queuepos]
+        return self.queue[self.queuepos]
 
-    def push_frame(self,n):
+    def push_frame(self, n):
         if (self.framespos < self.framesmaxpos):
             self.frames[self.framespos] = n
             self.framespos += 1
@@ -60,7 +61,7 @@ class ZStack:
             self.frames[self.framespos] = self.local_vars[:]
             self.framespos += 1
         else:
-            #self.frames.append(self.local_vars.tolist())
+            # self.frames.append(self.local_vars.tolist())
             self.frames.append(self.local_vars[:])
             self.framespos += 1
             self.framesmaxpos += 1
@@ -69,7 +70,7 @@ class ZStack:
         self.framespos -= 1
         self.local_vars = self.frames[self.framespos]
         #data = self.frames[self.framespos]
-        #for i in xrange(15):
+        # for i in xrange(15):
         #    self.local_vars[i] = data[i]
 
     def push_eval_stack(self):

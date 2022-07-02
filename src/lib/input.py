@@ -2,18 +2,19 @@
 
 from .stream import ZStream
 
-__author__="Theofilos Intzoglou"
-__date__ ="$1 Ιουλ 2009 6:24:20 μμ$"
+__author__ = "Theofilos Intzoglou"
+__date__ = "$1 Ιουλ 2009 6:24:20 μμ$"
+
 
 class ZInput:
     stream = None
     plugin = None
 
-    def __init__(self,p):
+    def __init__(self, p):
         self.stream = [ZStream(), ZStream()]
         self.plugin = p
 
-    def set_current(self,n):
+    def set_current(self, n):
         if n == 0:
             self.stream[1].selected = True
             self.stream[2].selected = False

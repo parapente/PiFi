@@ -2,13 +2,14 @@
 # To change this template, choose Tools | Templates
 # and open the template in the editor.
 
-__author__="Theofilos Intzoglou"
-__date__ ="$24 Ιουν 2009 2:39:50 πμ$"
+__author__ = "Theofilos Intzoglou"
+__date__ = "$24 Ιουν 2009 2:39:50 πμ$"
+
 
 class ZHeader:
     header = None
 
-    def __init__(self,h):
+    def __init__(self, h):
         self.header = h
         self.global_table = 256*h[0x0c]+h[0x0d]
         self.version = h[0]
@@ -23,7 +24,7 @@ class ZHeader:
         else:
             self.length_of_file = len(h)
 
-    #def version(self):
+    # def version(self):
     #    """ Version of story file """
     #    return self.header[0]
 
@@ -43,10 +44,9 @@ class ZHeader:
         """ Location of the object table """
         return 256*self.header[0x0a]+self.header[0x0b]
 
-    #def global_table(self):
+    # def global_table(self):
         """ Location of the global variables table """
     #    return 256*self.header[0x0c]+self.header[0x0d]
-
 
     def serial_number(self):
         """ Serial Number """
@@ -56,7 +56,7 @@ class ZHeader:
         """ Location of the abbreviations table """
         return 256*self.header[0x18]+self.header[0x19]
 
-    #def length_of_file(self):
+    # def length_of_file(self):
     #    length = 256*self.header[0x1a]+self.header[0x1b]
     #    if length <> 0:
     #        if self.version <= 3:
@@ -141,13 +141,16 @@ class ZHeader:
         """ Returns 0 if it is a score game, 1 if it is a timed game """
         return ((self.header[0x1] & 2) >> 1)
 
-    def print_all(self,plugin):
-        plugin.debugprint( "Abbrev table: {0}".format(self.abbrev_table()), 2)
-        plugin.debugprint( "Alphabet table: {0}".format(self.alphabet_table()), 2)
-        plugin.debugprint( "Characters table: {0}".format(self.characters_table()), 2)
-        plugin.debugprint( "Dictionary: {0}".format(self.dictionary()), 2)
-        plugin.debugprint( "Global var table: {0}".format(self.global_table), 2)
-        plugin.debugprint( "Header ext table: {0}".format(self.header_ext_table()), 2)
-        plugin.debugprint( "Object table: {0}".format(self.obj_table()), 2)
-        plugin.debugprint( "Static strings offset: {0}".format(self.strings()), 2)
-        
+    def print_all(self, plugin):
+        plugin.debugprint("Abbrev table: {0}".format(self.abbrev_table()), 2)
+        plugin.debugprint("Alphabet table: {0}".format(
+            self.alphabet_table()), 2)
+        plugin.debugprint("Characters table: {0}".format(
+            self.characters_table()), 2)
+        plugin.debugprint("Dictionary: {0}".format(self.dictionary()), 2)
+        plugin.debugprint("Global var table: {0}".format(self.global_table), 2)
+        plugin.debugprint("Header ext table: {0}".format(
+            self.header_ext_table()), 2)
+        plugin.debugprint("Object table: {0}".format(self.obj_table()), 2)
+        plugin.debugprint(
+            "Static strings offset: {0}".format(self.strings()), 2)

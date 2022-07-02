@@ -10,13 +10,14 @@ import sys
 __author__ = "Theofilos Intzoglou"
 __date__ = "$20 Σεπ 2009 2:39:20 μμ$"
 
+
 class QtPluginV3(PlugSkel):
     win = None
     zver = None
     rline = False
-    def_bg = 2 # Black
-    def_fg = 9 # White
-    zfont = 1 # Normal z-font
+    def_bg = 2  # Black
+    def_fg = 9  # White
+    zfont = 1  # Normal z-font
     current_window = 0
 
     def prepare_gui(self):
@@ -28,8 +29,10 @@ class QtPluginV3(PlugSkel):
         hbl.addWidget(QtWidgets.QLabel())
         hbl.itemAt(0).widget().setVisible(False)
         hbl.itemAt(1).widget().setVisible(False)
-        hbl.itemAt(1).widget().setAlignment(QtCore.Qt.Alignment(QtCore.Qt.AlignRight))
-        hbl.itemAt(1).widget().setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
+        hbl.itemAt(1).widget().setAlignment(
+            QtCore.Qt.Alignment(QtCore.Qt.AlignRight))
+        hbl.itemAt(1).widget().setSizePolicy(
+            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
         self.widget = ZTextWidget()
         vbl = QtWidgets.QVBoxLayout()
         vbl.addLayout(hbl)
@@ -58,7 +61,7 @@ class QtPluginV3(PlugSkel):
     def new_line(self):
         self.widget.prints('\n', self.window[self.current_window])
 
-    def prints(self,s):
+    def prints(self, s):
         if self._ostream[0].selected == True:
             self.widget.prints(s, self.window[self.current_window])
 
@@ -69,7 +72,8 @@ class QtPluginV3(PlugSkel):
         else:
             if (self.window[1].line_count < lines):
                 self.window[1].set_cursor_position(1, 1)
-                self.window[1].set_cursor_real_position(2, self.widget.linesize)
+                self.window[1].set_cursor_real_position(
+                    2, self.widget.linesize)
             self.window[1].set_line_count(lines)
             self.widget.split_window(lines, ver)
 
@@ -85,7 +89,7 @@ class QtPluginV3(PlugSkel):
             self.window[1].set_cursor_position(1, 1)
             self.widget.update_real_cursor_position(self.window[1])
 
-    def set_cursor(self,x, y):
+    def set_cursor(self, x, y):
         if (self.current_window == 1):
             self.window[1].set_cursor_position(x, y)
             self.widget.update_real_cursor_position(self.window[1])

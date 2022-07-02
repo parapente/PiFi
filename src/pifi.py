@@ -16,21 +16,29 @@ __date__ = "$17 Ιουν 2009 2:24:30 πμ$"
 
 if __name__ == "__main__":
 
-    signal.signal(signal.SIGINT, signal.SIG_DFL) # Break on control-c
+    signal.signal(signal.SIGINT, signal.SIG_DFL)  # Break on control-c
 
     # @type f file
     # @type parser argparse.ArgumentParser
-    parser = argparse.ArgumentParser(description='PiFi - Python Interactive Fiction Interpreter')
-    parser.add_argument('-p', '--plugin', help='specify the plugin to use; use QtPlugin for now', default='QtPluginV3')
+    parser = argparse.ArgumentParser(
+        description='PiFi - Python Interactive Fiction Interpreter')
+    parser.add_argument(
+        '-p',
+        '--plugin',
+        help='specify the plugin to use; use QtPlugin for now',
+        default='QtPluginV3'
+    )
     parser.add_argument('-v', '--verbose', action='store_true')
-    parser.add_argument('-l', '--log-level', type=int, default=0, help='debug log level (0-2); default: %(default)s')
-    parser.add_argument('-V', '--version', action='version', version='%(prog)s 0.1')
+    parser.add_argument('-l', '--log-level', type=int, default=0,
+                        help='debug log level (0-2); default: %(default)s')
+    parser.add_argument('-V', '--version', action='version',
+                        version='%(prog)s 0.1')
     parser.add_argument('zfile')
     args = parser.parse_args()
 
     try:
         f = open(args.zfile, 'rb')
-        #f = open("/home/oscar/games/wcastle.z5",'rb');
+        # f = open("/home/oscar/games/wcastle.z5",'rb');
     except IOError as cannot_open_file:
         (errno, strerror) = cannot_open_file.args
         print("I/O error ({0}): {1}".format(errno, strerror))
@@ -46,9 +54,9 @@ if __name__ == "__main__":
 
     plugin.prepare_gui()
     plugin.set_debug_level(args.log_level)
-    m = ZMachine(plugin) # Attach plugin to ZMachine
+    m = ZMachine(plugin)  # Attach plugin to ZMachine
     m.load_story(f)
-    plugin.set_zversion(m.zver) # Store version of z-code file
+    plugin.set_zversion(m.zver)  # Store version of z-code file
     m.init()
     m.boot()
-    plugin.exec_() # Start exec loop
+    plugin.exec_()  # Start exec loop
