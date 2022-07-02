@@ -2,3 +2,6 @@
 *~
 *.z?
 *.swp
+*.kdev4
+nbproject
+.vscode
