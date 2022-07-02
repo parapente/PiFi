@@ -3,10 +3,8 @@
 """ Python Interactive Fiction Interpreter """
 
 from lib.machine import ZMachine
-from plugins.qtplugin import QtPlugin
-from plugins.qtplugin_v2 import QtPluginV2
-from plugins.qtplugin_v3 import QtPluginV3
-from importlib import reload
+from importlib import reload, import_module
+from pkgutil import iter_modules
 import sys
 import argparse
 import signal
@@ -28,6 +26,12 @@ if __name__ == "__main__":
         help='specify the plugin to use; use QtPlugin for now',
         default='QtPluginV3'
     )
+    parser.add_argument(
+        '-P',
+        '--list-plugins',
+        action='store_true',
+        help='list all available plugins'
+    )
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('-l', '--log-level', type=int, default=0,
                         help='debug log level (0-2); default: %(default)s')
@@ -36,9 +40,20 @@ if __name__ == "__main__":
     parser.add_argument('zfile')
     args = parser.parse_args()
 
+    discovered_plugins = {
+        name.removeprefix('plugin_'): import_module('plugins.' + name)
+        for _, name, _
+        in iter_modules(path=['plugins'])
+        if name.startswith('plugin_')
+    }
+
+    if args.list_plugins:
+        for plugin_name in discovered_plugins.keys():
+            print(plugin_name)
+        exit(0)
+
     try:
         f = open(args.zfile, 'rb')
-        # f = open("/home/oscar/games/wcastle.z5",'rb');
     except IOError as cannot_open_file:
         (errno, strerror) = cannot_open_file.args
         print("I/O error ({0}): {1}".format(errno, strerror))
@@ -46,11 +61,12 @@ if __name__ == "__main__":
 
     reload(sys)
     # Initialize the appropriate plugin
-    if args.plugin in globals() and isinstance(globals()[args.plugin], type):
-        plugin = globals()[args.plugin]()
-    else:
+    if args.plugin not in discovered_plugins:
         print("Plugin " + args.plugin + " not found!")
         sys.exit(3)
+
+    class_name = args.plugin
+    plugin = getattr(discovered_plugins[args.plugin], class_name)()
 
     plugin.prepare_gui()
     plugin.set_debug_level(args.log_level)
