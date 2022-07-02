@@ -20,9 +20,9 @@ class ZOutput:
         self.plugin.screen_size_callback = self.set_screen_size
 
     def select_stream(self, n, table):
-        self.plugin.select_ostream(n)
+        self.plugin.select_output_stream(n)
         if table != -1:
-            # We keep 2 ints for every ostream 3 (addr,offset)
+            # We keep 2 ints for every output_stream 3 (addr,offset)
             if self.table_list_len < 33:
                 self.table_list.append(table)
                 self.table_list.append(0)
@@ -42,9 +42,9 @@ class ZOutput:
             del tl[tbl - 2]
             self.table_list_len -= 2
             if self.table_list_len == 0:
-                self.plugin.deselect_ostream(n)
+                self.plugin.deselect_output_stream(n)
         else:
-            self.plugin.deselect_ostream(n)
+            self.plugin.deselect_output_stream(n)
 
     def set_buffering(self, c):
         """Sets output buffering to on or off (1 or 0)"""
@@ -54,8 +54,8 @@ class ZOutput:
 
     def prints(self, s):
         # TODO: Buffering
-        # print "Output streams:", self.plugin.selected_ostreams()
-        if 3 in self.plugin.selected_ostreams():
+        # print "Output streams:", self.plugin.selected_output_streams()
+        if 3 in self.plugin.selected_output_streams():
             tbl = self.table_list_len
             tl = self.table_list
             addr = tl[tbl - 2]

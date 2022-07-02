@@ -142,15 +142,16 @@ class ZHeader:
         return ((self.header[0x1] & 2) >> 1)
 
     def print_all(self, plugin):
-        plugin.debugprint("Abbrev table: {0}".format(self.abbrev_table()), 2)
-        plugin.debugprint("Alphabet table: {0}".format(
+        plugin.debug_print("Abbrev table: {0}".format(self.abbrev_table()), 2)
+        plugin.debug_print("Alphabet table: {0}".format(
             self.alphabet_table()), 2)
-        plugin.debugprint("Characters table: {0}".format(
+        plugin.debug_print("Characters table: {0}".format(
             self.characters_table()), 2)
-        plugin.debugprint("Dictionary: {0}".format(self.dictionary()), 2)
-        plugin.debugprint("Global var table: {0}".format(self.global_table), 2)
-        plugin.debugprint("Header ext table: {0}".format(
+        plugin.debug_print("Dictionary: {0}".format(self.dictionary()), 2)
+        plugin.debug_print(
+            "Global var table: {0}".format(self.global_table), 2)
+        plugin.debug_print("Header ext table: {0}".format(
             self.header_ext_table()), 2)
-        plugin.debugprint("Object table: {0}".format(self.obj_table()), 2)
-        plugin.debugprint(
+        plugin.debug_print("Object table: {0}".format(self.obj_table()), 2)
+        plugin.debug_print(
             "Static strings offset: {0}".format(self.strings()), 2)

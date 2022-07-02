@@ -90,22 +90,22 @@ class ZMachine:
 
     def intr_char_routine(self):
         self.mutex.acquire()
-        self.plugin.debugprint("@@@@@@@@@@ start @@@@@@@@@@@@@@@@", 2)
+        self.plugin.debug_print("@@@@@@@@@@ start @@@@@@@@@@@@@@@@", 2)
         self.input.disconnect_input(self.get_char)
         self.cpu.intr = 0
         self.cpu._routine(self.cpu.intr_data[1], [], 0, -1, 20)
         self.cpu.start()
-        self.plugin.debugprint("@@@@@@@@@@@ end @@@@@@@@@@@@@@@@@", 2)
+        self.plugin.debug_print("@@@@@@@@@@@ end @@@@@@@@@@@@@@@@@", 2)
         self.handle_intr()
 
     def intr_line_routine(self):
         self.mutex.acquire()
-        self.plugin.debugprint("@@@@@@@@@@ start @@@@@@@@@@@@@@@@", 2)
+        self.plugin.debug_print("@@@@@@@@@@ start @@@@@@@@@@@@@@@@", 2)
         self.input.disconnect_input(self.get_text)
         self.cpu.intr = 0
         self.cpu._routine(self.cpu.intr_data[3], [], 0, -1, 10)
         self.cpu.start()
-        self.plugin.debugprint("@@@@@@@@@@@ end @@@@@@@@@@@@@@@@@", 2)
+        self.plugin.debug_print("@@@@@@@@@@@ end @@@@@@@@@@@@@@@@@", 2)
         self.handle_intr()
 
     def get_text(self, text, interrupted=False):
@@ -115,10 +115,10 @@ class ZMachine:
         # self.input.hide_cursor()
         #print('get_text:', text, interrupted)
         if (interrupted == False):  # We got here because user pressed enter
-            self.plugin.debugprint("Enter!", 2)
+            self.plugin.debug_print("Enter!", 2)
             paddr = self.cpu.intr_data[1]
             taddr = self.cpu.intr_data[0]
-            self.plugin.debugprint("gt -> '"+text+"'", 2)
+            self.plugin.debug_print("gt -> '"+text+"'", 2)
             if self.zver < 5:
                 i = 0
                 for i in range(len(text)):
@@ -160,7 +160,7 @@ class ZMachine:
             for i in range(self.mem.mem[text + 1]):
                 txt += chr(self.mem.mem[text + 2 + i])
         l = len(txt)
-        self.plugin.debugprint("txt='"+txt+"' Len:"+str(l), 2)
+        self.plugin.debug_print("txt='"+txt+"' Len:"+str(l), 2)
         words = []
         w = ""
         i = 0
@@ -196,13 +196,13 @@ class ZMachine:
                     w1 += words[i][j]
             else:
                 w1 = words[i]
-            self.plugin.debugprint(w1+"- len -"+str(len(w1)), 2)
+            self.plugin.debug_print(w1+"- len -"+str(len(w1)), 2)
             if self.cpu.intr_data[1] != 0:  # No parsing is required
                 # Find the data for the record
                 addr = self.dict.find_word(w1)
                 l = len(words[i])
                 pos = words[i + 1]
-                self.plugin.debugprint(
+                self.plugin.debug_print(
                     "word:"+w1+"Addr:"+str(addr)+"Pos:"+str(pos), 2)
                 # Write the record in parse buffer
                 self.mem.mem[parse] = addr >> 8
@@ -216,7 +216,7 @@ class ZMachine:
         self.input.stop_char_timer()
         self.input.disconnect_input(self.get_char)
         self.mutex.acquire()
-        self.plugin.debugprint("Character read!", 2)
+        self.plugin.debug_print("Character read!", 2)
         if (self.cpu.intr == 2):
             self.cpu.got_char(char)
             self.cpu.intr = 0
@@ -285,18 +285,18 @@ class ZMachine:
         # Read at most 1MB of savefile (can it be larger than that?)
         filebuf = list(self.savefile.read(1024*1024))
         if ''.join([chr(x) for x in filebuf[:4]]) == 'FORM' and ''.join([chr(x) for x in filebuf[8:12]]) == 'IFZS':
-            self.plugin.debugprint('File looks like a savefile.', 1)
+            self.plugin.debug_print('File looks like a savefile.', 1)
         savesize = (filebuf[4] << 24) + (filebuf[5] << 16) + \
             (filebuf[6] << 8) + filebuf[7] + 8
-        self.plugin.debugprint('Filesize: ' + str(savesize), 1)
-        self.plugin.debugprint('filebuf size: ' + str(len(filebuf)), 1)
+        self.plugin.debug_print('Filesize: ' + str(savesize), 1)
+        self.plugin.debug_print('filebuf size: ' + str(len(filebuf)), 1)
 
         pos = 12
         self.file.seek(0)
         gamefilebuf = list(self.file.read(self.mem.static_beg))
         while pos < savesize:
             nextID = ''.join([chr(x) for x in filebuf[pos:pos+4]])
-            self.plugin.debugprint('Found chunk ID: ' + nextID, 1)
+            self.plugin.debug_print('Found chunk ID: ' + nextID, 1)
             pos += 4
             if nextID == 'CMem':
                 chunk_length = (filebuf[pos] << 24) + (filebuf[pos+1] << 16) +\
@@ -384,14 +384,14 @@ class ZMachine:
                 chunk_length = (filebuf[pos] << 24) + (filebuf[pos+1] << 16) +\
                     (filebuf[pos+2] << 8) + filebuf[pos+3]
                 pos += 4
-                self.plugin.debugprint('Chunk len: ' + str(chunk_length), 1)
+                self.plugin.debug_print('Chunk len: ' + str(chunk_length), 1)
                 if chunk_length != 13:
                     self.plugin.prints('Wrong size of chunk. Not restoring\n')
                     return
 
                 release_number = (filebuf[pos] << 8) + filebuf[pos+1]
                 if release_number != self.header.release_number():
-                    self.plugin.debugprint(
+                    self.plugin.debug_print(
                         str(release_number) + " - " + str(self.header.release_number()), 1)
                     self.plugin.prints(
                         'Different release number. Not restoring')
@@ -399,7 +399,7 @@ class ZMachine:
 
                 serial_num = ''.join([chr(x) for x in filebuf[pos+2:pos+8]])
                 if serial_num != self.header.serial_number():
-                    self.plugin.debugprint(
+                    self.plugin.debug_print(
                         serial_num + " - " + self.header.serial_number(), 1)
                     self.plugin.prints(
                         'Different serial number. Not restoring')
@@ -408,18 +408,18 @@ class ZMachine:
                 checksum = (filebuf[pos+8] << 8) + filebuf[pos+9]
                 if checksum != self.header.checksum():
                     # TODO: If header checksum is zero we should cacl checksum
-                    self.plugin.debugprint(
+                    self.plugin.debug_print(
                         str(checksum) + " - " + str(self.header.checksum()), 1)
                     self.plugin.prints('Different checksum. Not restoring')
                     return
 
-                self.plugin.debugprint(
+                self.plugin.debug_print(
                     'Savefile is for this game. Continue...', 1)
                 if (chunk_length % 2) == 1:
                     pos += chunk_length + 1
                 else:
                     pos += chunk_length
-                self.plugin.debugprint(str(filebuf[pos]), 1)
+                self.plugin.debug_print(str(filebuf[pos]), 1)
             elif nextID == 'AUTH':
                 chunk_length = (filebuf[pos] << 24) + (filebuf[pos+1] << 16) +\
                     (filebuf[pos+2] << 8) + filebuf[pos+3]
@@ -687,11 +687,11 @@ class ZMachine:
         self.cpu = ZCpu(self.mem.mem, self.header, self.output, self.plugin)
         self.cpu.file = f
         self.dict = ZDictionary(self.mem.mem, self.header)
-        self.plugin.debugprint(
+        self.plugin.debug_print(
             'Version of story file: {0}'.format(self.zver), 1)
-        self.plugin.debugprint('Length of file: {0}'.format(
+        self.plugin.debug_print('Length of file: {0}'.format(
             self.header.length_of_file), 1)
-        self.plugin.debugprint(
+        self.plugin.debug_print(
             'Static memory begins at: {0}'.format(self.mem.static_beg), 1)
 
     def init(self):

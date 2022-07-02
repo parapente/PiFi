@@ -40,7 +40,7 @@ class ZTextWidget(QWidget):
     reading_line = False
     reverse_video = False
     _cursor_visible = False
-    _ostream = None
+    _output_stream = None
     _input_buffer_printing = False
     _input_cursor_pos = 0
     returnPressed = pyqtSignal(['QString'])

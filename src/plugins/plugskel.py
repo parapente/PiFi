@@ -8,20 +8,21 @@ __author__ = "Theofilos Intzoglou"
 __date__ = "$9 Ιαν 2011 1:56:17 πμ$"
 
 
-class PlugSkel(object):
+class PluginSkeleton(object):
 
     def __init__(self):
-        self._ostream = [ZStream(), ZStream(), ZStream(), ZStream()]
-        self._ostream[0].selected = True
+        self._output_stream = [ZStream(), ZStream(), ZStream(), ZStream()]
+        self._output_stream[0].selected = True
         self.level = 0  # Default debug level
 
     def prepare_gui(self):
+        # Nothing to do
         pass
 
     def set_debug_level(self, lvl):
         self.level = lvl
 
-    def debugprint(self, msg, lvl):
+    def debug_print(self, msg, lvl):
         if (lvl <= self.level):
             print(msg)
             sys.stdout.flush()
@@ -42,6 +43,7 @@ class PlugSkel(object):
         self.current_window = 0
 
     def exec_(self):
+        # Nothing to do
         pass
 
     def show_cursor(self):
@@ -55,17 +57,22 @@ class PlugSkel(object):
             self.window[self.current_window], callback, time, timeout_callback)
 
     def read_line(self, callback, time, timeout_callback, reset):
-        self.rline = True
+        self.read_line_enabled = True
         self.widget.read_line(
-            self.window[self.current_window], callback, time, timeout_callback, reset)
+            self.window[self.current_window],
+            callback,
+            time,
+            timeout_callback,
+            reset
+        )
 
     def set_max_input(self, max_in):
         self.widget.set_max_input(max_in)
 
     def disconnect_input(self, callback):
-        if self.rline:
+        if self.read_line_enabled:
             self.widget.disconnect_read_line(callback)
-            self.rline = False
+            self.read_line_enabled = False
         else:
             self.widget.disconnect_read_char(callback)
 
@@ -131,19 +138,19 @@ class PlugSkel(object):
         else:
             return 0
 
-    def selected_ostreams(self):
+    def selected_output_streams(self):
         s = []
         for i in range(4):
-            if self._ostream[i].selected == True:
+            if self._output_stream[i].selected is True:
                 s.append(i+1)
         return s
 
-    def select_ostream(self, n):
+    def select_output_stream(self, n):
         if n != 0:
-            self._ostream[n - 1].selected = True
+            self._output_stream[n - 1].selected = True
 
-    def deselect_ostream(self, n):
-        self._ostream[n - 1].selected = False
+    def deselect_output_stream(self, n):
+        self._output_stream[n - 1].selected = False
 
     def update_screen_size(self):
         self.screen_size_callback(self.width(), self.height())
@@ -159,7 +166,9 @@ class PlugSkel(object):
         self.widget.stop_char_timer()
 
     def quit(self):
+        # Nothing to do
         pass
 
     def unsplit(self):
+        # Nothing to do
         pass

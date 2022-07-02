@@ -3,7 +3,7 @@
 from plugins.qtztextwidget_v2 import ZTextWidget
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
-from .plugskel import PlugSkel
+from .plugskel import PluginSkeleton
 import traceback
 import sys
 
@@ -11,7 +11,7 @@ __author__ = "Theofilos Intzoglou"
 __date__ = "$20 Σεπ 2009 2:39:20 μμ$"
 
 
-class QtPluginV2(PlugSkel):
+class QtPluginV2(PluginSkeleton):
     win = None
     zver = None
     rline = False
@@ -62,7 +62,7 @@ class QtPluginV2(PlugSkel):
         self.widget.prints('\n', self.window[self.current_window])
 
     def prints(self, s):
-        if (self._ostream[0].selected == True):
+        if (self._output_stream[0].selected == True):
             self.widget.prints(s, self.window[self.current_window])
 
     def split_window(self, lines, ver):

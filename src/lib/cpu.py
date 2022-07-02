@@ -37,7 +37,7 @@ class ZCpu:
         self.output = o
         self.plugin = p
         self.pc = self.header.pc()
-        self.plugin.debugprint("Starting PC: {0}".format(self.pc), 1)
+        self.plugin.debug_print("Starting PC: {0}".format(self.pc), 1)
         self.zver = self.header.version
         self.stack = ZStack()
         self.random = ZRandom()
@@ -221,7 +221,7 @@ class ZCpu:
                 j += 1
         jif, offset = self.branch(condition)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: je {1} [{2}] {3}'.format(
+            self.plugin.debug_print('{0}: je {1} [{2}] {3}'.format(
                 format(pc, 'X'), ops[0:self.numops], jif, offset), 2)
 
     def _jl(self):
@@ -235,7 +235,7 @@ class ZCpu:
             ((ops[0] & 0x8000) == (ops[1] & 0x8000)) and (ops[0] < ops[1]))
         jif, offset = self.branch(condition)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: jl {1} [{2}] {3}'.format(
+            self.plugin.debug_print('{0}: jl {1} [{2}] {3}'.format(
                 format(pc, 'X'), ops[0:self.numops], jif, offset), 2)
 
     def _jg(self):
@@ -250,7 +250,7 @@ class ZCpu:
             ((ops[0] & 0x8000) == (ops[1] & 0x8000)) and (ops[0] > ops[1]))
         jif, offset = self.branch(condition)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: jg {1} [{2}] {3}'.format(
+            self.plugin.debug_print('{0}: jg {1} [{2}] {3}'.format(
                 format(pc, 'X'), ops[0:self.numops], jif, offset), 2)
 
     def _dec_chk(self):
@@ -264,7 +264,7 @@ class ZCpu:
         condition = val < self._s2i(ops[1])
         jif, offset = self.branch(condition)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: dec_chk {1} [{2}] {3}'.format(
+            self.plugin.debug_print('{0}: dec_chk {1} [{2}] {3}'.format(
                 format(pc, 'X'), ops[0:self.numops], jif, offset), 2)
 
     def _inc_chk(self):
@@ -278,7 +278,7 @@ class ZCpu:
         condition = val > self._s2i(ops[1])
         jif, offset = self.branch(condition)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: inc_chk {1} [{2}] {3}'.format(
+            self.plugin.debug_print('{0}: inc_chk {1} [{2}] {3}'.format(
                 format(pc, 'X'), ops[0:self.numops], jif, offset), 2)
 
     def _jin(self):
@@ -296,7 +296,7 @@ class ZCpu:
         condition = (b == ops[1])
         jif, offset = self.branch(condition)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: jin {1} [{2}] {3}'.format(
+            self.plugin.debug_print('{0}: jin {1} [{2}] {3}'.format(
                 format(pc, 'X'), ops[0:self.numops], jif, offset), 2)
 
     def _test(self):
@@ -309,7 +309,7 @@ class ZCpu:
         condition = ((ops[0] & ops[1]) == ops[1])
         jif, offset = self.branch(condition)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: test {1} [{2}] {3}'.format(
+            self.plugin.debug_print('{0}: test {1} [{2}] {3}'.format(
                 format(pc, 'X'), ops[0:self.numops], jif, offset), 2)
 
     def _or(self):
@@ -323,7 +323,7 @@ class ZCpu:
         self._zstore(res, self.mem[self.pc])
         self.pc += 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: or {1}'.format(
+            self.plugin.debug_print('{0}: or {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _and(self):
@@ -337,7 +337,7 @@ class ZCpu:
         self._zstore(res, self.mem[self.pc])
         self.pc += 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: and {1}'.format(
+            self.plugin.debug_print('{0}: and {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _test_attr(self):
@@ -364,7 +364,7 @@ class ZCpu:
         condition = ((b & mask) == mask)
         jif, offset = self.branch(condition)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: test_attr {1} [{2}] {3}'.format(
+            self.plugin.debug_print('{0}: test_attr {1} [{2}] {3}'.format(
                 format(pc, 'X'), ops[0:self.numops], jif, offset), 2)
 
     def _set_attr(self):
@@ -375,7 +375,7 @@ class ZCpu:
             self._read_operands_long_2op()
         ops = self.ops
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: set_attr {1}'.format(
+            self.plugin.debug_print('{0}: set_attr {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
         if ops[0] == 0:
             print("set_attr: Cannot set attr of object 0!")
@@ -410,7 +410,7 @@ class ZCpu:
             self._read_operands_long_2op()
         ops = self.ops
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: clear_attr {1}'.format(
+            self.plugin.debug_print('{0}: clear_attr {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
         if ops[0] == 0:
             print("clear_attr: Cannot clear attr of object 0!")
@@ -450,7 +450,7 @@ class ZCpu:
             self.stack.pop()  # so we pop the top value
         self._zstore(ops[1], ops[0])
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: store {1}'.format(
+            self.plugin.debug_print('{0}: store {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _insert_obj(self):
@@ -461,7 +461,7 @@ class ZCpu:
             self._read_operands_long_2op()
         ops = self.ops
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: insert_obj {1}'.format(
+            self.plugin.debug_print('{0}: insert_obj {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
         if ops[1] == 0 or ops[0] == 0:
             print("insert_obj: Cannot use 0 as source or destination!")
@@ -535,7 +535,7 @@ class ZCpu:
         data = (self.mem[addr] << 8) + self.mem[addr + 1]
         self._zstore(data, return_var)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: loadw {1}'.format(
+            self.plugin.debug_print('{0}: loadw {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _loadb(self):
@@ -552,7 +552,7 @@ class ZCpu:
         data = mem[addr]
         self._zstore(data, return_var)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: loadb {1}'.format(
+            self.plugin.debug_print('{0}: loadb {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _get_prop(self):
@@ -603,7 +603,7 @@ class ZCpu:
         self._zstore(data, self.mem[self.pc])
         self.pc += 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: get_prop {1}'.format(
+            self.plugin.debug_print('{0}: get_prop {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _get_prop_addr(self):
@@ -636,7 +636,7 @@ class ZCpu:
         self._zstore(prop, self.mem[self.pc])
         self.pc += 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: get_prop_addr {1}'.format(
+            self.plugin.debug_print('{0}: get_prop_addr {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _get_next_prop(self):
@@ -647,7 +647,7 @@ class ZCpu:
             self._read_operands_long_2op()
         ops = self.ops
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: get_next_prop {1}'.format(
+            self.plugin.debug_print('{0}: get_next_prop {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
         if ops[0] == 0:
             print("get_next_prop: Can't get property of nothing!")
@@ -716,7 +716,7 @@ class ZCpu:
         self._zstore(result, mem[self.pc])
         self.pc += 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: add {1}'.format(
+            self.plugin.debug_print('{0}: add {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _sub(self):
@@ -733,7 +733,7 @@ class ZCpu:
         self._zstore(result, self.mem[self.pc])
         self.pc = self.pc + 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: sub {1}'.format(
+            self.plugin.debug_print('{0}: sub {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _mul(self):
@@ -748,7 +748,7 @@ class ZCpu:
         self._zstore(result, self.mem[self.pc])
         self.pc = self.pc + 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: mul {1}'.format(
+            self.plugin.debug_print('{0}: mul {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _div(self):
@@ -776,7 +776,7 @@ class ZCpu:
         self._zstore(result, self.mem[self.pc])
         self.pc = self.pc + 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: div {1}'.format(
+            self.plugin.debug_print('{0}: div {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _mod(self):
@@ -801,7 +801,7 @@ class ZCpu:
         self._zstore(result, self.mem[self.pc])
         self.pc = self.pc + 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: mod {1}'.format(
+            self.plugin.debug_print('{0}: mod {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _call_2s(self):
@@ -816,9 +816,9 @@ class ZCpu:
         self.pc += 1
         self._routine(ops[0], argv, 1, return_addr)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: call_2s {1}'.format(
+            self.plugin.debug_print('{0}: call_2s {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
-            self.plugin.debugprint('--v', 2)
+            self.plugin.debug_print('--v', 2)
 
     def _call_2n(self):
         pc = self.pc
@@ -831,9 +831,9 @@ class ZCpu:
         return_addr = -1
         self._routine(ops[0], argv, 1, return_addr)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: call_2n {1}'.format(
+            self.plugin.debug_print('{0}: call_2n {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
-            self.plugin.debugprint('--v', 2)
+            self.plugin.debug_print('--v', 2)
 
     def _set_colour(self):
         pc = self.pc
@@ -844,7 +844,7 @@ class ZCpu:
         ops = self.ops
         self.output.set_colour(ops[0], ops[1])
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: set_colour {1}'.format(
+            self.plugin.debug_print('{0}: set_colour {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _throw(self):
@@ -855,7 +855,7 @@ class ZCpu:
             self._read_operands_long_2op()
         ops = self.ops
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: throw {1}'.format(
+            self.plugin.debug_print('{0}: throw {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
         sys.exit("Not implemented yet!")
 
@@ -865,7 +865,7 @@ class ZCpu:
         ops = self.ops
         jif, offset = self.branch(ops[0] == 0)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: jz {1} [{2}] {3}'.format(
+            self.plugin.debug_print('{0}: jz {1} [{2}] {3}'.format(
                 format(pc, 'X'), ops[0:self.numops], jif, offset), 2)
 
     def _get_sibling(self):
@@ -883,7 +883,7 @@ class ZCpu:
         jif, offset = self.branch(condition)
         self._zstore(sibl, return_var)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: get_sibling {1} [{2}] {3}'.format(
+            self.plugin.debug_print('{0}: get_sibling {1} [{2}] {3}'.format(
                 format(pc, 'X'), ops[0:self.numops], jif, offset), 2)
 
     def _get_child(self):
@@ -901,7 +901,7 @@ class ZCpu:
         jif, offset = self.branch(condition)
         self._zstore(child, return_var)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: get_child {1} [{2}] {3}'.format(
+            self.plugin.debug_print('{0}: get_child {1} [{2}] {3}'.format(
                 format(pc, 'X'), ops[0:self.numops], jif, offset), 2)
 
     def _get_parent(self):
@@ -918,7 +918,7 @@ class ZCpu:
             # print "Parent:", parent
         self.pc += 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: get_parent {1}'.format(
+            self.plugin.debug_print('{0}: get_parent {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _get_prop_len(self):
@@ -941,7 +941,7 @@ class ZCpu:
         self._zstore(nob, self.mem[self.pc])
         self.pc += 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: get_prop_len {1}'.format(
+            self.plugin.debug_print('{0}: get_prop_len {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _inc(self):
@@ -950,7 +950,7 @@ class ZCpu:
         ops = self.ops
         self._inc2(ops[0])
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: inc {1}'.format(
+            self.plugin.debug_print('{0}: inc {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _inc2(self, var):
@@ -987,7 +987,7 @@ class ZCpu:
         ops = self.ops
         self._dec2(ops[0])
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: dec {1}'.format(
+            self.plugin.debug_print('{0}: dec {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _dec2(self, var):
@@ -1038,7 +1038,7 @@ class ZCpu:
         self.output.prints(text)
         # print text
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: print_addr {1}'.format(
+            self.plugin.debug_print('{0}: print_addr {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _call_1s(self):
@@ -1050,7 +1050,7 @@ class ZCpu:
         self.pc += 1
         self._routine(ops[0], argv, 0, return_addr)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: call_1s {1}'.format(
+            self.plugin.debug_print('{0}: call_1s {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _remove_obj(self):
@@ -1058,7 +1058,7 @@ class ZCpu:
         self._read_operands_short_1op()
         ops = self.ops
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: remove_obj {1}'.format(
+            self.plugin.debug_print('{0}: remove_obj {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
         if ops[0] == 0:  # We have nothing to do here!
             return
@@ -1131,7 +1131,7 @@ class ZCpu:
         ), False, self.header.alphabet_table(), 0)
         self.output.prints(text)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: print_obj {1}'.format(
+            self.plugin.debug_print('{0}: print_obj {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _ret(self):
@@ -1140,7 +1140,7 @@ class ZCpu:
         ops = self.ops
         self._return(ops[0])
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: ret {1}'.format(
+            self.plugin.debug_print('{0}: ret {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _return(self, value):
@@ -1165,7 +1165,7 @@ class ZCpu:
         # print "Jump to offset", offset
         self.pc = self.pc + offset
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: jump {1}'.format(
+            self.plugin.debug_print('{0}: jump {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _print_paddr(self):
@@ -1202,7 +1202,7 @@ class ZCpu:
         self.output.prints(text)
         # print text
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: print_paddr {1}'.format(
+            self.plugin.debug_print('{0}: print_paddr {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _load(self):
@@ -1222,7 +1222,7 @@ class ZCpu:
         self._zstore(data, self.pc)
         self.pc += 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: load {1}'.format(
+            self.plugin.debug_print('{0}: load {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _not(self):
@@ -1237,7 +1237,7 @@ class ZCpu:
             self._zstore(r, self.mem[self.pc])
             self.pc += 1
             if (self.plugin.level >= 2):
-                self.plugin.debugprint('{0}: not {1}'.format(
+                self.plugin.debug_print('{0}: not {1}'.format(
                     format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _call_1n(self, pc, ops):
@@ -1246,20 +1246,20 @@ class ZCpu:
         return_addr = -1
         self._routine(addr, argv, 0, return_addr)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: call_1n {1}'.format(
+            self.plugin.debug_print('{0}: call_1n {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _rtrue(self):
         pc = self.pc
         self._return(1)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: rtrue'.format(format(pc, 'X')), 2)
+            self.plugin.debug_print('{0}: rtrue'.format(format(pc, 'X')), 2)
 
     def _rfalse(self):
         pc = self.pc
         self._return(0)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: rfalse'.format(format(pc, 'X')), 2)
+            self.plugin.debug_print('{0}: rfalse'.format(format(pc, 'X')), 2)
 
     def _print(self):
         pc = self.pc
@@ -1284,7 +1284,7 @@ class ZCpu:
         # print text
         self.output.prints(text)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint(
+            self.plugin.debug_print(
                 '{0}: print "{1}"'.format(format(pc, 'X'), text), 2)
 
     def _print_ret(self):
@@ -1307,39 +1307,39 @@ class ZCpu:
         self.pc += i + 1
         self._return(1)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint(
+            self.plugin.debug_print(
                 '{0}: print_ret "{1}"'.format(format(pc, 'X'), text), 2)
 
     def _nop(self):
         pc = self.pc
         self.pc += 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: nop'.format(format(pc, 'X')), 2)
+            self.plugin.debug_print('{0}: nop'.format(format(pc, 'X')), 2)
 
     def _save(self):
         pc = self.pc
         self.pc += 1
         self.intr = 5
-        self.plugin.debugprint('{0}: save'.format(format(pc, 'X')), 2)
+        self.plugin.debug_print('{0}: save'.format(format(pc, 'X')), 2)
 
     def _restore(self):
         pc = self.pc
         self.pc += 1
         self.intr = 6
-        self.plugin.debugprint('{0}: restore'.format(format(pc, 'X')), 2)
+        self.plugin.debug_print('{0}: restore'.format(format(pc, 'X')), 2)
 
     def _restart(self):
         pc = self.pc
         self.intr = 3
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: restart'.format(format(pc, 'X')), 2)
+            self.plugin.debug_print('{0}: restart'.format(format(pc, 'X')), 2)
 
     def _ret_popped(self):
         pc = self.pc
         data = self.stack.pop()
         self._return(data)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint(
+            self.plugin.debug_print(
                 '{0}: ret_popped'.format(format(pc, 'X')), 2)
 
     def _pop(self):
@@ -1348,11 +1348,12 @@ class ZCpu:
             self.stack.pop()
             self.pc += 1
             if (self.plugin.level >= 2):
-                self.plugin.debugprint('{0}: pop'.format(format(pc, 'X')), 2)
+                self.plugin.debug_print('{0}: pop'.format(format(pc, 'X')), 2)
         else:
             # print "actually catch is used!"
             if (self.plugin.level >= 2):
-                self.plugin.debugprint('{0}: catch'.format(format(pc, 'X')), 2)
+                self.plugin.debug_print(
+                    '{0}: catch'.format(format(pc, 'X')), 2)
             self._catch()
 
     def _catch(self):
@@ -1365,7 +1366,7 @@ class ZCpu:
     def _quit(self):
         pc = self.pc
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: quit'.format(format(pc, 'X')), 2)
+            self.plugin.debug_print('{0}: quit'.format(format(pc, 'X')), 2)
         self.output.prints('[Press any key to quit]')
         self.intr = 69
 
@@ -1374,14 +1375,14 @@ class ZCpu:
         self.output.new_line()
         self.pc += 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: new_line'.format(format(pc, 'X')), 2)
+            self.plugin.debug_print('{0}: new_line'.format(format(pc, 'X')), 2)
 
     def _show_status(self):
         pc = self.pc
         self._show_status2()
         self.pc += 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint(
+            self.plugin.debug_print(
                 '{0}: show_status'.format(format(pc, 'X')), 2)
 
     def _verify(self):
@@ -1410,14 +1411,14 @@ class ZCpu:
         condition = (chksum == self.header.checksum())
         jif, offset = self.branch(condition)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: verify '.format(
+            self.plugin.debug_print('{0}: verify '.format(
                 format(pc, 'X'), jif, offset), 2)
 
     def _piracy(self):
         pc = self.pc
         jif, offset = self.branch(False)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: piracy '.format(
+            self.plugin.debug_print('{0}: piracy '.format(
                 format(pc, 'X'), jif, offset), 2)
 
     def _call(self):
@@ -1436,7 +1437,7 @@ class ZCpu:
         self.pc = self.pc + 1
         self._routine(ops[0], argv, self.numops-1, return_addr)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: call {1}'.format(
+            self.plugin.debug_print('{0}: call {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _storew(self):
@@ -1447,7 +1448,7 @@ class ZCpu:
         self.mem[addr] = ops[2] >> 8
         self.mem[addr + 1] = ops[2] & 0xff
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: storew {1}'.format(
+            self.plugin.debug_print('{0}: storew {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _storeb(self):
@@ -1457,7 +1458,7 @@ class ZCpu:
         addr = ops[0] + ops[1]
         self.mem[addr] = ops[2] & 255
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: storeb {1}'.format(
+            self.plugin.debug_print('{0}: storeb {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _put_prop(self):
@@ -1501,7 +1502,7 @@ class ZCpu:
                     self.mem[prop+2] = ops[2] >> 8
                     self.mem[prop+3] = ops[2] & 0xff
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: put_prop {1}'.format(
+            self.plugin.debug_print('{0}: put_prop {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _sread(self):
@@ -1526,7 +1527,7 @@ class ZCpu:
         elif self.zver == 5:
             pass
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: sread {1}'.format(
+            self.plugin.debug_print('{0}: sread {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _print_char(self):
@@ -1541,7 +1542,7 @@ class ZCpu:
         self.output.prints(text)
         # print text
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: print_char {1}'.format(
+            self.plugin.debug_print('{0}: print_char {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _print_num(self):
@@ -1555,7 +1556,7 @@ class ZCpu:
             self.output.prints("{0}".format(ops[0]))
             # print ops[0]
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: print_num {1}'.format(
+            self.plugin.debug_print('{0}: print_num {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _random(self):
@@ -1575,7 +1576,7 @@ class ZCpu:
         self._zstore(r, self.mem[self.pc])
         self.pc += 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: random {1}'.format(
+            self.plugin.debug_print('{0}: random {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _push(self):
@@ -1584,7 +1585,7 @@ class ZCpu:
         ops = self.ops
         self.stack.push(ops[0])
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: push {1}'.format(
+            self.plugin.debug_print('{0}: push {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _pull(self):
@@ -1595,7 +1596,7 @@ class ZCpu:
             n = self.stack.pop()
             self._zstore(n, ops[0])
             if (self.plugin.level >= 2):
-                self.plugin.debugprint('{0}: pull {1}'.format(
+                self.plugin.debug_print('{0}: pull {1}'.format(
                     format(pc, 'X'), ops[0:self.numops]), 2)
         else:
             if (self.numops == 0):  # Use the game stack
@@ -1607,7 +1608,7 @@ class ZCpu:
                 # TODO: Add support for ver 6
                 sys.exit('pull: User stacks not implemented for V6!')
                 if (self.plugin.level >= 2):
-                    self.plugin.debugprint(
+                    self.plugin.debug_print(
                         '{0}: pull {1} -> {2}'.format(format(pc, 'X'), ops, variable), 2)
 
     def _split_window(self):
@@ -1616,7 +1617,7 @@ class ZCpu:
         ops = self.ops
         self.output.show_upper_window(ops[0])
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: split_window {1}'.format(
+            self.plugin.debug_print('{0}: split_window {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _set_window(self):
@@ -1625,7 +1626,7 @@ class ZCpu:
         ops = self.ops
         self.output.set_window(ops[0])
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: set_window {1}'.format(
+            self.plugin.debug_print('{0}: set_window {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _call_vs2(self):
@@ -1643,7 +1644,7 @@ class ZCpu:
         #    i += 1
         self._routine(ops[0], argv, self.numops-1, ret)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: call_vs2 {1}'.format(
+            self.plugin.debug_print('{0}: call_vs2 {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _erase_window(self):
@@ -1661,11 +1662,11 @@ class ZCpu:
         else:  # Erase window
             self.plugin.erase_window(ops[0])
             if (self.plugin.level >= 2):
-                self.plugin.debugprint('{0}: erase_window {1}'.format(
+                self.plugin.debug_print('{0}: erase_window {1}'.format(
                     format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _erase_line(self):
-        self.plugin.debugprint(': erase_line', 0)
+        self.plugin.debug_print(': erase_line', 0)
         sys.exit("Not implemented yet!")
 
     def _set_cursor(self):
@@ -1674,11 +1675,11 @@ class ZCpu:
         ops = self.ops
         self.output.set_cursor(ops[1], ops[0])
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: set_cursor {1}'.format(
+            self.plugin.debug_print('{0}: set_cursor {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _get_cursor(self):
-        self.plugin.debugprint(': get_cursor', 0)
+        self.plugin.debug_print(': get_cursor', 0)
         pc = self.pc
         self._read_operands_var_2op()
         ops = self.ops
@@ -1691,7 +1692,7 @@ class ZCpu:
         ops = self.ops
         self.output.set_font_style(ops[0])
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: set_text_style {1}'.format(
+            self.plugin.debug_print('{0}: set_text_style {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _buffer_mode(self):
@@ -1701,7 +1702,7 @@ class ZCpu:
         # print 'Buffer mode:', ops
         self.output.set_buffering(ops[0])
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: buffer_mode {1}'.format(
+            self.plugin.debug_print('{0}: buffer_mode {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _output_stream(self):
@@ -1719,11 +1720,11 @@ class ZCpu:
             else:
                 self.output.select_stream(ops[0], table)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: output_stream {1}'.format(
+            self.plugin.debug_print('{0}: output_stream {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _input_stream(self):
-        self.plugin.debugprint(': input_stream', 0)
+        self.plugin.debug_print(': input_stream', 0)
         sys.exit("Not implemented yet!")
 
     def _sound_effect(self):
@@ -1732,16 +1733,16 @@ class ZCpu:
         ops = self.ops
         # TODO: Implement beeps and sounds!
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: sound_effect {1}'.format(
+            self.plugin.debug_print('{0}: sound_effect {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
-            self.plugin.debugprint('TODO:Sound effects', 2)
+            self.plugin.debug_print('TODO:Sound effects', 2)
 
     def _read_char(self):
         pc = self.pc
         self._read_operands_var_2op()
         ops = self.ops
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: read_char {1}'.format(
+            self.plugin.debug_print('{0}: read_char {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
         if self.numops > 1:
             self.intr_data = [ops[1], ops[2]]
@@ -1750,7 +1751,7 @@ class ZCpu:
         self.intr = 2
 
     def _scan_table(self):
-        self.plugin.debugprint(': scan_table', 0)
+        self.plugin.debug_print(': scan_table', 0)
         sys.exit("Not implemented yet!")
 
     def _not_var(self):
@@ -1761,7 +1762,7 @@ class ZCpu:
         self._zstore(r, self.mem[self.pc])
         self.pc += 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: not_var {1}'.format(
+            self.plugin.debug_print('{0}: not_var {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _call_vn(self):
@@ -1772,7 +1773,7 @@ class ZCpu:
         argv = ops[1:self.numops]
         self._routine(ops[0], argv, self.numops-1, -1)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: call_vn {1}'.format(
+            self.plugin.debug_print('{0}: call_vn {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _call_vn2(self):
@@ -1783,7 +1784,7 @@ class ZCpu:
         argv = ops[1:self.numops]
         self._routine(ops[0], argv, self.numops-1, -1)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: call_vn2 {1}'.format(
+            self.plugin.debug_print('{0}: call_vn2 {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _tokenise(self):
@@ -1800,11 +1801,11 @@ class ZCpu:
         if n == 4:
             self.intr_data[3] = ops[3]
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: tokenise {1}'.format(
+            self.plugin.debug_print('{0}: tokenise {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _encode_text(self):
-        self.plugin.debugprint(': encode_text', 0)
+        self.plugin.debug_print(': encode_text', 0)
         sys.exit("Not implemented yet!")
 
     def _copy_table(self):
@@ -1812,7 +1813,7 @@ class ZCpu:
         self._read_operands_var_2op()
         ops = self.ops
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: copy_table {1}'.format(
+            self.plugin.debug_print('{0}: copy_table {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
         if (ops[1] == 0):  # Copy zeros to the first variable
             for i in range(abs(ops[2])):
@@ -1831,7 +1832,7 @@ class ZCpu:
                     self.mem[ops[1]+i] = self.mem[ops[0]+i]
 
     def _print_table(self):
-        self.plugin.debugprint(': print_table', 0)
+        self.plugin.debug_print(': print_table', 0)
         sys.exit("Not implemented yet!")
 
     def _check_arg_count(self):
@@ -1845,15 +1846,15 @@ class ZCpu:
         condition = (ops[0] <= noa)
         jif, offset = self.branch(condition)
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: check_arg_count {1} [{2}] {3}'.format(
+            self.plugin.debug_print('{0}: check_arg_count {1} [{2}] {3}'.format(
                 format(pc, 'X'), ops[0:self.numops], jif, offset), 2)
 
     def _save_ext(self):
-        self.plugin.debugprint(': save_ext', 0)
+        self.plugin.debug_print(': save_ext', 0)
         sys.exit("Not implemented yet!")
 
     def _restore_ext(self):
-        self.plugin.debugprint(': restore_ext', 0)
+        self.plugin.debug_print(': restore_ext', 0)
         sys.exit("Not implemented yet!")
 
     def _log_shift(self):
@@ -1869,7 +1870,7 @@ class ZCpu:
         self._zstore(self._i2s(res), self.mem[self.pc])
         self.pc += 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: log_shift {1}'.format(
+            self.plugin.debug_print('{0}: log_shift {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _art_shift(self):
@@ -1885,7 +1886,7 @@ class ZCpu:
         self._zstore(self._i2s(res), self.mem[self.pc])
         self.pc += 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: art_shift {1}'.format(
+            self.plugin.debug_print('{0}: art_shift {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _set_font(self):
@@ -1893,35 +1894,35 @@ class ZCpu:
         self._read_operands_var_2op()
         ops = self.ops
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('TODO:Implement all fonts', 2)
+            self.plugin.debug_print('TODO:Implement all fonts', 2)
         # TODO: Implement other fonts
         res = self.output.set_font(ops[0])
         self._zstore(res, self.mem[self.pc])
         self.pc += 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: set_font {1}'.format(
+            self.plugin.debug_print('{0}: set_font {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _draw_picture(self):
-        self.plugin.debugprint(': draw_picture', 0)
+        self.plugin.debug_print(': draw_picture', 0)
         sys.exit("Not implemented yet!")
 
     def _picture_data(self):
-        self.plugin.debugprint(': picture_data', 0)
+        self.plugin.debug_print(': picture_data', 0)
         sys.exit("Not implemented yet!")
 
     def _erase_picture(self):
-        self.plugin.debugprint(': erase_picture', 0)
+        self.plugin.debug_print(': erase_picture', 0)
         sys.exit("Not implemented yet!")
 
     def _set_margins(self):
-        self.plugin.debugprint(': set_margins', 0)
+        self.plugin.debug_print(': set_margins', 0)
         sys.exit("Not implemented yet!")
 
     def _save_undo(self):
         pc = self.pc
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('TODO:Implement undo', 2)
+            self.plugin.debug_print('TODO:Implement undo', 2)
         # TODO: Implement undo!
         self._read_operands_var_2op()
         ops = self.ops
@@ -1929,15 +1930,15 @@ class ZCpu:
         self._zstore(65535, self.mem[self.pc])
         self.pc += 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: save_undo {1}'.format(
+            self.plugin.debug_print('{0}: save_undo {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _restore_undo(self):
-        self.plugin.debugprint(': restore_undo', 0)
+        self.plugin.debug_print(': restore_undo', 0)
         sys.exit("Not implemented yet!")
 
     def _print_unicode(self):
-        self.plugin.debugprint(': print_unicode', 0)
+        self.plugin.debug_print(': print_unicode', 0)
         sys.exit("Not implemented yet!")
 
     def _check_unicode(self):
@@ -1954,59 +1955,59 @@ class ZCpu:
             self._zstore(0, self.mem[self.pc])
         self.pc += 1
         if (self.plugin.level >= 2):
-            self.plugin.debugprint('{0}: check_unicode {1}'.format(
+            self.plugin.debug_print('{0}: check_unicode {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
 
     def _move_window(self):
-        self.plugin.debugprint(': move_window', 0)
+        self.plugin.debug_print(': move_window', 0)
         sys.exit("Not implemented yet!")
 
     def _window_size(self):
-        self.plugin.debugprint(': window_size', 0)
+        self.plugin.debug_print(': window_size', 0)
         sys.exit("Not implemented yet!")
 
     def _window_style(self):
-        self.plugin.debugprint(': window_style', 0)
+        self.plugin.debug_print(': window_style', 0)
         sys.exit("Not implemented yet!")
 
     def _get_wind_prop(self):
-        self.plugin.debugprint(': wind_prop', 0)
+        self.plugin.debug_print(': wind_prop', 0)
         sys.exit("Not implemented yet!")
 
     def _scroll_window(self):
-        self.plugin.debugprint(': scroll_window', 0)
+        self.plugin.debug_print(': scroll_window', 0)
         sys.exit("Not implemented yet!")
 
     def _pop_stack(self):
-        self.plugin.debugprint(': pop_stack', 0)
+        self.plugin.debug_print(': pop_stack', 0)
         sys.exit("Not implemented yet!")
 
     def _read_mouse(self):
-        self.plugin.debugprint(': read_mouse', 0)
+        self.plugin.debug_print(': read_mouse', 0)
         sys.exit("Not implemented yet!")
 
     def _mouse_window(self):
-        self.plugin.debugprint(': mouse_window', 0)
+        self.plugin.debug_print(': mouse_window', 0)
         sys.exit("Not implemented yet!")
 
     def _push_stack(self):
-        self.plugin.debugprint(': push_stack', 0)
+        self.plugin.debug_print(': push_stack', 0)
         sys.exit("Not implemented yet!")
 
     def _put_wind_prop(self):
-        self.plugin.debugprint(': put_wind_prop', 0)
+        self.plugin.debug_print(': put_wind_prop', 0)
         sys.exit("Not implemented yet!")
 
     def _print_form(self):
-        self.plugin.debugprint(': print_form', 0)
+        self.plugin.debug_print(': print_form', 0)
         sys.exit("Not implemented yet!")
 
     def _make_menu(self):
-        self.plugin.debugprint(': make_menu', 0)
+        self.plugin.debug_print(': make_menu', 0)
         sys.exit("Not implemented yet!")
 
     def _picture_table(self):
-        self.plugin.debugprint(': picture_table', 0)
+        self.plugin.debug_print(': picture_table', 0)
         sys.exit("Not implemented yet!")
 
     def _read_operands_short_1op(self):

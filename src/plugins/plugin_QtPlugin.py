@@ -5,13 +5,13 @@
 from plugins.qtztextwidget import ZTextWidget
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
-from plugins.plugskel import PlugSkel
+from plugins.plugskel import PluginSkeleton
 
 __author__ = "Theofilos Intzoglou"
 __date__ = "$20 Σεπ 2009 2:39:20 μμ$"
 
 
-class QtPlugin(PlugSkel):
+class QtPlugin(PluginSkeleton):
     widget = None
     win = None
     zver = None
@@ -75,11 +75,11 @@ class QtPlugin(PlugSkel):
         else:
             self.widget.disconnect_read_char(callback)
 
-    def select_ostream(self, n):
-        self.widget.select_ostream(n)
+    def select_output_stream(self, n):
+        self.widget.select_output_stream(n)
 
-    def deselect_ostream(self, n):
-        self.widget.deselect_ostream(n)
+    def deselect_output_stream(self, n):
+        self.widget.deselect_output_stream(n)
 
     def prints(self, s):
         self.widget.prints(s)
@@ -121,8 +121,8 @@ class QtPlugin(PlugSkel):
         elif bg > 1 and bg < 13:
             self.widget.set_text_background_colour(bg)
 
-    def selected_ostreams(self):
-        return self.widget.selected_ostreams()
+    def selected_output_streams(self):
+        return self.widget.selected_output_streams()
 
     def width(self):
         return self.widget.width
