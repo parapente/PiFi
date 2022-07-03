@@ -41,7 +41,7 @@ class ZTextWidget(QWidget):
     cur_pos = 0
     input_buf = []
     _cursor_visible = False
-    _ostream = None
+    _output_stream = None
     returnPressed = pyqtSignal(str)
     keyPressed = pyqtSignal(int)
 
@@ -53,8 +53,8 @@ class ZTextWidget(QWidget):
         self.set_fixed_font("DeJa Vu Sans Mono", 9)
         self.setSizePolicy(sp)
         self.setFocusPolicy(Qt.StrongFocus)
-        self._ostream = [ZStream(), ZStream(), ZStream(), ZStream()]
-        self._ostream[0].selected = True
+        self._output_stream = [ZStream(), ZStream(), ZStream(), ZStream()]
+        self._output_stream[0].selected = True
         for i in range(self.width * self.height * 4):
             self.buf.append(0)
 
@@ -200,8 +200,8 @@ class ZTextWidget(QWidget):
         else:
             sys.exit("Unknown window {0}!?!".args(w))
 
-    def prints(self, txt):
-        if self._ostream[0].selected:
+    def print_string(self, txt):
+        if self._output_stream[0].selected:
             if self.cur_win == 0:  # Lower win
                 # TODO: Buffering
                 c = self.lower_win_cursor
@@ -436,12 +436,12 @@ class ZTextWidget(QWidget):
         if (self.upper_win_cursor == []) or (self.upper_win_cursor[1] > lines):
             self.upper_win_cursor = [1, 1]
 
-    def select_ostream(self, n):
+    def select_output_stream(self, n):
         if n != 0:
-            self._ostream[n - 1].selected = True
+            self._output_stream[n - 1].selected = True
 
-    def deselect_ostream(self, n):
-        self._ostream[n - 1].selected = False
+    def deselect_output_stream(self, n):
+        self._output_stream[n - 1].selected = False
 
     def insert_new_line(self):
         # print "New line"
@@ -463,15 +463,15 @@ class ZTextWidget(QWidget):
         QObject.disconnect(self, SIGNAL("keyPressed(int)"), callback)
         print('Disconnect char')
 
-    def selected_ostreams(self):
+    def selected_output_streams(self):
         s = []
         for i in range(4):
-            if self._ostream[i].selected == True:
+            if self._output_stream[i].selected == True:
                 s.append(i+1)
         return s
 
     def new_line(self):
-        if self._ostream[0].selected:
+        if self._output_stream[0].selected:
             if self.cur_win == 0:  # Lower win
                 self.insert_new_line()
                 self.lower_win_cursor = 1
