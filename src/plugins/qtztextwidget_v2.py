@@ -238,7 +238,7 @@ class ZTextWidget(QWidget):
         self.lastwindow.set_cursor_real_position(
             self.insert_real_pos[0], self.insert_real_pos[1])
         self._input_buffer_printing = True
-        self.prints(self.input_buf, self.lastwindow)
+        self.print_string(self.input_buf, self.lastwindow)
         self._input_buffer_printing = False
         if (self.just_scrolled):  # A new line scroll // Is it really necessary?
             self.just_scrolled = False
@@ -365,7 +365,7 @@ class ZTextWidget(QWidget):
             pass
         # print 'Disconnect char'
 
-    def prints(self, txt, window):
+    def print_string(self, txt, window):
         txtlen = len(txt)
         if (txtlen == 1):  # print_char got us here...
             self.draw_text(txt[0], 1, window)
