@@ -89,12 +89,12 @@ class ZTextWidget(QTextEdit):
 
         self.font_metrics = self.fontMetrics()
 
-        self.linesize = self.font_metrics.height()
+        self.line_size = self.font_metrics.height()
         self.avgwidth = self.font_metrics.averageCharWidth()
-        print(self.linesize, self.avgwidth)
+        print(self.line_size, self.avgwidth)
         print(self.font_metrics.height())
         self.width = super(ZTextWidget, self).width() // self.avgwidth
-        self.height = super(ZTextWidget, self).height() // self.linesize
+        self.height = super(ZTextWidget, self).height() // self.line_size
         print(self.width, self.height)
 
         # self.pbuffer_painter[0].setFont(self.normal_font)
@@ -328,7 +328,7 @@ class ZTextWidget(QTextEdit):
         # self.keyPressed.disconnect(callback)
         # print 'Disconnect char'
 
-    def prints(self, txt, window):
+    def print_string(self, txt, window):
         txtlen = len(txt)
         if txtlen == 1:  # print_char got us here...
             self.draw_text(txt[0], 1, window)
@@ -379,10 +379,10 @@ class ZTextWidget(QTextEdit):
                 if window.id == 0:  # Main window
                     window.set_cursor_position(1, self.height)
                     window.set_cursor_real_position(
-                        2, self.height*(self.linesize-1))
+                        2, self.height*(self.line_size-1))
                 else:
                     window.set_cursor_position(1, 1)
-                    window.set_cursor_real_position(2, self.linesize-1)
+                    window.set_cursor_real_position(2, self.line_size-1)
 
             if txt == '\n':
                 if window.cursor[1] == self.height:
@@ -395,7 +395,7 @@ class ZTextWidget(QTextEdit):
                 else:
                     window.set_cursor_position(1, window.cursor[1]+1)
                     window.set_cursor_real_position(
-                        2, window.cursor_real_pos[1]+self.linesize)
+                        2, window.cursor_real_pos[1]+self.line_size)
             else:
                 self.insertPlainText(txt)
                 #rect = QRectF(window.cursor_real_pos[0], window.cursor_real_pos[1], self.pbuffer[window.id].width()-window.cursor_real_pos[0], self.linesize)
