@@ -1,6 +1,12 @@
 Normal
 ------
 o Z-Machine Debugger
+o Testing
+  -- ztext.py --
+  * abbreviations
+  * v5- alphabet table
+  * unicode table
+  * text encoding
 o Ops:
   -- 2op --
   * throw
@@ -54,6 +60,7 @@ o disconnect_input is probably unnecessary
 o Implement the specification of character graphics
   (maybe there is a bitmap font already in the net we can use)
 o 8.1.5.1 part of spec for char graphics in v5
+o 3.8.2.3 part of spec for tab character in v6
 o Propose save game filename
 o Optimize:
     * _je (23337 0.397 1.243 -->command)
