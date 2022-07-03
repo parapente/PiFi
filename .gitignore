@@ -5,3 +5,5 @@
 *.kdev4
 nbproject
 .vscode
+__pycache__
+.pytest_cache
