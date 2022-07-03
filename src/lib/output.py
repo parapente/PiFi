@@ -52,7 +52,7 @@ class ZOutput:
         if (self.version > 3):  # In V1-3 buffering is always on
             self.buffering = c
 
-    def prints(self, s):
+    def print_string(self, s):
         # TODO: Buffering
         # print "Output streams:", self.plugin.selected_output_streams()
         if 3 in self.plugin.selected_output_streams():
@@ -74,7 +74,7 @@ class ZOutput:
                     mem[x] = i
                 x += 1
         else:
-            self.plugin.prints(s)
+            self.plugin.print_string(s)
 
     def print_status(self, room, status):
         self.plugin.print_status(room, status)

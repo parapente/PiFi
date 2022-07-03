@@ -614,7 +614,7 @@ class ZCpu:
             self._read_operands_long_2op()
         ops = self.ops
         if ops[0] == 0:
-            self.output.prints("** get_prop_addr got 0 as object! **\n")
+            self.output.print_string("** get_prop_addr got 0 as object! **\n")
             prop = 0
             #sys.exit("Can't get property of nothing!")
         else:
@@ -1035,7 +1035,7 @@ class ZCpu:
             i += 2
         text = decode_text(buf, self.zver, self.mem, self.header.abbrev_table(
         ), False, self.header.alphabet_table(), 0)
-        self.output.prints(text)
+        self.output.print_string(text)
         # print text
         if (self.plugin.level >= 2):
             self.plugin.debug_print('{0}: print_addr {1}'.format(
@@ -1129,7 +1129,7 @@ class ZCpu:
         # print buf
         text = decode_text(buf, self.zver, self.mem, self.header.abbrev_table(
         ), False, self.header.alphabet_table(), 0)
-        self.output.prints(text)
+        self.output.print_string(text)
         if (self.plugin.level >= 2):
             self.plugin.debug_print('{0}: print_obj {1}'.format(
                 format(pc, 'X'), ops[0:self.numops]), 2)
@@ -1199,7 +1199,7 @@ class ZCpu:
             i += 2
         text = decode_text(buf, self.zver, self.mem, self.header.abbrev_table(
         ), False, self.header.alphabet_table(), 0)
-        self.output.prints(text)
+        self.output.print_string(text)
         # print text
         if (self.plugin.level >= 2):
             self.plugin.debug_print('{0}: print_paddr {1}'.format(
@@ -1282,7 +1282,7 @@ class ZCpu:
             self.print_dict[uaddr] = [i, text]
         self.pc += i + 1
         # print text
-        self.output.prints(text)
+        self.output.print_string(text)
         if (self.plugin.level >= 2):
             self.plugin.debug_print(
                 '{0}: print "{1}"'.format(format(pc, 'X'), text), 2)
@@ -1302,7 +1302,7 @@ class ZCpu:
         # print buf
         text = decode_text(buf, self.zver, self.mem, self.header.abbrev_table(
         ), False, self.header.alphabet_table(), 0)
-        self.output.prints(text + "\n")
+        self.output.print_string(text + "\n")
         # print text
         self.pc += i + 1
         self._return(1)
@@ -1367,7 +1367,7 @@ class ZCpu:
         pc = self.pc
         if (self.plugin.level >= 2):
             self.plugin.debug_print('{0}: quit'.format(format(pc, 'X')), 2)
-        self.output.prints('[Press any key to quit]')
+        self.output.print_string('[Press any key to quit]')
         self.intr = 69
 
     def _new_line(self):
@@ -1539,7 +1539,7 @@ class ZCpu:
         except KeyError:
             text = convert_from_zscii(ops[0], self.mem, 0)
             self.print_char_dict[ops[0]] = text
-        self.output.prints(text)
+        self.output.print_string(text)
         # print text
         if (self.plugin.level >= 2):
             self.plugin.debug_print('{0}: print_char {1}'.format(
@@ -1550,10 +1550,10 @@ class ZCpu:
         self._read_operands_var_2op()
         ops = self.ops
         if ops[0] > 0x7fff:
-            self.output.prints("{0}".format(ops[0] - 65536))
+            self.output.print_string("{0}".format(ops[0] - 65536))
             #print (ops[0] - 65536)
         else:
-            self.output.prints("{0}".format(ops[0]))
+            self.output.print_string("{0}".format(ops[0]))
             # print ops[0]
         if (self.plugin.level >= 2):
             self.plugin.debug_print('{0}: print_num {1}'.format(

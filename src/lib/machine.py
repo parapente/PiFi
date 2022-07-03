@@ -58,7 +58,7 @@ class ZMachine:
             self.cpu.start()
             self.handle_intr()
         elif self.cpu.intr == 5:  # Save state interrupt
-            self.plugin.prints('Enter filename:')
+            self.plugin.print_string('Enter filename:')
             self.mutex.acquire()
             self.input.read_line(100, self.save_state, 0, None)
             # self.mutex.acquire() # We should wait here for the result of save_state
@@ -67,7 +67,7 @@ class ZMachine:
             # self.cpu.start()
             # self.handle_intr()
         elif self.cpu.intr == 6:  # Load state interrupt
-            self.plugin.prints('Enter filename:')
+            self.plugin.print_string('Enter filename:')
             self.mutex.acquire()
             self.input.read_line(100, self.restore_state, 0, None)
         elif self.cpu.intr == 10:  # Return from routine, back to sread
@@ -233,7 +233,7 @@ class ZMachine:
         try:
             self.savefile = open(filename)
             # File exists! Ask if user wants to overwrite file.
-            self.plugin.prints('Overwrite?(Y/N)')
+            self.plugin.print_string('Overwrite?(Y/N)')
             self.input.read_char(self.overwrite_yn)
         except IOError:
             # File doesn't exist
@@ -243,7 +243,7 @@ class ZMachine:
             except IOError as cannot_save_file:
                 (errno, strerror) = cannot_save_file.args
                 print("I/O error ({0}): {1}".format(errno, strerror))
-                self.plugin.prints('Save failed!\n')
+                self.plugin.print_string('Save failed!\n')
                 self.mutex.release()
                 self.save_state_return_fail()
 
@@ -259,7 +259,7 @@ class ZMachine:
         except IOError as cannot_restore_file:
             (errno, strerror) = cannot_restore_file.args
             print("I/O error ({0}): {1}".format(errno, strerror))
-            self.plugin.prints('Restore failed!\n')
+            self.plugin.print_string('Restore failed!\n')
             self.mutex.release()
             self.restore_state_return_fail()
 
@@ -273,7 +273,7 @@ class ZMachine:
             except IOError as cannot_save_file:
                 (errno, strerror) = cannot_save_file.args
                 print("I/O error ({0}): {1}".format(errno, strerror))
-                self.plugin.prints('Save failed!\n')
+                self.plugin.print_string('Save failed!\n')
                 self.mutex.release()
                 self.save_state_return_fail()
         elif key == 'n' or key == 'N':
@@ -321,7 +321,7 @@ class ZMachine:
                         self.mem.mem[mempos] = x
                         mempos += 1
                 elif mempos > self.mem.static_beg:
-                    self.plugin.prints(
+                    self.plugin.print_string(
                         'Savefile overwrites part of static memory. Halting...')
                     sys.exit("Static memory overwritten!")
                 if (chunk_length % 2) == 1:
@@ -333,7 +333,7 @@ class ZMachine:
                     (filebuf[pos+2] << 8) + filebuf[pos+3]
                 pos += 4
                 if chunk_length < self.mem.static_beg or chunk_length > self.mem.static_beg:
-                    self.plugin.prints(
+                    self.plugin.print_string(
                         'Saved UMem size not matching dynamic memory. Restore failed')
                     return
                 i = 0
@@ -386,14 +386,15 @@ class ZMachine:
                 pos += 4
                 self.plugin.debug_print('Chunk len: ' + str(chunk_length), 1)
                 if chunk_length != 13:
-                    self.plugin.prints('Wrong size of chunk. Not restoring\n')
+                    self.plugin.print_string(
+                        'Wrong size of chunk. Not restoring\n')
                     return
 
                 release_number = (filebuf[pos] << 8) + filebuf[pos+1]
                 if release_number != self.header.release_number():
                     self.plugin.debug_print(
                         str(release_number) + " - " + str(self.header.release_number()), 1)
-                    self.plugin.prints(
+                    self.plugin.print_string(
                         'Different release number. Not restoring')
                     return
 
@@ -401,7 +402,7 @@ class ZMachine:
                 if serial_num != self.header.serial_number():
                     self.plugin.debug_print(
                         serial_num + " - " + self.header.serial_number(), 1)
-                    self.plugin.prints(
+                    self.plugin.print_string(
                         'Different serial number. Not restoring')
                     return
 
@@ -410,7 +411,8 @@ class ZMachine:
                     # TODO: If header checksum is zero we should cacl checksum
                     self.plugin.debug_print(
                         str(checksum) + " - " + str(self.header.checksum()), 1)
-                    self.plugin.prints('Different checksum. Not restoring')
+                    self.plugin.print_string(
+                        'Different checksum. Not restoring')
                     return
 
                 self.plugin.debug_print(
