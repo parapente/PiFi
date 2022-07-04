@@ -35,7 +35,7 @@ class ZMemory:
         # print 'Static:',self.static_beg,'High:',self.high_beg
         # TODO: Find static_end
 
-    def read(self, offset):
+    def read(self, offset: int) -> int:
         """Function to be used with z-code to read a byte from specific offset"""
         if offset >= 0:
             if offset < self.static_beg:
@@ -54,7 +54,7 @@ class ZMemory:
             print("Memory:read:Error! Trying to access high memory!")
             sys.exit(1)
 
-    def write(self, offset, data):
+    def write(self, offset: int, data: int) -> None:
         """Function to be used with z-code to write to specific offset a byte"""
         if offset >= 0:
             if offset < self.static_beg:
@@ -76,7 +76,7 @@ class ZMemory:
             print("Memory:write:Error! Trying to access high memory!")
             sys.exit(1)
 
-    def p_read(self, offset):
+    def p_read(self, offset: int) -> int:
         """Generic function for reading bytes from Z memory"""
         if offset < 0:
             print("Memory:p_read:Error! Negative offset!")
@@ -84,7 +84,7 @@ class ZMemory:
         else:
             return self.mem[offset]
 
-    def p_write(self, offset, data):
+    def p_write(self, offset: int, data: int) -> None:
         """Generic function for writing bytes to Z memory"""
         if offset < 0:
             print("Memory:p_write:Error! Negative offset!")
