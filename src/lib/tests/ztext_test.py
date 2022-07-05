@@ -1,11 +1,11 @@
 from array import array
 import pytest
 from lib.memory import ZMemory
-from lib.ztext import decode_text
+from lib.ztext import decode_text, encode_text
 
 
 @pytest.fixture
-def text_data():
+def decode_text_data():
     return [
         [1, "", []],
         [1, "This is a test!",
@@ -32,12 +32,41 @@ def text_data():
     ]
 
 
-def test_ztext_decode_text(text_data):
+@pytest.fixture
+def encode_text_data():
+    return [
+        [1, "hello"],
+        [2, "hello"],
+        [3, "hello"],
+        [4, "hello"],
+        [5, "hello"],
+        [1, "hellooooo"],
+        [2, "HELLO"],
+        [3, "this is a test"],
+        [4, "this is a test"],
+    ]
+
+
+def test_ztext_decode_text(decode_text_data):
     mem = ZMemory()
-    for data in text_data:
+    for data in decode_text_data:
         version, text, z_chars = data
         text_buffer = array('B', z_chars)
         print(data)
         assert decode_text(text_buffer, version, mem.mem, 0,
                            False, 0, 0
                            ) == text
+
+
+def test_ztext_encode_text(encode_text_data):
+    mem = ZMemory()
+    for data in encode_text_data:
+        version, text = data
+        encoded_string = encode_text(list(text), version,
+                                     mem.mem, 0, 0)
+        decoded_string = decode_text(encoded_string, version, mem.mem,
+                                     0, False, 0, 0)
+        if version < 4:
+            assert decoded_string == text[:6].lower()
+        else:
+            assert decoded_string == text[:9].lower()
