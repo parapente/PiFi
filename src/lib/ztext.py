@@ -153,72 +153,118 @@ def convert_from_zscii(zscii_char: int, mem: array, unicode_table: int) -> str:
         return chr(ut[zscii_char-155])
 
 
-def encode_text(text, version, mem, abbrev, isabbrev, alpha_table, unicode_table):
-    a2 = ['\n', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.',
-          ',', '!', '?', '_', '#', '\'', '\"', '/', '\\', '-', ':', '(', ')']
-    t = str(text)
-    l = len(t)
-    j = 1
+def encode_text(text: list, version: int, mem: array, alphabet_table: int, unicode_table) -> array:
+    a0 = dict()
+    a1 = dict()
+    a2 = dict()
+    prepare_dicts(a0, a1, a2, version, mem, alphabet_table)
+
+    string_length = len(text)
     buf = []
+    if version < 4:
+        buffer_limit = 6
+    else:
+        buffer_limit = 9
+
+    i = 0
+    char_count = 0
+    while i < string_length and char_count < buffer_limit:
+        a2_is_used = False
+        if text[i] == " ":
+            code = 0
+        else:
+            item = ord(text[i])
+            if item in a0:
+                code = a0[item]
+            elif item in a1:
+                code = a1[item]
+            elif item in a2:
+                a2_is_used = True
+                code = a2[item]
+            else:
+                raise ValueError(
+                    "Unexpected character in text '" + text[i] + "'")
+        if a2_is_used:
+            if version < 3:
+                shift_char = 3
+            else:
+                shift_char = 5
+
+            if char_count < buffer_limit - 1:
+                buf.extend([shift_char, code])
+                char_count += 2
+            else:
+                buf.append(shift_char)
+                char_count += 1
+        else:
+            buf.append(code)
+            char_count += 1
+        i += 1
+
+    if char_count < buffer_limit:
+        buf.extend([5]*(buffer_limit - char_count))
+    output = convert_to_z_bytes(buf)
+    return array('B', output)
+
+
+def convert_to_z_bytes(buf: list) -> list:
+    output = []
+    byte_count = 1
     b1 = 0
     b2 = 0
-    if (version == 1):
-        a2.remove('\n')
-        a2.insert(a2.index('-'), '<')
-    for i in range(l):
-        c = t[i].lower()
-        if (c >= 'a') and (c <= 'z'):
-            n = (ord(c) - ord('a')) + 6
-            if (j % 3) == 1:
-                b1 = n << 2
-            elif (j % 3) == 2:
-                p1 = n >> 3
-                p2 = (n & 7) << 5
-                b1 += p1
-                b2 = p2
-            else:
-                b2 += n
-                buf.append(b1)
-                buf.append(b2)
-            j += 1
-        elif c in a2:  # Char is symbol in standard alphabet
-            if version < 3:
-                zc = 3
-            else:
-                zc = 5
-            n = a2.index(c) + 7
-            if (j % 3) == 1:
-                b1 = zc << 2
-                p1 = n >> 3
-                p2 = (n & 7) << 5
-                b1 += p1
-                b2 = p2
-            elif (j % 3) == 2:
-                p1 = zc >> 3
-                p2 = (zc & 7) << 5
-                b1 += p1
-                b2 = p2
-                b2 += n
-                buf.append(b1)
-                buf.append(b2)
-            else:
-                b2 += zc
-                buf.append(b1)
-                buf.append(b2)
-                b1 = n << 2
-            j += 2
-    if (j % 3) == 1:
-        b1 |= 128
-    elif (j % 3) == 2:
-        p1 = 5 >> 3
-        p2 = (5 & 7) << 5
-        b1 += p1
-        b1 |= 128
-        b2 = p2
-        b2 += 5
+    for z_char in buf:
+        if (byte_count % 3) == 1:
+            b1 = z_char << 2
+        elif (byte_count % 3) == 2:
+            p1 = z_char >> 3
+            p2 = (z_char & 7) << 5
+            b1 += p1
+            b2 = p2
+        else:
+            b2 += z_char
+            if byte_count == len(buf):
+                b1 |= 128
+            output.append(b1)
+            output.append(b2)
+        byte_count += 1
+    return output
+
+
+def prepare_dicts(a0: dict, a1: dict, a2: dict, version: int, mem: array,
+                  alphabet_table: int) -> None:
+    if version >= 5 and alphabet_table:
+        i = 0
+        for x in range(26):
+            a0[mem[alphabet_table+x]] = 6 + i
+            i += 1
+        i = 0
+        for x in range(26, 52):
+            a1[mem[alphabet_table+x]] = 6 + i
+            i += 1
+        i = 0
+        for x in range(52, 78):
+            a2[mem[alphabet_table+x]] = 6 + i
+            i += 1
     else:
-        b1 |= 128
-        b2 += 5
-    buf.append(b1)
-    buf.append(b2)
-    print(buf)
+        i = 0
+        for x in range(ord('a'), ord('z') + 1):
+            a0[x] = 6 + i
+            i += 1
+        i = 0
+        for x in range(ord('A'), ord('Z') + 1):
+            a1[x] = 6 + i
+            i += 1
+        if version == 1:
+            i = 0
+            for x in [' ', '0', '1', '2', '3', '4', '5', '6', '7', '8',
+                      '9', '.', ',', '!', '?', '_', '#', '\'', '\"', '/',
+                      '\\', '<', '-', ':', '(', ')']:
+                a2[ord(x)] = 6 + i
+                i += 1
+        else:
+            i = 0
+            for x in [' ', '\n', '0', '1', '2', '3', '4', '5', '6', '7',
+                      '8', '9', '.', ',', '!', '?', '_', '#', '\'', '\"',
+                      '/', '\\', '-', ':', '(', ')']:
+                a2[ord(x)] = 6 + i
+                i += 1
