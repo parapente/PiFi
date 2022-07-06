@@ -170,10 +170,10 @@ def encode_text(text: list, version: int, mem: array, alphabet_table: int, unico
     char_count = 0
     while i < string_length and char_count < buffer_limit:
         a2_is_used = False
-        if text[i] == " ":
+        if text[i] == 32:  # if it is space character
             code = 0
         else:
-            item = ord(text[i])
+            item = text[i]
             if item in a0:
                 code = a0[item]
             elif item in a1:

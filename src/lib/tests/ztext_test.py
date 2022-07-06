@@ -62,7 +62,8 @@ def test_ztext_encode_text(encode_text_data):
     mem = ZMemory()
     for data in encode_text_data:
         version, text = data
-        encoded_string = encode_text(list(text), version,
+        decoded_text = [ord(x) for x in text]
+        encoded_string = encode_text(decoded_text, version,
                                      mem.mem, 0, 0)
         decoded_string = decode_text(encoded_string, version, mem.mem,
                                      0, False, 0, 0)
