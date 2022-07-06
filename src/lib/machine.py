@@ -1,13 +1,14 @@
 # -*- coding: utf-8
 
-from .memory import ZMemory
-from .cpu import ZCpu
-from .header import ZHeader
-from .input import ZInput
-from .output import ZOutput
-from .ztext import *
-from .dictionary import ZDictionary
-import sys
+from io import BufferedReader
+from lib.cpu import ZCpu
+from lib.dictionary import ZDictionary
+from lib.header import ZHeader
+from lib.input import ZInput
+from lib.memory import ZMemory
+from lib.output import ZOutput
+from plugins.plugskel import PluginSkeleton
+from sys import exit
 from threading import Lock
 
 __author__ = "Theofilos Intzoglou"
@@ -26,8 +27,8 @@ class ZMachine:
     file = None
     mutex = Lock()
 
-    def __init__(self, w):
-        self.plugin = w
+    def __init__(self, plugin: PluginSkeleton):
+        self.plugin = plugin
 
     def boot(self):
         if self.header.version == 6:
@@ -63,7 +64,7 @@ class ZMachine:
             self.input.read_line(100, self.save_state, 0, None)
             # self.mutex.acquire() # We should wait here for the result of save_state
             # self.mutex.release()
-            #self.cpu.intr = 0
+            # self.cpu.intr = 0
             # self.cpu.start()
             # self.handle_intr()
         elif self.cpu.intr == 6:  # Load state interrupt
@@ -108,13 +109,13 @@ class ZMachine:
         self.plugin.debug_print("@@@@@@@@@@@ end @@@@@@@@@@@@@@@@@", 2)
         self.handle_intr()
 
-    def get_text(self, text, interrupted=False):
+    def get_text(self, text: str, interrupted: bool = False):
         self.input.stop_line_timer()
         self.input.disconnect_input(self.get_text)
         self.mutex.acquire()
         # self.input.hide_cursor()
-        #print('get_text:', text, interrupted)
-        if (interrupted == False):  # We got here because user pressed enter
+        # print('get_text:', text, interrupted)
+        if not interrupted:  # We got here because user pressed enter
             self.plugin.debug_print("Enter!", 2)
             paddr = self.cpu.intr_data[1]
             taddr = self.cpu.intr_data[0]
@@ -147,9 +148,9 @@ class ZMachine:
         self.cpu.start()
         self.handle_intr()
 
-    def lex(self, text, parse, dictionary, flag):
+    def lex(self, text: int, parse: int, dictionary: int, flag: int):
         if dictionary != 0 or flag != 0:
-            sys.exit("LEX: Not supported yet!")
+            exit("LEX: Not supported yet!")
         txt = ""
         if self.zver < 5:
             i = 0
@@ -212,7 +213,7 @@ class ZMachine:
                 parse += 4
             i += 2
 
-    def get_char(self, char):
+    def get_char(self, char: int):
         self.input.stop_char_timer()
         self.input.disconnect_input(self.get_char)
         self.mutex.acquire()
@@ -225,9 +226,9 @@ class ZMachine:
             self.handle_intr()
         else:
             self.plugin.quit()
-            # sys.exit('Quit')
+            # exit('Quit')
 
-    def save_state(self, filename):
+    def save_state(self, filename: str):
         print("Here!")
         # Test if file already exists
         try:
@@ -247,7 +248,7 @@ class ZMachine:
                 self.mutex.release()
                 self.save_state_return_fail()
 
-    def restore_state(self, filename):
+    def restore_state(self, filename: str):
         print("Here!")
         # Test if file already exists
         try:
@@ -263,7 +264,7 @@ class ZMachine:
             self.mutex.release()
             self.restore_state_return_fail()
 
-    def overwrite_yn(self, key):
+    def overwrite_yn(self, key: str):
         if key == 'y' or key == 'Y':
             fname = self.savefile.name
             self.savefile.close()
@@ -323,7 +324,7 @@ class ZMachine:
                 elif mempos > self.mem.static_beg:
                     self.plugin.print_string(
                         'Savefile overwrites part of static memory. Halting...')
-                    sys.exit("Static memory overwritten!")
+                    exit("Static memory overwritten!")
                 if (chunk_length % 2) == 1:
                     pos += chunk_length + 1
                 else:
@@ -449,7 +450,7 @@ class ZMachine:
                     pos += chunk_length + 1
                 else:
                     pos += chunk_length
-        # sys.exit("Exit")
+        # exit("Exit")
 
         # FIX: You should restart to the point where the save was created
         # The following are unnecessary
@@ -629,7 +630,7 @@ class ZMachine:
             self.cpu.branch(False)
             self.cpu.start()
 
-    def rle_encode(self, buffer, rle):
+    def rle_encode(self, buffer: list, rle: list):
         bufferlen = len(buffer)
         i = 0
         seqzeros = 0
@@ -663,7 +664,7 @@ class ZMachine:
         if (lastbyte == 0):
             rle.pop()
 
-    def load_story(self, f):
+    def load_story(self, f: BufferedReader):
         # @type f file
         # Read the first byte of the file to determine the version of the story
         self.file = f
@@ -676,7 +677,7 @@ class ZMachine:
             max_length = 512 * 1024
         else:
             print('Not a valid story file')
-            sys.exit(10)
+            exit(10)
 
         # Now that we checked the file size we rewind the file and read the data into memory
         f.seek(0)
