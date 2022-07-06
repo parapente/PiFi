@@ -1,6 +1,8 @@
 # -*- coding: utf-8
 import sys
 
+from plugins.plugskel import PluginSkeleton
+
 __author__ = "Theofilos Intzoglou"
 __date__ = "$1 Ιουλ 2009 5:20:39 μμ$"
 
@@ -13,13 +15,13 @@ class ZOutput:
     table_list_len = 0
     mem = None
 
-    def __init__(self, ver, mem, plugin):
-        self.version = ver
+    def __init__(self, version: int, mem: array, plugin: PluginSkeleton):
+        self.version = version
         self.plugin = plugin
         self.mem = mem
         self.plugin.screen_size_callback = self.set_screen_size
 
-    def select_stream(self, n, table):
+    def select_stream(self, n: int, table: int) -> None:
         self.plugin.select_output_stream(n)
         if table != -1:
             # We keep 2 ints for every output_stream 3 (addr,offset)
@@ -30,7 +32,7 @@ class ZOutput:
             else:
                 sys.exit("Output stream 3 is selected too many times!")
 
-    def deselect_stream(self, n):
+    def deselect_stream(self, n: int) -> None:
         if n == 3:
             tl = self.table_list
             tbl = self.table_list_len
@@ -46,13 +48,13 @@ class ZOutput:
         else:
             self.plugin.deselect_output_stream(n)
 
-    def set_buffering(self, c):
+    def set_buffering(self, c: int) -> None:
         """Sets output buffering to on or off (1 or 0)"""
         # TODO: Implement proper buffering!
         if (self.version > 3):  # In V1-3 buffering is always on
             self.buffering = c
 
-    def print_string(self, s):
+    def print_string(self, s: str) -> None:
         # TODO: Buffering
         # print "Output streams:", self.plugin.selected_output_streams()
         if 3 in self.plugin.selected_output_streams():
@@ -76,19 +78,19 @@ class ZOutput:
         else:
             self.plugin.print_string(s)
 
-    def print_status(self, room, status):
+    def print_status(self, room: str, status: str) -> None:
         self.plugin.print_status(room, status)
 
-    def printkey(self, key):
+    def printkey(self, key: str):
         # TODO: Implement printkey properly!
         if self.stream[4].on == 1:
             print(key)
 
-    def print_input(self, s):
-        if self.stream[1].selected == True:
+    def print_input(self, s: str) -> None:
+        if self.stream[1].selected:
             # TODO: Buffering
             print(s)
-        if (self.stream[2].selected == True and self.stream[2].filename == None):
+        if (self.stream[2].selected and self.stream[2].filename is None):
             # TODO: Do something to get the filename
             pass
         else:
@@ -97,28 +99,28 @@ class ZOutput:
     def clear_screen(self):
         self.plugin.clear_screen()
 
-    def set_font_style(self, s):
+    def set_font_style(self, s: int) -> None:
         self.plugin.set_font_style(s)
 
-    def show_upper_window(self, lines):
+    def show_upper_window(self, lines: int) -> None:
         self.plugin.show_upper_window(lines)
 
-    def set_window(self, w):
+    def set_window(self, w: int) -> None:
         self.plugin.set_window(w)
 
-    def set_cursor(self, y, x):
-        self.plugin.set_cursor(y, x)
+    def set_cursor(self, y: int, x: int) -> None:
+        self.plugin.set_cursor(x, y)
 
-    def set_colour(self, fg, bg):
+    def set_colour(self, fg: int, bg: int):
         self.plugin.set_colour(fg, bg)
 
     def new_line(self):
         self.plugin.new_line()
 
-    def set_font(self, f):
+    def set_font(self, f: int):
         return self.plugin.set_font(f)
 
-    def set_screen_size(self, w, h):
+    def set_screen_size(self, w: int, h: int) -> None:
         if (self.version > 4):
             self.mem[0x22] = w // 256
             self.mem[0x23] = w % 256
