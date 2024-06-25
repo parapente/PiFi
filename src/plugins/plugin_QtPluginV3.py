@@ -1,8 +1,8 @@
 # -*- coding: utf-8
 
 from plugins.qtztextwidget_v3 import ZTextWidget
-from PyQt5 import QtWidgets
-from PyQt5 import QtCore
+from PyQt6 import QtWidgets
+from PyQt6 import QtCore
 from plugins.plugskel import PluginSkeleton
 import traceback
 import sys
@@ -30,9 +30,11 @@ class QtPluginV3(PluginSkeleton):
         hbl.itemAt(0).widget().setVisible(False)
         hbl.itemAt(1).widget().setVisible(False)
         hbl.itemAt(1).widget().setAlignment(
-            QtCore.Qt.Alignment(QtCore.Qt.AlignRight))
+            QtCore.Qt.AlignmentFlag(QtCore.Qt.AlignmentFlag.AlignRight)
+        )
         hbl.itemAt(1).widget().setSizePolicy(
-            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
+            QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Preferred
+        )
         self.widget = ZTextWidget()
         vbl = QtWidgets.QVBoxLayout()
         vbl.addLayout(hbl)
@@ -44,7 +46,7 @@ class QtPluginV3(PluginSkeleton):
         self.win.show()
 
     def exec_(self) -> None:
-        sys.exit(self.a.exec_())
+        sys.exit(self.a.exec())
 
     def print_status(self, room: str, status: str) -> None:
         vbl = self.win.centralWidget().layout()
@@ -59,7 +61,7 @@ class QtPluginV3(PluginSkeleton):
         s2.setText(status)
 
     def new_line(self) -> None:
-        self.widget.print_string('\n', self.window[self.current_window])
+        self.widget.print_string("\n", self.window[self.current_window])
 
     def print_string(self, string: str) -> None:
         if self._output_stream[0].selected is True:
@@ -70,10 +72,9 @@ class QtPluginV3(PluginSkeleton):
             traceback.print_stack()
             sys.exit()
         else:
-            if (self.window[1].line_count < lines):
+            if self.window[1].line_count < lines:
                 self.window[1].set_cursor_position(1, 1)
-                self.window[1].set_cursor_real_position(
-                    2, self.widget.line_size)
+                self.window[1].set_cursor_real_position(2, self.widget.line_size)
             self.window[1].set_line_count(lines)
             self.widget.split_window(lines, ver)
 
@@ -90,7 +91,7 @@ class QtPluginV3(PluginSkeleton):
             self.widget.update_real_cursor_position(self.window[1])
 
     def set_cursor(self, x: int, y: int) -> None:
-        if (self.current_window == 1):
+        if self.current_window == 1:
             self.window[1].set_cursor_position(x, y)
             self.widget.update_real_cursor_position(self.window[1])
 
