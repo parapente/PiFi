@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "pifi"
+version = "0.1.0"
+description = "Python Interactive Fiction Interpreter"
+authors = ["Theofilos Intzoglou <int.teo@gmail.com>"]
+license = "GPL-3"
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+PyQt6 = "^6.7.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
