@@ -131,7 +131,7 @@ class ZTextWidget(QTextEdit):
         # self.draw_cursor(window,False)
 
     def keyPressEvent(self, e: QKeyEvent):
-        if e.key() == Qt.Key_Left:
+        if e.key() == Qt.Key.Key_Left:
             if self._input_cursor_pos > 0:
                 # c = self.input_buf.pop(self._input_cursor_pos)
                 self._input_cursor_pos -= 1
@@ -141,30 +141,32 @@ class ZTextWidget(QTextEdit):
                 # self.draw_input_buffer()
             e.accept()
             self.keyPressed.emit(131)
-        elif e.key() == Qt.Key_Right:
+        elif e.key() == Qt.Key.Key_Right:
             if self._input_cursor_pos < (len(self.input_buf)):
                 # c = self.input_buf.pop(self._input_cursor_pos)
                 self._input_cursor_pos += 1
-                self.moveCursor(QTextCursor.NextCharacter)
+                self.moveCursor(QTextCursor.MoveOperation.NextCharacter)
                 # self.input_buf.insert(self._input_cursor_pos, c)
                 # self.clean_input_buffer_from_screen()
                 # self.draw_input_buffer()
             e.accept()
             self.keyPressed.emit(132)
-        elif e.key() == Qt.Key_Home:
+        elif e.key() == Qt.Key.Key_Home:
             tc = self.textCursor()
             tc.movePosition(
-                QTextCursor.Left, QTextCursor.MoveAnchor, self._input_cursor_pos
+                QTextCursor.MoveOperation.Left,
+                QTextCursor.MoveMode.MoveAnchor,
+                self._input_cursor_pos,
             )
             self.setTextCursor(tc)
             self._input_cursor_pos = 0
             e.accept()
             # self.keyPressed.emit() # No keycode available for zscii
-        elif e.key() == Qt.Key_End:
+        elif e.key() == Qt.Key.Key_End:
             tc = self.textCursor()
             tc.movePosition(
-                QTextCursor.Right,
-                QTextCursor.MoveAnchor,
+                QTextCursor.MoveOperation.Right,
+                QTextCursor.MoveMode.MoveAnchor,
                 len(self.input_buf) - self._input_cursor_pos,
             )
             self.setTextCursor(tc)
@@ -181,7 +183,7 @@ class ZTextWidget(QTextEdit):
         # e.accept()
         # self.keyPressed.emit(130)
         # pass
-        elif e.key() == Qt.Key_Backspace:
+        elif e.key() == Qt.Key.Key_Backspace:
             # If there IS something to delete
             if len(self.input_buf) > 0 and (self._input_cursor_pos != 0):
                 del self.input_buf[self._input_cursor_pos - 1]
@@ -189,18 +191,18 @@ class ZTextWidget(QTextEdit):
                 self.textCursor().deletePreviousChar()
             # self.keyPressed.emit() # No keycode available for zscii
             e.accept()
-        elif e.key() == Qt.Key_Delete:
+        elif e.key() == Qt.Key.Key_Delete:
             if self._input_cursor_pos < len(self.input_buf):
                 del self.input_buf[self._input_cursor_pos]
                 self.textCursor().deleteChar()
             e.accept()
             self.keyPressed.emit(8)
-        elif (e.key() == Qt.Key_Return) or (e.key() == Qt.Key_Enter):
+        elif (e.key() == Qt.Key.Key_Return) or (e.key() == Qt.Key.Key_Enter):
             # Move cursor to the end of the line to avoid transferring text to the new line
             tc = self.textCursor()
             tc.movePosition(
-                QTextCursor.Right,
-                QTextCursor.MoveAnchor,
+                QTextCursor.MoveOperation.Right,
+                QTextCursor.MoveMode.MoveAnchor,
                 len(self.input_buf) - self._input_cursor_pos,
             )
             self.setTextCursor(tc)
@@ -220,10 +222,10 @@ class ZTextWidget(QTextEdit):
             self.input_buf = []
             self.returnPressed.emit(text)
             e.accept()
-        elif (e.key() >= Qt.Key_F1) and (e.key() <= Qt.Key_F12):
+        elif (e.key() >= Qt.Key.Key_F1) and (e.key() <= Qt.Key.Key_F12):
             e.accept()
-            self.keyPressed.emit(133 + e.key() - Qt.Key_F1)
-        elif e.key() == Qt.Key_Escape:
+            self.keyPressed.emit(133 + e.key() - Qt.Key.Key_F1)
+        elif e.key() == Qt.Key.Key_Escape:
             e.accept()
             self.keyPressed.emit(27)
         elif e.text():
