@@ -7,3 +7,7 @@ nbproject
 .vscode
 __pycache__
 .pytest_cache
+*.log
+*.sav*
+*.dat
+.coverage
