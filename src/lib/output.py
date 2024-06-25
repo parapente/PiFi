@@ -1,6 +1,7 @@
 # -*- coding: utf-8
 import sys
 
+from array import array
 from plugins.plugskel import PluginSkeleton
 
 __author__ = "Theofilos Intzoglou"
@@ -15,7 +16,7 @@ class ZOutput:
     table_list_len = 0
     mem = None
 
-    def __init__(self, version: int, mem: array, plugin: PluginSkeleton):
+    def __init__(self, version: int, mem: array[int], plugin: PluginSkeleton):
         self.version = version
         self.plugin = plugin
         self.mem = mem
@@ -39,7 +40,7 @@ class ZOutput:
             addr = tl[tbl - 2]
             numbytes = tl[tbl - 1]
             self.mem[addr] = numbytes >> 8
-            self.mem[addr + 1] = numbytes & 0xff
+            self.mem[addr + 1] = numbytes & 0xFF
             del tl[tbl - 1]
             del tl[tbl - 2]
             self.table_list_len -= 2
@@ -51,7 +52,7 @@ class ZOutput:
     def set_buffering(self, c: int) -> None:
         """Sets output buffering to on or off (1 or 0)"""
         # TODO: Implement proper buffering!
-        if (self.version > 3):  # In V1-3 buffering is always on
+        if self.version > 3:  # In V1-3 buffering is always on
             self.buffering = c
 
     def print_string(self, s: str) -> None:
@@ -90,7 +91,7 @@ class ZOutput:
         if self.stream[1].selected:
             # TODO: Buffering
             print(s)
-        if (self.stream[2].selected and self.stream[2].filename is None):
+        if self.stream[2].selected and self.stream[2].filename is None:
             # TODO: Do something to get the filename
             pass
         else:
@@ -121,16 +122,16 @@ class ZOutput:
         return self.plugin.set_font(f)
 
     def set_screen_size(self, w: int, h: int) -> None:
-        if (self.version > 4):
+        if self.version > 4:
             self.mem[0x22] = w // 256
             self.mem[0x23] = w % 256
             self.mem[0x24] = h // 256
             self.mem[0x25] = h % 256
 
         # The above is necessary because we can store only one byte
-        if (h > 255):
+        if h > 255:
             h = 255
-        if (w > 255):
+        if w > 255:
             w = 255
         self.mem[0x20] = h
         self.mem[0x21] = w
