@@ -88,7 +88,7 @@ class ZTextWidget(QTextEdit):
         self.fixed_font.setFamily(self.fixed_font.defaultFamily())
         self.normal_font.setPointSize(14)
         self.fixed_font.setPointSize(14)
-        print(self.fixed_font.family())
+        print("Fixed font used:", self.fixed_font.family())
         self.setFont(self.normal_font)
         # self.setFont(self.fixed_font)
 
@@ -96,11 +96,12 @@ class ZTextWidget(QTextEdit):
 
         self.line_size = self.font_metrics.height()
         self.avg_width = self.font_metrics.averageCharWidth()
-        print(self.line_size, self.avg_width)
-        print(self.font_metrics.height())
+        print(f"Line size (font height): {self.line_size}, Average Char Width: {self.avg_width}")
+        # print(self.font_metrics.height())
         self.width = super(ZTextWidget, self).width() // self.avg_width
         self.height = super(ZTextWidget, self).height() // self.line_size
-        print(self.width, self.height)
+        print("Window size:")
+        print(f"Width - {self.width}, Height - {self.height}")
 
         # self.print_buffer_painter[0].setFont(self.normal_font)
         self.set_text_colour(self.cur_fg, 0)
