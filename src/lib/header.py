@@ -1,19 +1,34 @@
 # -*- coding: utf-8
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
 
 __author__ = "Theofilos Intzoglou"
 __date__ = "$24 Ιουν 2009 2:39:50 πμ$"
 
 
-class ZHeader:
-    header = None
+from lib.memory import ZMemory
+from lib.singleton import Singleton
 
-    def __init__(self, h):
-        self.header = h
-        self.global_table = 256*h[0x0c]+h[0x0d]
-        self.version = h[0]
-        length = 256*self.header[0x1a]+self.header[0x1b]
+
+class ZHeader(metaclass=Singleton):
+
+    def __init__(self):
+        mem = ZMemory().mem
+        self.version = mem[0]
+
+        # Flags 1 are going to be declared as properties later
+        # except for those that don't ever change
+        self.status_line_type = mem[0x01] & 0b10
+        self.story_split_across_two_disks = mem[0x01] & 0b100
+        self.release_number = 256*mem[0x02]+mem[0x03]
+        # Initial value of the program counter
+        self.pc = 256*mem[0x06]+mem[0x07]
+        self.dictionary = 256*mem[0x08]+mem[0x09]
+        self.obj_table = 256*mem[0x0a]+mem[0x0b]
+        self.global_variables_table = 256*mem[0x0c]+mem[0x0d]
+        self.static_memory_base = 256*mem[0x0e]+mem[0x0f]
+        # Flags 2 are going to be declared as properties later
+        self.abbrev_table = 256*mem[0x18]+mem[0x19]
+
+        length = 256*mem[0x1a]+mem[0x1b]
         if length != 0:
             if self.version <= 3:
                 self.length_of_file = length*2
@@ -22,55 +37,47 @@ class ZHeader:
             else:
                 self.length_of_file = length*8
         else:
-            self.length_of_file = len(h)
+            self.length_of_file = len(mem)
+        
+        self.checksum = 256*mem[0x1c]+mem[0x1d]
+        # Routines offset (divided by 8)
+        self.routines = 256*mem[0x28]+mem[0x29]
+        # Static strings offset (divided by 8)
+        self.strings = 256*mem[0x2a]+mem[0x2b]
+        self.terminating_characters_table = 256*mem[0x2e]+mem[0x2f]
+        self.alphabet_table = 256*mem[0x34]+mem[0x35]
+        self.header_ext_table = 256*mem[0x36]+mem[0x37]
+        self.serial_number = ''.join([chr(x) for x in mem[0x12:0x18]])
 
-    # def version(self):
-    #    """ Version of story file """
-    #    return self.header[0]
+    def _get_status_line_unavailable(self):
+        return bool(ZMemory().get_memory_bit(0x01, 4))
 
-    def release_number(self):
-        """ Release Number """
-        return 256*self.header[0x02]+self.header[0x03]
+    def _set_status_line_unavailable(self, unavailable: bool):
+        ZMemory().set_memory_bit(0x01, 4, int(unavailable))
 
-    def pc(self):
-        """ Program Counter """
-        return 256*self.header[0x06]+self.header[0x07]
+    def _get_screen_splitting_available(self):
+        return bool(ZMemory().get_memory_bit(0x01, 5))
+    
+    def _set_screen_splitting_available(self, available: bool):
+        ZMemory().set_memory_bit(0x01, 5, int(available))
 
-    def dictionary(self):
-        """ Location of dictionary """
-        return 256*self.header[0x08]+self.header[0x09]
+    def _get_variable_pitch_font_as_default(self):
+        return bool(ZMemory().get_memory_bit(0x01, 6))
+    
+    def _set_variable_pitch_font_as_default(self, is_default: bool):
+        ZMemory().set_memory_bit(0x01, 6, int(is_default))
 
-    def obj_table(self):
-        """ Location of the object table """
-        return 256*self.header[0x0a]+self.header[0x0b]
+    def _get_colours_available(self):
+        return bool(ZMemory().get_memory_bit(0x01, 0))
+    
+    def _set_colours_available(self, available: bool):
+        ZMemory().set_memory_bit(0x01, 0, int(available))
 
-    # def global_table(self):
-        """ Location of the global variables table """
-    #    return 256*self.header[0x0c]+self.header[0x0d]
+    def _get_picture_displaying_available(self):
+        return bool(ZMemory().get_memory_bit(0x01, 1))
 
-    def serial_number(self):
-        """ Serial Number """
-        return ''.join([chr(x) for x in self.header[0x12:0x18]])
-
-    def abbrev_table(self):
-        """ Location of the abbreviations table """
-        return 256*self.header[0x18]+self.header[0x19]
-
-    # def length_of_file(self):
-    #    length = 256*self.header[0x1a]+self.header[0x1b]
-    #    if length <> 0:
-    #        if self.version <= 3:
-    #            return length*2
-    #        elif self.version < 6:
-    #            return length*4
-    #        else:
-    #            return length*8
-    #    else:
-    #        return len(self.header)
-
-    def checksum(self):
-        """ Return the checksum stored in the file """
-        return 256*self.header[0x1c]+self.header[0x1d]
+    def _set_picture_displaying_available(self, available: bool):
+        ZMemory().set_memory_bit(0x01, 1, int(available))
 
     def interpreter_number(self):
         return self.header[0x1e]
@@ -104,23 +111,11 @@ class ZHeader:
         else:
             return self.header[0x26]
 
-    def routines(self):
-        """ Returns the routines offset in memory """
-        return 256*self.header[0x28]+self.header[0x29]
-
-    def strings(self):
-        """ Returns the static strings offset in memory """
-        return 256*self.header[0x2a]+self.header[0x2b]
-
     def default_background_color(self):
         return self.header[0x2c]
 
     def default_foreground_color(self):
         return self.header[0x2d]
-
-    def characters_table(self):
-        """ Address of terminating characters table """
-        return 256*self.header[0x2e]+self.header[0x2f]
 
     def total_width(self):
         """ Total width in pixels of text sent to output stream 3 """
@@ -129,29 +124,39 @@ class ZHeader:
     def standard_revision_number(self):
         return 256*self.header[0x32]+self.header[0x33]
 
-    def alphabet_table(self):
-        """ Returns the alphabet table address or 0 for default """
-        return 256*self.header[0x34]+self.header[0x35]
-
-    def header_ext_table(self):
-        """ Returns the address of header extension table """
-        return 256*self.header[0x36]+self.header[0x37]
-
-    def score_game(self):
-        """ Returns 0 if it is a score game, 1 if it is a timed game """
-        return ((self.header[0x1] & 2) >> 1)
-
     def print_all(self, plugin):
-        plugin.debug_print("Abbrev table: {0}".format(self.abbrev_table()), 2)
+        plugin.debug_print("Abbrev table: {0}".format(self.abbrev_table), 2)
         plugin.debug_print("Alphabet table: {0}".format(
-            self.alphabet_table()), 2)
+            self.alphabet_table), 2)
         plugin.debug_print("Characters table: {0}".format(
-            self.characters_table()), 2)
-        plugin.debug_print("Dictionary: {0}".format(self.dictionary()), 2)
+            self.terminating_characters_table), 2)
+        plugin.debug_print("Dictionary: {0}".format(self.dictionary), 2)
         plugin.debug_print(
-            "Global var table: {0}".format(self.global_table), 2)
+            "Global var table: {0}".format(self.global_variables_table), 2)
         plugin.debug_print("Header ext table: {0}".format(
-            self.header_ext_table()), 2)
-        plugin.debug_print("Object table: {0}".format(self.obj_table()), 2)
+            self.header_ext_table), 2)
+        plugin.debug_print("Object table: {0}".format(self.obj_table), 2)
         plugin.debug_print(
-            "Static strings offset: {0}".format(self.strings()), 2)
+            "Static strings offset: {0}".format(self.strings), 2)
+
+    status_line_unavailable = property(
+        fget=_get_status_line_unavailable,
+        fset=_set_status_line_unavailable
+    )
+    screen_splitting_available = property(
+        fget=_get_screen_splitting_available,
+        fset=_set_screen_splitting_available
+    )
+    variable_pitch_font_as_default = property(
+        fget=_get_variable_pitch_font_as_default,
+        fset=_set_variable_pitch_font_as_default
+    )
+    colours_available = property(
+        fget=_get_colours_available,
+        fset=_set_colours_available
+    )
+    picture_displaying_available = property(
+        fget=_get_picture_displaying_available,
+        fset=_set_picture_displaying_available
+    )
+    

@@ -1,22 +1,22 @@
 # -*- coding: utf-8
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
 
 from array import array
 import sys
+
+from lib.singleton import Singleton
 
 __author__ = "Theofilos Intzoglou"
 __date__ = "$17 Ιουν 2009 1:35:47 μμ$"
 
 
-class ZMemory:
+class ZMemory(metaclass=Singleton):
     mem = None
     static_beg = 0
     static_end = 0
     high_beg = 0
     high_end = 0
 
-    def __init__(self, f: str = None, max_length: int = None) -> None:
+    def initialize(self, f: str = None, max_length: int = None) -> None:
         self.mem = array('B')
         if f:
             try:
@@ -91,3 +91,12 @@ class ZMemory:
             sys.exit(1)
         else:
             self.mem[offset] = data
+
+    def get_memory_bit(self, address: int, bit: int):
+        mask = 0b1 << bit
+        return self.mem[address] & mask
+
+    def set_memory_bit(self, address: int, bit: int, value: int):
+        self.mem[address] &= 0xff - (1 << bit)
+        if (value):
+            self.mem[address] |= 1 << bit
