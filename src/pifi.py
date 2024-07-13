@@ -74,7 +74,7 @@ if __name__ == "__main__":
     discovered_plugins = discover_plugins()
 
     try:
-        f = open(args.zfile, "rb")
+        story_file = open(args.zfile, "rb")
     except IOError as cannot_open_file:
         print(f"I/O error {cannot_open_file}")
         sys.exit(2)
@@ -90,9 +90,10 @@ if __name__ == "__main__":
 
     plugin.prepare_gui()
     plugin.set_debug_level(args.log_level)
-    m = ZMachine(plugin)  # Attach plugin to ZMachine
-    m.load_story(f)
-    plugin.set_zversion(m.zver)  # Store version of z-code file
-    m.init()
-    m.boot()
+    machine = ZMachine()
+    machine.attachPlugin(plugin)  # Attach plugin to ZMachine
+    machine.load_story(story_file)
+    plugin.set_zversion(machine.zver)  # Store version of z-code file
+    machine.init()
+    machine.boot()
     plugin.exec_()  # Start exec loop
