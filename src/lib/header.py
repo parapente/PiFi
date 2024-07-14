@@ -134,7 +134,7 @@ class ZHeader(metaclass=Singleton):
         return bool(ZMemory().get_memory_bit(0x10, 0))
 
     @transcripting_is_on.setter
-    def transcription_is_on(self, enabled: bool):
+    def transcripting_is_on(self, enabled: bool):
         ZMemory().set_memory_bit(0x10, 0, int(enabled))
 
     @property
