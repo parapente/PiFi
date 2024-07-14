@@ -2,7 +2,7 @@
 
 from lib.header import ZHeader
 from lib.memory import ZMemory
-from .ztext import *
+from .ztext import decode_text
 
 __author__ = "oscar"
 __date__ = "$28 Ιουλ 2009 3:33:47 μμ$"
