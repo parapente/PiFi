@@ -779,34 +779,48 @@ class ZMachine(metaclass=Singleton):
 
     def init(self):
         # Set the default options
+        header = ZHeader()
         if self.zver > 3:
             # Interpreter number and version
-            self.mem.mem[0x1E] = 1
-            self.mem.mem[0x1F] = 0x41  # revision A
+            header.interpreter_number = 1
+            header.interpreter_version = 0x41  # revision A
             # Width and height of window
             self.plugin.update_screen_size()
 
+            header.status_line_unavailable = False
+            header.variable_pitch_font_as_default = True
+
         # Standard revision number
-        self.mem.mem[0x32] = 1
+        header.standard_revision_number = 1
 
         if self.zver > 4:
             # Font width in units
-            self.mem.mem[0x26] = 1
+            header.font_width = 1
             # Font height in units
-            self.mem.mem[0x27] = 1
+            header.font_height = 1
 
         # Default supported options
         if self.zver < 4:
             # Split window is available
-            self.mem.mem[0x1] |= 0x20
+            header.screen_splitting_available = True
         else:
             # Color, Bold, Italic, Fixed is available
-            self.mem.mem[0x1] |= 0x9D
+            header.colours_available = True
+            header.boldface_available = True
+            header.italic_available = True
+            header.fixed_space_font_available = True
+            # So is timed input
+            header.timed_input_available = True
+            # Pictures and sound effects are not available yet (v6)
+            header.picture_displaying_available = False
+            header.sound_effects_available = False
 
         if self.zver > 4:
             # Default background color
-            self.mem.mem[0x2C] = 2
+            header.default_background_colour = 2
             # Default foreground color
-            self.mem.mem[0x2D] = 9
+            header.default_foreground_colour = 9
         self.plugin.set_default_bg(2)
         self.plugin.set_default_fg(9)
+
+        header.transcripting_is_on = False
