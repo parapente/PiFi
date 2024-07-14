@@ -1,5 +1,20 @@
 [ Main x y res;
 
+x = -11/2;
+if (x==-5) res="OK"; else res="ERROR";
+print "-11/2=", x, " ", (string) res;
+new_line;
+
+x = -11/-2;
+if (x==5) res="OK"; else res="ERROR";
+print "-11/-2=", x, " ", (string) res;
+new_line;
+
+x = 11/-2;
+if (x==-5) res="OK"; else res="ERROR";
+print "11/-2=", x, " ", (string) res;
+new_line;
+
 x = 13/5;
 if (x==2) res="OK"; else res="ERROR";
 print "13/5=", x, " ", (string) res;
