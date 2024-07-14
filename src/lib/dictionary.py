@@ -1,5 +1,7 @@
 # -*- coding: utf-8
 
+from lib.header import ZHeader
+from lib.memory import ZMemory
 from .ztext import *
 
 __author__ = "oscar"
@@ -12,9 +14,11 @@ class ZDictionary:
     word_length = 0
     data_length = 0
 
-    def __init__(self, mem, header):
+    def __init__(self):
+        mem = ZMemory().mem
+        header = ZHeader()
         zver = header.version
-        addr = header.dictionary()
+        addr = header.dictionary
         n = mem[addr]
         if n > 0:
             for i in range(n):
@@ -28,13 +32,14 @@ class ZDictionary:
         else:
             self.word_length = 6
         j = 0
-        while (j < entries):
+        while j < entries:
             entry_addr = addr
             t = []
             for i in range(self.word_length):
                 t.append(mem[addr + i])
             entry = decode_text(
-                t, zver, mem, header.abbrev_table(), False, header.alphabet_table(), 0)
+                t, zver, mem, header.abbrev_table, False, header.alphabet_table, 0
+            )
             # print "e[", j, "]=", entry
             self.data_length = entry_length - 4
             self.dict.append(entry)

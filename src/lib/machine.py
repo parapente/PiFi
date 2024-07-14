@@ -8,6 +8,7 @@ from lib.header import ZHeader
 from lib.input import ZInput
 from lib.memory import ZMemory
 from lib.output import ZOutput
+from lib.singleton import Singleton
 from plugins.plugskel import PluginSkeleton
 from sys import exit
 from threading import Lock
@@ -16,7 +17,7 @@ __author__ = "Theofilos Intzoglou"
 __date__ = "$1 Ιουλ 2009 4:39:00 μμ$"
 
 
-class ZMachine:
+class ZMachine(metaclass=Singleton):
     mem = None
     header = None
     cpu = None
@@ -28,7 +29,7 @@ class ZMachine:
     file = None
     mutex = Lock()
 
-    def __init__(self, plugin: PluginSkeleton):
+    def attachPlugin(self, plugin: PluginSkeleton):
         self.plugin = plugin
 
     def boot(self):
@@ -444,27 +445,27 @@ class ZMachine:
                     return
 
                 release_number = (filebuf[pos] << 8) + filebuf[pos + 1]
-                if release_number != self.header.release_number():
+                if release_number != self.header.release_number:
                     self.plugin.debug_print(
-                        str(release_number) + " - " + str(self.header.release_number()),
+                        str(release_number) + " - " + str(self.header.release_number),
                         1,
                     )
                     self.plugin.print_string("Different release number. Not restoring")
                     return
 
                 serial_num = "".join([chr(x) for x in filebuf[pos + 2 : pos + 8]])
-                if serial_num != self.header.serial_number():
+                if serial_num != self.header.serial_number:
                     self.plugin.debug_print(
-                        serial_num + " - " + self.header.serial_number(), 1
+                        serial_num + " - " + self.header.serial_number, 1
                     )
                     self.plugin.print_string("Different serial number. Not restoring")
                     return
 
                 checksum = (filebuf[pos + 8] << 8) + filebuf[pos + 9]
-                if checksum != self.header.checksum():
+                if checksum != self.header.checksum:
                     # TODO: If header checksum is zero we should cacl checksum
                     self.plugin.debug_print(
-                        str(checksum) + " - " + str(self.header.checksum()), 1
+                        str(checksum) + " - " + str(self.header.checksum), 1
                     )
                     self.plugin.print_string("Different checksum. Not restoring")
                     return
@@ -736,32 +737,38 @@ class ZMachine:
         if lastbyte == 0:
             rle.pop()
 
-    def load_story(self, f: BufferedReader):
-        # @type f file
+    def load_story(self, story_file: BufferedReader):
+        # @type story_file file
         # Read the first byte of the file to determine the version of the story
-        self.file = f
-        b = ord(f.read(1))
-        if b < 4:
-            max_length = 128 * 1024
-        elif b < 6:
-            max_length = 256 * 1024
-        elif b == 6 or b == 7 or b == 8:
-            max_length = 512 * 1024
+        self.file = story_file
+        version_byte = story_file.read(1)
+        if len(version_byte):
+            b = ord(version_byte)
+            if b < 4:
+                max_length = 128 * 1024
+            elif b < 6:
+                max_length = 256 * 1024
+            elif b == 6 or b == 7 or b == 8:
+                max_length = 512 * 1024
+            else:
+                print("Not a valid story file")
+                exit(10)
         else:
-            print("Not a valid story file")
+            print("Empty file or otherwise inaccessible file")
             exit(10)
 
         # Now that we checked the file size we rewind the file and read the data into memory
-        f.seek(0)
-        self.mem = ZMemory(f, max_length)
-        self.header = ZHeader(self.mem.mem)
+        story_file.seek(0)
+        self.mem = ZMemory()
+        self.mem.initialize(story_file, max_length)
+        self.header = ZHeader()
         self.header.print_all(self.plugin)
         self.input = ZInput(self.plugin)
         self.zver = self.header.version
-        self.output = ZOutput(self.zver, self.mem.mem, self.plugin)
-        self.cpu = ZCpu(self.mem.mem, self.header, self.output, self.plugin)
-        self.cpu.file = f
-        self.dict = ZDictionary(self.mem.mem, self.header)
+        self.output = ZOutput(self.zver, self.plugin)
+        self.cpu = ZCpu(self.output, self.plugin)
+        self.cpu.file = story_file
+        self.dict = ZDictionary()
         self.plugin.debug_print("Version of story file: {0}".format(self.zver), 1)
         self.plugin.debug_print(
             "Length of file: {0}".format(self.header.length_of_file), 1

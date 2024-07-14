@@ -2,6 +2,7 @@
 import sys
 
 from array import array
+from lib.memory import ZMemory
 from plugins.plugskel import PluginSkeleton
 
 __author__ = "Theofilos Intzoglou"
@@ -16,10 +17,10 @@ class ZOutput:
     table_list_len = 0
     mem = None
 
-    def __init__(self, version: int, mem: array[int], plugin: PluginSkeleton):
+    def __init__(self, version: int, plugin: PluginSkeleton):
         self.version = version
         self.plugin = plugin
-        self.mem = mem
+        self.mem = ZMemory().mem
         self.plugin.screen_size_callback = self.set_screen_size
 
     def select_stream(self, n: int, table: int) -> None:
