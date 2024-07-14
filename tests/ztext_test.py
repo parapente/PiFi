@@ -1,6 +1,5 @@
 from array import array
 import pytest
-from src.lib.memory import ZMemory
 from src.lib.ztext import decode_text, encode_text
 
 
@@ -56,21 +55,19 @@ def encode_text_data():
 
 
 def test_ztext_decode_text(decode_text_data):
-    mem = ZMemory()
     for data in decode_text_data:
         version, text, z_chars = data
         text_buffer = array("B", z_chars)
         print(data)
-        assert decode_text(text_buffer, version, mem.mem, 0, False, 0, 0) == text
+        assert decode_text(text_buffer, version, 0, False, 0, 0) == text
 
 
 def test_ztext_encode_text(encode_text_data):
-    mem = ZMemory()
     for data in encode_text_data:
         version, text = data
         decoded_text = [ord(x) for x in text]
-        encoded_string = encode_text(decoded_text, version, mem.mem, 0, 0)
-        decoded_string = decode_text(encoded_string, version, mem.mem, 0, False, 0, 0)
+        encoded_string = encode_text(decoded_text, version, 0, 0)
+        decoded_string = decode_text(encoded_string, version, 0, False, 0, 0)
         if version < 4:
             assert decoded_string == text[:6].lower()
         else:

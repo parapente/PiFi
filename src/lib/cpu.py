@@ -1169,7 +1169,6 @@ class ZCpu:
         text = decode_text(
             buf,
             self.zver,
-            self.mem,
             self.header.abbrev_table,
             False,
             self.header.alphabet_table,
@@ -1277,7 +1276,6 @@ class ZCpu:
         text = decode_text(
             buf,
             self.zver,
-            self.mem,
             self.header.abbrev_table,
             False,
             self.header.alphabet_table,
@@ -1357,7 +1355,6 @@ class ZCpu:
         text = decode_text(
             buf,
             self.zver,
-            self.mem,
             self.header.abbrev_table,
             False,
             self.header.alphabet_table,
@@ -1448,7 +1445,6 @@ class ZCpu:
             text = decode_text(
                 buf,
                 self.zver,
-                self.mem,
                 self.header.abbrev_table,
                 False,
                 self.header.alphabet_table,
@@ -1477,7 +1473,6 @@ class ZCpu:
         text = decode_text(
             buf,
             self.zver,
-            self.mem,
             self.header.abbrev_table,
             False,
             self.header.alphabet_table,
@@ -1725,7 +1720,7 @@ class ZCpu:
         try:
             text = self.print_char_dict[ops[0]]
         except KeyError:
-            text = convert_from_zscii(ops[0], self.mem, 0)
+            text = convert_from_zscii(ops[0], 0)
             self.print_char_dict[ops[0]] = text
         self.output.print_string(text)
         # print text
@@ -2026,7 +2021,6 @@ class ZCpu:
         encode_text(
             z_text,
             self.version,
-            self.mem,
             self.header.alphabet_table,
             self.header.unicode_table,
         )
@@ -2533,7 +2527,7 @@ class ZCpu:
             text.append(self.mem[a])
             a = a + 1
             i = i + 1
-        # dtext = decode_text(text, self.zver, self.mem, self.header.abbrev_table, False, self.header.alphabet_table, 0)
+        # dtext = decode_text(text, self.zver, self.header.abbrev_table, False, self.header.alphabet_table, 0)
         # print dtext
         p = table_addr + self.mem[table_addr] * 2 + 1  # Skip property name
         if self.zver < 4:
@@ -2634,7 +2628,6 @@ class ZCpu:
             text = decode_text(
                 buf,
                 self.zver,
-                self.mem,
                 self.header.abbrev_table,
                 False,
                 self.header.alphabet_table,

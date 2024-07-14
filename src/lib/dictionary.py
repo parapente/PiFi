@@ -38,7 +38,7 @@ class ZDictionary:
             for i in range(self.word_length):
                 t.append(mem[addr + i])
             entry = decode_text(
-                t, zver, mem, header.abbrev_table, False, header.alphabet_table, 0
+                t, zver, header.abbrev_table, False, header.alphabet_table, 0
             )
             # print "e[", j, "]=", entry
             self.data_length = entry_length - 4
