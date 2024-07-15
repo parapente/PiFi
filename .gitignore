@@ -11,3 +11,4 @@ __pycache__
 *.sav*
 *.dat
 .coverage
+tmp
