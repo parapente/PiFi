@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8
-""" Python Interactive Fiction Interpreter """
+"""Python Interactive Fiction Interpreter"""
 
 from lib.machine import ZMachine
 from importlib import reload, import_module
@@ -38,8 +38,7 @@ class ListPluginsAction(argparse.Action):
         exit(0)
 
 
-if __name__ == "__main__":
-
+def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)  # Break on control-c
 
     # @type f file
@@ -97,3 +96,7 @@ if __name__ == "__main__":
     machine.init()
     machine.boot()
     plugin.exec_()  # Start exec loop
+
+
+if __name__ == "__main__":
+    main()
