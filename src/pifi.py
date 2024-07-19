@@ -10,6 +10,8 @@ import sys
 import argparse
 import signal
 
+from plugins.plugskel import PluginSkeleton
+
 __author__ = "Theofilos Intzoglou"
 __date__ = "$17 Ιουν 2009 2:24:30 πμ$"
 
@@ -85,7 +87,9 @@ def main():
         sys.exit(3)
 
     class_name = args.plugin
-    plugin = getattr(import_module(discovered_plugins[args.plugin]), class_name)()
+    plugin: PluginSkeleton = getattr(
+        import_module(discovered_plugins[args.plugin]), class_name
+    )()
 
     plugin.prepare_gui()
     plugin.set_debug_level(args.log_level)
