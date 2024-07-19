@@ -2,6 +2,7 @@
 
 from array import array
 
+from lib.header import ZHeader
 from lib.memory import ZMemory
 
 __author__ = "Theofilos Intzoglou"
@@ -10,13 +11,14 @@ __date__ = "$24 Ιουν 2009 10:28:44 μμ$"
 
 def decode_text(
     text_buffer: array,
-    version: int,
-    abbreviation_table: int,
-    is_abbreviation: bool,
-    alphabet_table: int,
-    unicode_table: int,
+    is_abbreviation: bool = False,
 ) -> str:
     mem = ZMemory().mem
+    header = ZHeader()
+    version = header.version
+    abbreviation_table = header.abbrev_table
+    alphabet_table = header.alphabet_table
+    unicode_table = header.unicode_table
     z2 = [1, 2, 0]
     z3 = [2, 0, 1]
     z = [z2, z3]
@@ -63,11 +65,7 @@ def decode_text(
                     idx += 2
                 text += decode_text(
                     new_buffer,
-                    version,
-                    abbreviation_table,
                     True,
-                    alphabet_table,
-                    unicode_table,
                 )
                 abbrev_next = 0
             elif (version < 3) and (z_char >= 2) and (z_char <= 5):
@@ -186,7 +184,11 @@ def convert_from_zscii(zscii_char: int, unicode_table: int) -> str:
         return chr(ut[zscii_char - 155])
 
 
-def encode_text(text: list, version: int, alphabet_table: int, unicode_table) -> array:
+def encode_text(text: list) -> array:
+    header = ZHeader()
+    version = header.version
+    alphabet_table = header.alphabet_table
+
     a0 = dict()
     a1 = dict()
     a2 = dict()

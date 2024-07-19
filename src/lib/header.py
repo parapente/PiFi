@@ -4,14 +4,16 @@ __author__ = "Theofilos Intzoglou"
 __date__ = "$24 Ιουν 2009 2:39:50 πμ$"
 
 
+from functools import cache
 from lib.error import InvalidArgumentException
 from lib.memory import ZMemory
 from lib.singleton import Singleton
 
 
 class ZHeader(metaclass=Singleton):
-    def __init__(self):
-        mem = ZMemory().mem
+    def __init__(self, memory: ZMemory = ZMemory()):
+        self.memory = memory
+        mem = self.memory.mem
         self.version = mem[0]
 
         # Flags 1 are going to be declared as properties later
@@ -50,170 +52,196 @@ class ZHeader(metaclass=Singleton):
         self.serial_number = "".join([chr(x) for x in mem[0x12:0x18]])
 
     @property
+    @cache
+    def unicode_table(self):
+        mem = self.memory.mem
+
+        if self.version < 5:
+            return 0
+
+        if self.header_ext_num_words >= 3:
+            return mem[self.header_ext_table + 6] * 256 + mem[self.header_ext_table + 7]
+
+        return 0
+
+    @property
+    @cache
+    def header_ext_num_words(self):
+        mem = self.memory.mem
+
+        if self.version < 5:
+            return 0
+
+        if self.header_ext_table:
+            return mem[self.header_ext_table] * 256 + mem[self.header_ext_table + 1]
+
+        return 0
+
+    @property
     def status_line_unavailable(self):
-        return bool(ZMemory().get_memory_bit(0x01, 4))
+        return bool(self.memory.get_memory_bit(0x01, 4))
 
     @status_line_unavailable.setter
     def status_line_unavailable(self, unavailable: bool):
-        ZMemory().set_memory_bit(0x01, 4, int(unavailable))
+        self.memory.set_memory_bit(0x01, 4, int(unavailable))
 
     @property
     def screen_splitting_available(self):
-        return bool(ZMemory().get_memory_bit(0x01, 5))
+        return bool(self.memory.get_memory_bit(0x01, 5))
 
     @screen_splitting_available.setter
     def screen_splitting_available(self, available: bool):
-        ZMemory().set_memory_bit(0x01, 5, int(available))
+        self.memory.set_memory_bit(0x01, 5, int(available))
 
     @property
     def variable_pitch_font_as_default(self):
-        return bool(ZMemory().get_memory_bit(0x01, 6))
+        return bool(self.memory.get_memory_bit(0x01, 6))
 
     @variable_pitch_font_as_default.setter
     def variable_pitch_font_as_default(self, is_default: bool):
-        ZMemory().set_memory_bit(0x01, 6, int(is_default))
+        self.memory.set_memory_bit(0x01, 6, int(is_default))
 
     @property
     def colours_available(self):
-        return bool(ZMemory().get_memory_bit(0x01, 0))
+        return bool(self.memory.get_memory_bit(0x01, 0))
 
     @colours_available.setter
     def colours_available(self, available: bool):
-        ZMemory().set_memory_bit(0x01, 0, int(available))
+        self.memory.set_memory_bit(0x01, 0, int(available))
 
     @property
     def picture_displaying_available(self):
-        return bool(ZMemory().get_memory_bit(0x01, 1))
+        return bool(self.memory.get_memory_bit(0x01, 1))
 
     @picture_displaying_available.setter
     def picture_displaying_available(self, available: bool):
-        ZMemory().set_memory_bit(0x01, 1, int(available))
+        self.memory.set_memory_bit(0x01, 1, int(available))
 
     @property
     def boldface_available(self):
-        return bool(ZMemory().get_memory_bit(0x01, 2))
+        return bool(self.memory.get_memory_bit(0x01, 2))
 
     @boldface_available.setter
     def boldface_available(self, available: bool):
-        ZMemory().set_memory_bit(0x01, 2, int(available))
+        self.memory.set_memory_bit(0x01, 2, int(available))
 
     @property
     def italic_available(self):
-        return bool(ZMemory().get_memory_bit(0x01, 3))
+        return bool(self.memory.get_memory_bit(0x01, 3))
 
     @italic_available.setter
     def italic_available(self, available: bool):
-        ZMemory().set_memory_bit(0x01, 3, int(available))
+        self.memory.set_memory_bit(0x01, 3, int(available))
 
     @property
     def fixed_space_font_available(self):
-        return bool(ZMemory().get_memory_bit(0x01, 4))
+        return bool(self.memory.get_memory_bit(0x01, 4))
 
     @fixed_space_font_available.setter
     def fixed_space_font_available(self, available: bool):
-        ZMemory().set_memory_bit(0x01, 4, int(available))
+        self.memory.set_memory_bit(0x01, 4, int(available))
 
     @property
     def sound_effects_available(self):
-        return bool(ZMemory().get_memory_bit(0x01, 5))
+        return bool(self.memory.get_memory_bit(0x01, 5))
 
     @sound_effects_available.setter
     def sound_effects_available(self, available: bool):
-        ZMemory().set_memory_bit(0x01, 5, int(available))
+        self.memory.set_memory_bit(0x01, 5, int(available))
 
     @property
     def timed_input_available(self):
-        return bool(ZMemory().get_memory_bit(0x01, 7))
+        return bool(self.memory.get_memory_bit(0x01, 7))
 
     @timed_input_available.setter
     def timed_input_available(self, available: bool):
-        ZMemory().set_memory_bit(0x01, 7, int(available))
+        self.memory.set_memory_bit(0x01, 7, int(available))
 
     @property
     def transcripting_is_on(self):
-        return bool(ZMemory().get_memory_bit(0x10, 0))
+        return bool(self.memory.get_memory_bit(0x10, 0))
 
     @transcripting_is_on.setter
     def transcripting_is_on(self, enabled: bool):
-        ZMemory().set_memory_bit(0x10, 0, int(enabled))
+        self.memory.set_memory_bit(0x10, 0, int(enabled))
 
     @property
     def game_forces_fixed_pitch_font(self):
-        return bool(ZMemory().get_memory_bit(0x10, 1))
+        return bool(self.memory.get_memory_bit(0x10, 1))
 
     @game_forces_fixed_pitch_font.setter
     def game_forces_fixed_pitch_font(self, forces: bool):
-        ZMemory().set_memory_bit(0x10, 1, int(forces))
+        self.memory.set_memory_bit(0x10, 1, int(forces))
 
     @property
     def request_status_redraw(self):
-        return bool(ZMemory().get_memory_bit(0x10, 2))
+        return bool(self.memory.get_memory_bit(0x10, 2))
 
     @request_status_redraw.setter
     def request_status_redraw(self, requested: bool):
-        ZMemory().set_memory_bit(0x10, 2, int(requested))
+        self.memory.set_memory_bit(0x10, 2, int(requested))
 
     @property
     def game_wants_pictures(self):
-        return bool(ZMemory().get_memory_bit(0x10, 3))
+        return bool(self.memory.get_memory_bit(0x10, 3))
 
     @game_wants_pictures.setter
     def game_wants_pictures(self, enabled: bool):
-        ZMemory().set_memory_bit(0x10, 3, int(enabled))
+        self.memory.set_memory_bit(0x10, 3, int(enabled))
 
     @property
     def game_wants_undo(self):
-        return bool(ZMemory().get_memory_bit(0x10, 4))
+        return bool(self.memory.get_memory_bit(0x10, 4))
 
     @game_wants_undo.setter
     def game_wants_undo(self, enabled: bool):
-        ZMemory().set_memory_bit(0x10, 4, int(enabled))
+        self.memory.set_memory_bit(0x10, 4, int(enabled))
 
     @property
     def game_wants_mouse(self):
-        return bool(ZMemory().get_memory_bit(0x10, 5))
+        return bool(self.memory.get_memory_bit(0x10, 5))
 
     @game_wants_mouse.setter
     def game_wants_mouse(self, enabled: bool):
-        ZMemory().set_memory_bit(0x10, 5, int(enabled))
+        self.memory.set_memory_bit(0x10, 5, int(enabled))
 
     @property
     def game_wants_colours(self):
-        return bool(ZMemory().get_memory_bit(0x10, 6))
+        return bool(self.memory.get_memory_bit(0x10, 6))
 
     @game_wants_colours.setter
     def game_wants_colours(self, enabled: bool):
-        ZMemory().set_memory_bit(0x10, 6, int(enabled))
+        self.memory.set_memory_bit(0x10, 6, int(enabled))
 
     @property
     def game_wants_sound_effects(self):
-        return bool(ZMemory().get_memory_bit(0x10, 7))
+        return bool(self.memory.get_memory_bit(0x10, 7))
 
     @game_wants_sound_effects.setter
     def game_wants_sound_effects(self, enabled: bool):
-        ZMemory().set_memory_bit(0x10, 7, int(enabled))
+        self.memory.set_memory_bit(0x10, 7, int(enabled))
 
     @property
     def game_wants_menus(self):
-        return bool(ZMemory().get_memory_bit(0x10, 8))
+        return bool(self.memory.get_memory_bit(0x10, 8))
 
     @game_wants_menus.setter
     def game_wants_menus(self, enabled: bool):
-        ZMemory().set_memory_bit(0x10, 8, int(enabled))
+        self.memory.set_memory_bit(0x10, 8, int(enabled))
 
     @property
     def interpreter_number(self):
-        return ZMemory().mem[0x1E]
+        return self.memory.mem[0x1E]
 
     @interpreter_number.setter
     def interpreter_number(self, number: int):
         if number > 11 or number < 0:
             raise InvalidArgumentException(f"Invalid interpreter number '{number}'")
-        ZMemory().mem[0x1E] = number
+        self.memory.mem[0x1E] = number
 
     @property
     def interpreter_version(self):
-        return ZMemory().mem[0x1F]
+        return self.memory.mem[0x1F]
 
     @interpreter_version.setter
     def interpreter_version(self, version: int):
@@ -221,12 +249,12 @@ class ZHeader(metaclass=Singleton):
             raise InvalidArgumentException(
                 f"Invalid interpreter version '{version}'. It should be a single byte number."
             )
-        ZMemory().mem[0x1F] = version
+        self.memory.mem[0x1F] = version
 
     @property
     def screen_height_in_lines(self):
         """Screen height (lines): 255 means "infinite" """
-        return ZMemory().mem[0x20]
+        return self.memory.mem[0x20]
 
     @screen_height_in_lines.setter
     def screen_height_in_lines(self, lines: int):
@@ -234,11 +262,11 @@ class ZHeader(metaclass=Singleton):
             raise InvalidArgumentException(
                 f"Invalid value for height in lines '{lines}'. Should be between 0 and 254 or 255 for infinite."
             )
-        ZMemory().mem[0x20] = lines
+        self.memory.mem[0x20] = lines
 
     @property
     def screen_width_in_chars(self):
-        return ZMemory().mem[0x21]
+        return self.memory.mem[0x21]
 
     @screen_width_in_chars.setter
     def screen_width_in_chars(self, chars: int):
@@ -246,11 +274,11 @@ class ZHeader(metaclass=Singleton):
             raise InvalidArgumentException(
                 f"Invalid value for width in chars '{chars}'. Should be netween 0 and 255."
             )
-        ZMemory().mem[0x21] = chars
+        self.memory.mem[0x21] = chars
 
     @property
     def screen_width_in_units(self):
-        mem = ZMemory().mem
+        mem = self.memory.mem
         return 256 * mem[0x22] + mem[0x23]
 
     @screen_width_in_units.setter
@@ -259,13 +287,13 @@ class ZHeader(metaclass=Singleton):
             raise InvalidArgumentException(
                 f"Invalid value for width in units '{units}'. Should be between 0 and 65535."
             )
-        mem = ZMemory().mem
+        mem = self.memory.mem
         mem[0x22] = units // 256
         mem[0x23] = units % 256
 
     @property
     def screen_height_in_units(self):
-        mem = ZMemory().mem
+        mem = self.memory.mem
         return 256 * mem[0x24] + mem[0x25]
 
     @screen_height_in_units.setter
@@ -274,14 +302,14 @@ class ZHeader(metaclass=Singleton):
             raise InvalidArgumentException(
                 f"Invalid value for height in units '{units}'. Should be between 0 and 65535."
             )
-        mem = ZMemory().mem
+        mem = self.memory.mem
         mem[0x24] = units // 256
         mem[0x25] = units % 256
 
     @property
     def font_width(self):
         """Font width in units (defined as width of '0')"""
-        mem = ZMemory().mem
+        mem = self.memory.mem
         if self.version == 5:
             return mem[0x26]
         else:
@@ -293,7 +321,7 @@ class ZHeader(metaclass=Singleton):
             raise InvalidArgumentException(
                 f"Invalid value for font width in units '{units}'. Should be between 0 and 255."
             )
-        mem = ZMemory().mem
+        mem = self.memory.mem
         if self.version == 5:
             mem[0x26] = units
         else:
@@ -302,7 +330,7 @@ class ZHeader(metaclass=Singleton):
     @property
     def font_height(self):
         """Font height in units"""
-        mem = ZMemory().mem
+        mem = self.memory.mem
         if self.version == 5:
             return mem[0x27]
         else:
@@ -314,7 +342,7 @@ class ZHeader(metaclass=Singleton):
             raise InvalidArgumentException(
                 f"Invalid value for font height in units '{units}'. Should be between 0 and 255."
             )
-        mem = ZMemory().mem
+        mem = self.memory.mem
         if self.version == 5:
             mem[0x27] = units
         else:
@@ -322,7 +350,7 @@ class ZHeader(metaclass=Singleton):
 
     @property
     def default_background_colour(self):
-        return ZMemory().mem[0x2C]
+        return self.memory.mem[0x2C]
 
     @default_background_colour.setter
     def default_background_colour(self, colour: int):
@@ -330,11 +358,11 @@ class ZHeader(metaclass=Singleton):
             raise InvalidArgumentException(
                 f"Invalid value for default background colour '{colour}'. Should be between 0 and 255."
             )
-        ZMemory().mem[0x2C] = colour
+        self.memory.mem[0x2C] = colour
 
     @property
     def default_foreground_colour(self):
-        return ZMemory().mem[0x2D]
+        return self.memory.mem[0x2D]
 
     @default_foreground_colour.setter
     def default_foreground_colour(self, colour: int):
@@ -342,12 +370,12 @@ class ZHeader(metaclass=Singleton):
             raise InvalidArgumentException(
                 f"Invalid value for default foreground colour '{colour}'. Should be between 0 and 255."
             )
-        ZMemory().mem[0x2D] = colour
+        self.memory.mem[0x2D] = colour
 
     @property
     def total_width(self):
         """Total width in pixels of text sent to output stream 3"""
-        mem = ZMemory().mem
+        mem = self.memory.mem
         return 256 * mem[0x30] + mem[0x31]
 
     @total_width.setter
@@ -356,13 +384,13 @@ class ZHeader(metaclass=Singleton):
             raise InvalidArgumentException(
                 f"Invalid value for total width '{width}'. Should be between 0 and 65535."
             )
-        mem = ZMemory().mem
+        mem = self.memory.mem
         mem[0x30] = width // 256
         mem[0x31] = width % 256
 
     @property
     def standard_revision_number(self):
-        mem = ZMemory().mem
+        mem = self.memory.mem
         return 256 * mem[0x32] + mem[0x33]
 
     @standard_revision_number.setter
@@ -371,7 +399,7 @@ class ZHeader(metaclass=Singleton):
             raise InvalidArgumentException(
                 f"Invalid value for standard revision number '{revision}'. Should be between 0 and 65535."
             )
-        mem = ZMemory().mem
+        mem = self.memory.mem
         mem[0x32] = revision // 256
         mem[0x33] = revision % 256
 

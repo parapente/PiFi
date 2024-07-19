@@ -24,10 +24,19 @@ class ZInput:
             self.stream[1].selected = False
             self.stream[2].selected = True
 
-    def read_char(self, callback: Callable, time: int, timeout_callback: Callable) -> None:
+    def read_char(
+        self, callback: Callable, time: int = 0, timeout_callback: Callable = None
+    ) -> None:
         self.plugin.read_char(callback, time, timeout_callback)
 
-    def read_line(self, max_read: int, callback: Callable, time: int, timeout_callback: Callable, reset: bool = True) -> None:
+    def read_line(
+        self,
+        max_read: int,
+        callback: Callable,
+        time: int,
+        timeout_callback: Callable,
+        reset: bool = True,
+    ) -> None:
         self.plugin.set_max_input(max_read)
         self.plugin.show_cursor()
         self.plugin.read_line(callback, time, timeout_callback, reset)

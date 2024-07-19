@@ -1166,14 +1166,7 @@ class ZCpu:
             buf.append(self.mem[uaddr + i])
             buf.append(self.mem[uaddr + i + 1])
             i += 2
-        text = decode_text(
-            buf,
-            self.zver,
-            self.header.abbrev_table,
-            False,
-            self.header.alphabet_table,
-            0,
-        )
+        text = decode_text(buf)
         self.output.print_string(text)
         # print text
         if self.plugin.level >= 2:
@@ -1273,14 +1266,7 @@ class ZCpu:
             buf.append(self.mem[addr + i + 1])
             i += 2
         # print buf
-        text = decode_text(
-            buf,
-            self.zver,
-            self.header.abbrev_table,
-            False,
-            self.header.alphabet_table,
-            0,
-        )
+        text = decode_text(buf)
         self.output.print_string(text)
         if self.plugin.level >= 2:
             self.plugin.debug_print(
@@ -1352,14 +1338,7 @@ class ZCpu:
                 eot = True
             buf.extend([mem[uaddr + i], mem[uaddr + i + 1]])
             i += 2
-        text = decode_text(
-            buf,
-            self.zver,
-            self.header.abbrev_table,
-            False,
-            self.header.alphabet_table,
-            0,
-        )
+        text = decode_text(buf)
         self.output.print_string(text)
         # print text
         if self.plugin.level >= 2:
@@ -1442,14 +1421,7 @@ class ZCpu:
                 buf.append(self.mem[uaddr + i + 1])
                 i += 2
             # print buf
-            text = decode_text(
-                buf,
-                self.zver,
-                self.header.abbrev_table,
-                False,
-                self.header.alphabet_table,
-                0,
-            )
+            text = decode_text(buf)
             self.print_dict[uaddr] = [i, text]
         self.pc += i + 1
         # print text
@@ -1470,14 +1442,7 @@ class ZCpu:
             buf.append(self.mem[uaddr + i + 1])
             i += 2
         # print buf
-        text = decode_text(
-            buf,
-            self.zver,
-            self.header.abbrev_table,
-            False,
-            self.header.alphabet_table,
-            0,
-        )
+        text = decode_text(buf)
         self.output.print_string(text + "\n")
         # print text
         self.pc += i + 1
@@ -2527,7 +2492,7 @@ class ZCpu:
             text.append(self.mem[a])
             a = a + 1
             i = i + 1
-        # dtext = decode_text(text, self.zver, self.header.abbrev_table, False, self.header.alphabet_table, 0)
+        # dtext = decode_text(text)
         # print dtext
         p = table_addr + self.mem[table_addr] * 2 + 1  # Skip property name
         if self.zver < 4:
@@ -2625,14 +2590,7 @@ class ZCpu:
             buf = []
             for i in range(nob):
                 buf.append(self.mem[prop_addr + i + 1])
-            text = decode_text(
-                buf,
-                self.zver,
-                self.header.abbrev_table,
-                False,
-                self.header.alphabet_table,
-                0,
-            )
+            text = decode_text(buf)
 
             # Now we need to determine if it is a score game or a time game
             score_game = False
