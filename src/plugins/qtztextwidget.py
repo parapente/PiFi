@@ -2,16 +2,16 @@
 # To change this template, choose Tools | Templates
 # and open the template in the editor.
 
-from PyQt5.QtWidgets import QWidget
-from PyQt5.QtGui import QPainter
-from PyQt5.QtGui import QBrush
-from PyQt5.QtGui import QFont
-from PyQt5.QtGui import QFontMetrics
-from PyQt5.QtWidgets import QSizePolicy
-from PyQt5.QtCore import QObject
-from PyQt5.QtCore import Qt
-from PyQt5.QtCore import QSize
-from PyQt5.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QWidget
+from PyQt6.QtGui import QPainter
+from PyQt6.QtGui import QBrush
+from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QFontMetrics
+from PyQt6.QtWidgets import QSizePolicy
+from PyQt6.QtCore import QObject
+from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QSize
+from PyQt6.QtCore import pyqtSignal
 from lib.stream import ZStream
 import sys
 
@@ -45,14 +45,14 @@ class ZTextWidget(QWidget):
     returnPressed = pyqtSignal(str)
     keyPressed = pyqtSignal(int)
 
-    def __init__(self, parent=None, flags=Qt.Widget):
+    def __init__(self, parent=None, flags=Qt.WindowType.Widget):
         super(ZTextWidget, self).__init__(parent, flags)
         sp = QSizePolicy()
-        sp.setHorizontalPolicy(QSizePolicy.Fixed)
-        sp.setVerticalPolicy(QSizePolicy.Fixed)
+        sp.setHorizontalPolicy(QSizePolicy.Policy.Fixed)
+        sp.setVerticalPolicy(QSizePolicy.Policy.Fixed)
         self.set_fixed_font("DeJa Vu Sans Mono", 9)
         self.setSizePolicy(sp)
-        self.setFocusPolicy(Qt.StrongFocus)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self._output_stream = [ZStream(), ZStream(), ZStream(), ZStream()]
         self._output_stream[0].selected = True
         for i in range(self.width * self.height * 4):

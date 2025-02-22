@@ -24,17 +24,25 @@ class PluginSkeleton(object):
         self.level = level
 
     def debug_print(self, msg, level: int) -> None:
-        if (level <= self.level):
+        if level <= self.level:
             print(msg)
             sys.stdout.flush()
 
     def set_zversion(self, zver: int) -> None:
         self.zver = zver
-        if (zver < 3):
+        if zver < 3:
             self.window = [ZWindow(0)]
-        elif (zver == 6):
-            self.window = [ZWindow(0), ZWindow(1), ZWindow(2), ZWindow(3),
-                           ZWindow(4), ZWindow(5), ZWindow(6), ZWindow(7)]
+        elif zver == 6:
+            self.window = [
+                ZWindow(0),
+                ZWindow(1),
+                ZWindow(2),
+                ZWindow(3),
+                ZWindow(4),
+                ZWindow(5),
+                ZWindow(6),
+                ZWindow(7),
+            ]
         else:
             self.window = [ZWindow(0), ZWindow(1)]
             # The upper window is a special type of window
@@ -53,20 +61,17 @@ class PluginSkeleton(object):
     def hide_cursor(self) -> None:
         self.widget.hide_cursor()
 
-    def read_char(self, callback: Callable, time: int,
-                  timeout_callback: Callable):
+    def read_char(self, callback: Callable, time: int, timeout_callback: Callable):
         self.widget.read_char(
-            self.window[self.current_window], callback, time, timeout_callback)
+            self.window[self.current_window], callback, time, timeout_callback
+        )
 
-    def read_line(self, callback: Callable, time: int,
-                  timeout_callback: Callable, reset: bool) -> None:
+    def read_line(
+        self, callback: Callable, time: int, timeout_callback: Callable, reset: bool
+    ) -> None:
         self.read_line_enabled = True
         self.widget.read_line(
-            self.window[self.current_window],
-            callback,
-            time,
-            timeout_callback,
-            reset
+            self.window[self.current_window], callback, time, timeout_callback, reset
         )
 
     def set_max_input(self, max_input: int) -> None:
@@ -97,22 +102,22 @@ class PluginSkeleton(object):
 
     def set_window(self, window: int) -> None:
         self.current_window = window
-        if (self.zver != 6 and window == 1):
+        if self.zver != 6 and window == 1:
             self.window[1].set_cursor_position(1, 1)
 
     def set_cursor(self, x: int, y: int) -> None:
-        if (self.current_window == 1):
+        if self.current_window == 1:
             self.window[1].set_cursor_position(x, y)
 
     def set_colour(self, fg: int, bg: int) -> None:
         win = self.current_window
         widget = self.widget
-        if (fg != 0):
+        if fg != 0:
             if fg == 1:
                 widget.set_text_colour(self.def_fg, win)
             else:
                 widget.set_text_colour(fg, win)
-        if (bg != 0):
+        if bg != 0:
             if bg == 1:
                 widget.set_text_background_colour(self.def_bg, win)
             else:
@@ -145,7 +150,7 @@ class PluginSkeleton(object):
         s = []
         for i in range(4):
             if self._output_stream[i].selected is True:
-                s.append(i+1)
+                s.append(i + 1)
         return s
 
     def select_output_stream(self, n: int) -> None:
@@ -174,4 +179,9 @@ class PluginSkeleton(object):
 
     def unsplit(self) -> None:
         # Nothing to do
+        pass
+
+    def play_sound(
+        self, sound: str, volume: int, repeat: int, callback: Callable | None
+    ) -> None:
         pass

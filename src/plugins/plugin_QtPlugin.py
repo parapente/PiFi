@@ -4,8 +4,8 @@
 
 from typing import Callable
 from plugins.qtztextwidget import ZTextWidget
-from PyQt5 import QtWidgets
-from PyQt5 import QtCore
+from PyQt6 import QtWidgets
+from PyQt6 import QtCore
 from plugins.plugskel import PluginSkeleton
 
 __author__ = "Theofilos Intzoglou"
@@ -30,9 +30,9 @@ class QtPlugin(PluginSkeleton):
         hbl.itemAt(0).widget().setVisible(False)
         hbl.itemAt(1).widget().setVisible(False)
         hbl.itemAt(1).widget().setAlignment(
-            QtCore.Qt.Alignment(QtCore.Qt.AlignRight))
+            QtCore.Qt.AlignmentFlag(QtCore.Qt.AlignmentFlag.AlignRight))
         hbl.itemAt(1).widget().setSizePolicy(
-            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
+            QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Preferred)
         self.widget = ZTextWidget()
         vbl = QtWidgets.QVBoxLayout()
         vbl.addLayout(hbl)
