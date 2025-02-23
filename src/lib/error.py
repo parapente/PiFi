@@ -7,3 +7,11 @@ class InvalidArgumentException(Exception):
 
 class InvalidHighMemoryException(Exception):
     pass
+
+
+class InvalidContainerKeyException(Exception):
+    pass
+
+
+class InvalidContainerTypeException(Exception):
+    pass

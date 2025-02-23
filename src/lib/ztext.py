@@ -1,7 +1,9 @@
 # -*- coding: utf-8
 
 from array import array
+from typing import cast
 
+from lib.container.container import Container
 from lib.header import ZHeader
 from lib.memory import ZMemory
 
@@ -13,8 +15,9 @@ def decode_text(
     text_buffer: array,
     is_abbreviation: bool = False,
 ) -> str:
-    mem = ZMemory().mem
-    header = ZHeader()
+    container = Container()
+    mem = cast(ZMemory, container.resolve("ZMemory")).mem
+    header = cast(ZHeader, container.resolve("ZHeader"))
     version = header.version
     abbreviation_table = header.abbrev_table
     alphabet_table = header.alphabet_table
@@ -110,7 +113,8 @@ def check_z_char(
     alphabet_table: int,
     unicode_table: int,
 ) -> str:
-    mem = ZMemory().mem
+    container = Container()
+    mem = cast(ZMemory, container.resolve("ZMemory")).mem
     # fmt: off
     a2 = [
         "\n", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
@@ -139,7 +143,8 @@ def check_z_char(
 
 
 def convert_from_zscii(zscii_char: int, unicode_table: int) -> str:
-    mem = ZMemory().mem
+    container = Container()
+    mem = cast(ZMemory, container.resolve("ZMemory")).mem
     # fmt: off
     ut = [
         0xE4, 0xF6, 0xFC, 0xC4, 0xD6, 0xDC, 0xDF, 0xBB,
@@ -185,7 +190,8 @@ def convert_from_zscii(zscii_char: int, unicode_table: int) -> str:
 
 
 def encode_text(text: list) -> array:
-    header = ZHeader()
+    container = Container()
+    header = cast(ZHeader, container.resolve("ZHeader"))
     version = header.version
     alphabet_table = header.alphabet_table
 
@@ -267,7 +273,8 @@ def convert_to_z_bytes(buf: list) -> list:
 def prepare_dicts(
     a0: dict, a1: dict, a2: dict, version: int, alphabet_table: int
 ) -> None:
-    mem = ZMemory().mem
+    container = Container()
+    mem = cast(ZMemory, container.resolve("ZMemory")).mem
     if version >= 5 and alphabet_table:
         i = 0
         for x in range(26):

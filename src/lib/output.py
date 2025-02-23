@@ -1,7 +1,8 @@
 # -*- coding: utf-8
 import sys
+from typing import cast
 
-from array import array
+from lib.container.container import Container
 from lib.memory import ZMemory
 from plugins.plugskel import PluginSkeleton
 
@@ -18,9 +19,10 @@ class ZOutput:
     mem = None
 
     def __init__(self, version: int, plugin: PluginSkeleton):
+        self.container = Container()
         self.version = version
         self.plugin = plugin
-        self.mem = ZMemory().mem
+        self.mem = cast(ZMemory, self.container.resolve("ZMemory")).mem
         self.plugin.screen_size_callback = self.set_screen_size
 
     def select_stream(self, n: int, table: int) -> None:

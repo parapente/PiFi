@@ -2,6 +2,8 @@
 # -*- coding: utf-8
 """Python Interactive Fiction Interpreter"""
 
+from typing import cast
+from lib.container import initialize_container
 from lib.machine import ZMachine
 from importlib import reload, import_module
 from pathlib import Path
@@ -93,7 +95,8 @@ def main():
 
     plugin.prepare_gui()
     plugin.set_debug_level(args.log_level)
-    machine = ZMachine()
+    container = initialize_container()
+    machine = cast(ZMachine, container.resolve("ZMachine"))
     machine.attachPlugin(plugin)  # Attach plugin to ZMachine
     machine.load_story(story_file)
     plugin.set_zversion(machine.zver)  # Store version of z-code file

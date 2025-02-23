@@ -1,5 +1,8 @@
 from array import array
+from typing import cast
 import pytest
+from lib.container import initialize_container
+from lib.container.container import Container
 from lib.header import ZHeader
 from lib.memory import ZMemory
 from src.lib.ztext import decode_text, encode_text
@@ -57,27 +60,39 @@ def encode_text_data():
 
 
 def test_ztext_decode_text(decode_text_data):
+    container = initialize_container()
     # Create dummy empty 1k memory
-    ZMemory().mem = array("B")
-    ZMemory().mem.extend([0] * 1024)
+    memory = cast(ZMemory, container.resolve("ZMemory"))
+    memory.mem = array("B")
+    memory.mem.extend([0] * 1024)
 
-    mem = ZMemory().mem
+    mem = memory.mem
     for data in decode_text_data:
         version, text, z_chars = data
         text_buffer = array("B", z_chars)
         print(data)
-        ZHeader().version = version
+        header = cast(ZHeader, container.resolve("ZHeader"))
+        header.version = version
         assert decode_text(text_buffer) == text
+    Container.destroy()
 
 
 def test_ztext_encode_text(encode_text_data):
+    container = initialize_container()
+    # Create dummy empty 1k memory
+    memory = cast(ZMemory, container.resolve("ZMemory"))
+    memory.mem = array("B")
+    memory.mem.extend([0] * 1024)
+
     for data in encode_text_data:
         version, text = data
         decoded_text = [ord(x) for x in text]
-        ZHeader().version = version
+        header = cast(ZHeader, container.resolve("ZHeader"))
+        header.version = version
         encoded_string = encode_text(decoded_text)
         decoded_string = decode_text(encoded_string)
         if version < 4:
             assert decoded_string == text[:6].lower()
         else:
             assert decoded_string == text[:9].lower()
+    Container.destroy()

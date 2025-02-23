@@ -1,6 +1,7 @@
 # -*- coding: utf-8
 
-from array import array
+from typing import cast
+from lib.container.container import Container
 from lib.header import ZHeader
 from lib.memory import ZMemory
 from lib.output import ZOutput
@@ -37,15 +38,16 @@ class ZCpu:
     numops = 0
 
     def __init__(self, o: ZOutput, p: PluginSkeleton):
-        self.mem = ZMemory().mem
-        self.header = ZHeader()
+        self.container = Container()
+        self.mem = cast(ZMemory, self.container.resolve("ZMemory")).mem
+        self.header = cast(ZHeader, self.container.resolve("ZHeader"))
         self.output = o
         self.plugin = p
         self.pc = self.header.pc
         self.plugin.debug_print("Starting PC: {0}".format(self.pc), 1)
         self.zver = self.header.version
-        self.stack = ZStack()
-        self.random = ZRandom()
+        self.stack = cast(ZStack, self.container.resolve("ZStack"))
+        self.random = cast(ZRandom, self.container.resolve("ZRandom"))
         self.print_dict = dict()
         self.print_char_dict = dict()
         self.command_dict = dict()

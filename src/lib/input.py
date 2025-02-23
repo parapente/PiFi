@@ -1,8 +1,9 @@
 # -*- coding: utf-8
 
+from lib.container.container import Container
 from lib.stream import ZStream
 from plugins.plugskel import PluginSkeleton
-from typing import Callable
+from typing import Callable, cast
 
 __author__ = "Theofilos Intzoglou"
 __date__ = "$1 Ιουλ 2009 6:24:20 μμ$"
@@ -13,7 +14,11 @@ class ZInput:
     plugin = None
 
     def __init__(self, p: PluginSkeleton):
-        self.stream = [ZStream(), ZStream()]
+        self.container = Container()
+        self.stream = [
+            cast(ZStream, self.container.resolve("ZStream")),
+            cast(ZStream, self.container.resolve("ZStream")),
+        ]
         self.plugin = p
 
     def set_current(self, n: int) -> None:
