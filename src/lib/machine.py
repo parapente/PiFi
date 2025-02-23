@@ -2,13 +2,14 @@
 
 from array import array
 from io import BufferedReader
+from typing import cast
+from lib.container.container import Container
 from lib.cpu import ZCpu
 from lib.dictionary import ZDictionary
 from lib.header import ZHeader
 from lib.input import ZInput
 from lib.memory import ZMemory
 from lib.output import ZOutput
-from lib.singleton import Singleton
 from plugins.plugskel import PluginSkeleton
 from sys import exit
 from threading import Lock
@@ -17,7 +18,7 @@ __author__ = "Theofilos Intzoglou"
 __date__ = "$1 Ιουλ 2009 4:39:00 μμ$"
 
 
-class ZMachine(metaclass=Singleton):
+class ZMachine:
     mem = None
     header = None
     cpu = None
@@ -28,6 +29,7 @@ class ZMachine(metaclass=Singleton):
     zver = None
     file = None
     mutex = Lock()
+    container = Container()
 
     def attachPlugin(self, plugin: PluginSkeleton):
         self.plugin = plugin
@@ -759,16 +761,18 @@ class ZMachine(metaclass=Singleton):
 
         # Now that we checked the file size we rewind the file and read the data into memory
         story_file.seek(0)
-        self.mem = ZMemory()
+        self.mem = cast(ZMemory, self.container.resolve("ZMemory"))
         self.mem.initialize(story_file, max_length)
-        self.header = ZHeader()
+        self.header = cast(ZHeader, self.container.resolve("ZHeader"))
         self.header.print_all(self.plugin)
-        self.input = ZInput(self.plugin)
+        self.input = cast(ZInput, self.container.resolve("ZInput", self.plugin))
         self.zver = self.header.version
-        self.output = ZOutput(self.zver, self.plugin)
-        self.cpu = ZCpu(self.output, self.plugin)
+        self.output = cast(
+            ZOutput, self.container.resolve("ZOutput", self.zver, self.plugin)
+        )
+        self.cpu = cast(ZCpu, self.container.resolve("ZCpu", self.output, self.plugin))
         self.cpu.file = story_file
-        self.dict = ZDictionary()
+        self.dict = cast(ZDictionary, self.container.resolve("ZDictionary"))
         self.plugin.debug_print("Version of story file: {0}".format(self.zver), 1)
         self.plugin.debug_print(
             "Length of file: {0}".format(self.header.length_of_file), 1
@@ -779,7 +783,7 @@ class ZMachine(metaclass=Singleton):
 
     def init(self):
         # Set the default options
-        header = ZHeader()
+        header = cast(ZHeader, self.container.resolve("ZHeader"))
         if self.zver > 3:
             # Interpreter number and version
             header.interpreter_number = 1

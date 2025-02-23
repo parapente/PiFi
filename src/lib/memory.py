@@ -3,13 +3,12 @@
 from array import array
 from io import BufferedReader
 from lib.error import InvalidHighMemoryException
-from lib.singleton import Singleton
 
 __author__ = "Theofilos Intzoglou"
 __date__ = "$17 Ιουν 2009 1:35:47 μμ$"
 
 
-class ZMemory(metaclass=Singleton):
+class ZMemory:
     mem = None
     static_beg = 0
     static_end = 0

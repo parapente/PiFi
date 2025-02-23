@@ -1,5 +1,7 @@
 # -*- coding: utf-8
 
+from typing import cast
+from lib.container.container import Container
 from lib.header import ZHeader
 from lib.memory import ZMemory
 from .ztext import decode_text
@@ -15,8 +17,9 @@ class ZDictionary:
     data_length = 0
 
     def __init__(self):
-        mem = ZMemory().mem
-        header = ZHeader()
+        container = Container()
+        mem = cast(ZMemory, container.resolve("ZMemory")).mem
+        header = cast(ZHeader, container.resolve("ZHeader"))
         zver = header.version
         addr = header.dictionary
         n = mem[addr]

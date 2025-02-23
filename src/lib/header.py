@@ -5,14 +5,16 @@ __date__ = "$24 Ιουν 2009 2:39:50 πμ$"
 
 
 from functools import cache
+from typing import cast
+from lib.container.container import Container
 from lib.error import InvalidArgumentException
 from lib.memory import ZMemory
-from lib.singleton import Singleton
 
 
-class ZHeader(metaclass=Singleton):
-    def __init__(self, memory: ZMemory = ZMemory()):
-        self.memory = memory
+class ZHeader:
+    def __init__(self):
+        self.container = Container()
+        self.memory = cast(ZMemory, self.container.resolve("ZMemory"))
         mem = self.memory.mem
         self.version = mem[0]
 
