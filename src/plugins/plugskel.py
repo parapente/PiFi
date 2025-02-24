@@ -1,6 +1,7 @@
 # -*- coding: utf-8
 
-from typing import Callable
+from typing import Callable, cast
+from lib.container.container import Container
 from lib.window import ZWindow
 from lib.stream import ZStream
 import sys
@@ -10,9 +11,14 @@ __date__ = "$9 Ιαν 2011 1:56:17 πμ$"
 
 
 class PluginSkeleton(object):
-
     def __init__(self):
-        self._output_stream = [ZStream(), ZStream(), ZStream(), ZStream()]
+        self.container = Container()
+        self._output_stream = [
+            cast(ZStream, self.container.resolve("ZStream")),
+            cast(ZStream, self.container.resolve("ZStream")),
+            cast(ZStream, self.container.resolve("ZStream")),
+            cast(ZStream, self.container.resolve("ZStream")),
+        ]
         self._output_stream[0].selected = True
         self.level = 0  # Default debug level
 
@@ -31,20 +37,23 @@ class PluginSkeleton(object):
     def set_zversion(self, zver: int) -> None:
         self.zver = zver
         if zver < 3:
-            self.window = [ZWindow(0)]
+            self.window = [cast(ZWindow, self.container.resolve("ZWindow", 0))]
         elif zver == 6:
             self.window = [
-                ZWindow(0),
-                ZWindow(1),
-                ZWindow(2),
-                ZWindow(3),
-                ZWindow(4),
-                ZWindow(5),
-                ZWindow(6),
-                ZWindow(7),
+                cast(ZWindow, self.container.resolve("ZWindow", 0)),
+                cast(ZWindow, self.container.resolve("ZWindow", 1)),
+                cast(ZWindow, self.container.resolve("ZWindow", 2)),
+                cast(ZWindow, self.container.resolve("ZWindow", 3)),
+                cast(ZWindow, self.container.resolve("ZWindow", 4)),
+                cast(ZWindow, self.container.resolve("ZWindow", 5)),
+                cast(ZWindow, self.container.resolve("ZWindow", 6)),
+                cast(ZWindow, self.container.resolve("ZWindow", 7)),
             ]
         else:
-            self.window = [ZWindow(0), ZWindow(1)]
+            self.window = [
+                cast(ZWindow, self.container.resolve("ZWindow", 0)),
+                cast(ZWindow, self.container.resolve("ZWindow", 1)),
+            ]
             # The upper window is a special type of window
             self.window[1].set_buffering(False)
             self.window[1].set_wrapping(False)
