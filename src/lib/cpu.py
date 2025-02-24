@@ -1719,10 +1719,9 @@ class ZCpu:
             self.random.set_seed(0x10000 - ops[0])
             r = 0
         elif ops[0] != 0:  # Get a random num between 1 and ops[0]
-            self.random.set_range(ops[0])
-            r = self.random.get_random()
+            r = self.random.get_random(ops[0])
         else:  # Get random seed
-            self.random.set_mode(0)
+            self.random.set_seed(0)
             r = 0
         # print "Returns:", r
         self._zstore(r, self.mem[self.pc])
