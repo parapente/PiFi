@@ -1,5 +1,6 @@
 import pytest
 from lib.container.container import Container
+from lib.container.item import ItemType
 from lib.error import InvalidContainerKeyException, InvalidContainerTypeException
 from lib.stream import ZStream
 from lib.window import ZWindow
@@ -40,12 +41,12 @@ def test_container_bind_singleton():
     b = container.resolve("Test")
     assert a != b
 
-    container.bind("TestSingleton", lambda: TestClass(), "singleton")
+    container.bind("TestSingleton", lambda: TestClass(), ItemType.SINGLETON)
     a = container.resolve("TestSingleton")
     b = container.resolve("TestSingleton")
     assert a == b
 
-    container.bind("TestSingleton", lambda *args: TestClass2(*args), "singleton", 0)
+    container.bind("TestSingleton", lambda *args: TestClass2(*args), ItemType.SINGLETON, 0)
     a = container.resolve("TestSingleton")
     b = container.resolve("TestSingleton")
     assert a == b
@@ -145,7 +146,7 @@ def test_container_singleton_across_instances():
     container2 = Container()
 
     # Bind as singleton in first container
-    container1.bind("Singleton", lambda: SingletonClass(), "singleton")
+    container1.bind("Singleton", lambda: SingletonClass(), ItemType.SINGLETON)
     instance1 = container1.resolve("Singleton")
     instance2 = container2.resolve("Singleton")
 

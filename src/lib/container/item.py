@@ -1,12 +1,19 @@
 from dataclasses import dataclass
+from enum import StrEnum
 from typing import Any, Callable, TypeVar, Generic, Optional
 
 T = TypeVar('T')
 
 
+class ItemType(StrEnum):
+    """Enum for container item types."""
+    RESOLVABLE = "resolvable"
+    SINGLETON = "singleton"
+
+
 @dataclass
 class Item(Generic[T]):
-    type: str
+    type: ItemType
     resolvable: Callable[..., T]
     args: tuple[Any, ...] = ()
     singleton: Optional[T] = None
@@ -28,12 +35,12 @@ class Item(Generic[T]):
         if len(args):
             resolvable_args = args
 
-        if self.type == "resolvable":
+        if self.type == ItemType.RESOLVABLE:
             if len(resolvable_args):
                 return self.resolvable(*resolvable_args)
             else:
                 return self.resolvable()
-        elif self.type == "singleton":
+        elif self.type == ItemType.SINGLETON:
             if self.singleton is None:
                 if len(resolvable_args):
                     self.singleton = self.resolvable(*resolvable_args)

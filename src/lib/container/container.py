@@ -1,5 +1,5 @@
 from typing import Callable, Dict, Optional, Type, Any
-from lib.container.item import Item
+from lib.container.item import Item, ItemType
 from lib.error import InvalidContainerKeyException, InvalidContainerTypeException
 from lib.singleton import Singleton
 
@@ -38,10 +38,10 @@ class Container(metaclass=Singleton):
         self,
         key: str,
         resolver: Callable[..., Any],
-        type: str = "resolvable",
+        type: ItemType = ItemType.RESOLVABLE,
         *args: Any,
     ) -> None:
-        if type not in ["resolvable", "singleton"]:
+        if type not in [ItemType.RESOLVABLE, ItemType.SINGLETON]:
             raise InvalidContainerTypeException("Invalid container item type")
 
         item = Item(type, resolver, args)
@@ -68,9 +68,9 @@ class Container(metaclass=Singleton):
                 )
 
             if len(args):
-                item = Item("resolvable", lambda *args: result(*args), args)
+                item = Item(ItemType.RESOLVABLE, lambda *args: result(*args), args)
             else:
-                item = Item("resolvable", lambda: result())
+                item = Item(ItemType.RESOLVABLE, lambda: result())
 
             self.bindings[key] = item
         else:
