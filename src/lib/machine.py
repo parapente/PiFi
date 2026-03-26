@@ -26,6 +26,24 @@ class ZMachine:
     mutex = Lock()
     container = Container()
 
+    def __enter__(self):
+        """Enter context manager."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Exit context manager, ensuring file is closed."""
+        self.close()
+        return False  # Don't suppress exceptions
+
+    def close(self):
+        """Close resources held by the machine."""
+        if self.file is not None:
+            try:
+                self.file.close()
+            except Exception:
+                pass  # Ignore errors during cleanup
+            self.file = None
+
     def attachPlugin(self, plugin: PluginSkeleton):
         self.plugin = plugin
 
@@ -251,33 +269,37 @@ class ZMachine:
 
     def save_state(self, filename: str):
         print("Here!")
-        # Test if file already exists
         try:
-            self.savefile = open(filename)
-            # File exists! Ask if user wants to overwrite file.
-            self.plugin.print_string("Overwrite?(Y/N)")
-            self.input.read_char(self.overwrite_yn)
-        except IOError:
-            # File doesn't exist
+            # Check if file exists using context manager
             try:
-                self.savefile = open(filename, "wb")
-                self.do_save_state()
-            except IOError as cannot_save_file:
-                (errno, strerror) = cannot_save_file.args
-                print("I/O error ({0}): {1}".format(errno, strerror))
-                self.plugin.print_string("Save failed!\n")
-                self.mutex.release()
-                self.save_state_return_fail()
+                with open(filename, 'rb') as _:
+                    pass  # file exists
+                # File exists, ask user
+                self.pending_save_filename = filename
+                self.plugin.print_string("Overwrite?(Y/N)")
+                self.input.read_char(self._handle_save_confirmation)
+                return
+            except IOError:
+                # File doesn't exist, save directly
+                with open(filename, 'wb') as f:
+                    self._save_state_to_file(f)
+        except IOError as cannot_save_file:
+            (errno, strerror) = cannot_save_file.args
+            print("I/O error ({0}): {1}".format(errno, strerror))
+            self.plugin.print_string("Save failed!\n")
+            self.mutex.release()
+            self.save_state_return_fail()
 
     def restore_state(self, filename: str):
         print("Here!")
         # Test if file already exists
         try:
-            self.savefile = open(filename, "rb")
-            # Save header bits to be used after restore
-            bits = self.header.header[0x10] & 3
-            self.do_restore_state()
-            self.header.header[0x10] = self.header.header[0x10] | bits
+            with open(filename, "rb") as f:
+                self.savefile = f
+                # Save header bits to be used after restore
+                bits = self.header.header[0x10] & 3
+                self.do_restore_state()
+                self.header.header[0x10] = self.header.header[0x10] | bits
         except IOError as cannot_restore_file:
             (errno, strerror) = cannot_restore_file.args
             print("I/O error ({0}): {1}".format(errno, strerror))
@@ -285,23 +307,23 @@ class ZMachine:
             self.mutex.release()
             self.restore_state_return_fail()
 
-    def overwrite_yn(self, key: str):
-        if key == "y" or key == "Y":
-            fname = self.savefile.name
-            self.savefile.close()
+    def _handle_save_confirmation(self, key: str):
+        """Handle user response to overwrite confirmation."""
+        filename = self.pending_save_filename
+        if key in ('y', 'Y'):
             try:
-                self.savefile = open(fname, "wb")
-                self.do_save_state()
+                with open(filename, 'wb') as f:
+                    self._save_state_to_file(f)
             except IOError as cannot_save_file:
                 (errno, strerror) = cannot_save_file.args
                 print("I/O error ({0}): {1}".format(errno, strerror))
                 self.plugin.print_string("Save failed!\n")
                 self.mutex.release()
                 self.save_state_return_fail()
-        elif key == "n" or key == "N":
+        elif key in ('n', 'N'):
             self.save_state_return_fail()
         else:
-            self.input.read_char(self.overwrite_yn)
+            self.input.read_char(lambda k: self._handle_save_confirmation(k))
 
     def do_restore_state(self):
         # Read at most 1MB of savefile (can it be larger than that?)
@@ -526,8 +548,14 @@ class ZMachine:
             self.cpu.start()
             self.handle_intr()
 
-    def do_save_state(self):
-        self.savefile.write("FORM\x00\x00\x00\x00IFZS".encode())
+    def _save_state_to_file(self, file):
+        """Write save state to the given file object.
+
+        Args:
+            file: An open file object opened for writing in binary mode.
+                  This method will NOT close the file.
+        """
+        file.write("FORM\x00\x00\x00\x00IFZS".encode())
         savefile_size = 4
 
         membuff = self.mem.mem[: self.mem.static_beg]
@@ -537,7 +565,7 @@ class ZMachine:
         print(filebuff)
 
         # Save Story File info ('IFhd') - MUST be first
-        self.savefile.write("IFhd\x00\x00\x00\x0d".encode())
+        file.write("IFhd\x00\x00\x00\x0d".encode())
         ifhd = []
         ifhd += [membuff[2], membuff[3]]
         for i in range(6):
@@ -552,7 +580,7 @@ class ZMachine:
         ]
         tmp = array("B")
         tmp.fromlist(ifhd)
-        self.savefile.write(tmp)
+        file.write(tmp)
         savefile_size += 22
 
         # Save dynamic memory ('CMem')
@@ -561,7 +589,7 @@ class ZMachine:
             diffbuff[i] = membuff[i] ^ filebuff[i]
         rlebuff = []
         self.rle_encode(diffbuff, rlebuff)
-        self.savefile.write("CMem".encode())
+        file.write("CMem".encode())
         tmp = array("B")
         tmpsize = len(rlebuff)
         sizebyte4 = tmpsize & 255
@@ -569,15 +597,15 @@ class ZMachine:
         sizebyte2 = (tmpsize >> 16) & 255
         sizebyte1 = 0
         tmp.fromlist([sizebyte1, sizebyte2, sizebyte3, sizebyte4] + rlebuff)
-        self.savefile.write(tmp)
+        file.write(tmp)
         if (tmpsize % 2) == 1:
-            self.savefile.write("\x00".encode())
+            file.write("\x00".encode())
             savefile_size += 8 + len(rlebuff) + 1
         else:
             savefile_size += 8 + len(rlebuff)
 
         # Save stack ('Stks')
-        self.savefile.write("Stks".encode())
+        file.write("Stks".encode())
 
         # To get a complete stack dump we need to push local data to stack
         self.cpu.stack.push_local_vars()
@@ -648,10 +676,10 @@ class ZMachine:
         tmp = array("B")
         tmp.fromlist(stks)
         savefile_size += len(stks)
-        self.savefile.write(tmp)
+        file.write(tmp)
 
         # Complete the FORM chunk with the data length
-        self.savefile.seek(4)
+        file.seek(4)
         tmp = array("B")
         tmp.fromlist(
             [
@@ -661,9 +689,8 @@ class ZMachine:
                 savefile_size & 255,
             ]
         )
-        self.savefile.write(tmp)
-
-        self.savefile.close()
+        file.write(tmp)
+        # Note: Caller is responsible for closing the file
 
         # Drop temporary frames. Not needed any more
         self.cpu.stack.pop_frame()

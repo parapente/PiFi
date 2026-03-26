@@ -93,12 +93,15 @@ def main():
     plugin.set_debug_level(args.log_level)
     container = initialize_container()
     machine = cast(ZMachine, container.resolve("ZMachine"))
-    machine.attachPlugin(plugin)  # Attach plugin to ZMachine
-    machine.load_story(story_file)
-    plugin.set_zversion(machine.zver)  # Store version of z-code file
-    machine.init()
-    machine.boot()
-    plugin.exec_()  # Start exec loop
+    try:
+        machine.attachPlugin(plugin)  # Attach plugin to ZMachine
+        machine.load_story(story_file)
+        plugin.set_zversion(machine.zver)  # Store version of z-code file
+        machine.init()
+        machine.boot()
+        plugin.exec_()  # Start exec loop
+    finally:
+        machine.close()
 
 
 if __name__ == "__main__":
