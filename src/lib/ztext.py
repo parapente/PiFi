@@ -1,4 +1,3 @@
-from array import array
 from typing import cast
 
 from lib.container.container import Container
@@ -7,7 +6,7 @@ from lib.memory import ZMemory
 
 
 def decode_text(
-    text_buffer: array,
+    text_buffer: bytearray,
     is_abbreviation: bool = False,
 ) -> str:
     container = Container()
@@ -53,7 +52,7 @@ def decode_text(
             elif abbrev_next == 1:
                 abbrev_offset += z_char * 2
                 idx = 2 * ((mem[abbrev_offset] << 8) + mem[abbrev_offset + 1])
-                new_buffer = array("B")
+                new_buffer = bytearray()
                 eot = False
                 while not (eot):
                     if (mem[idx] & 128) == 128:
@@ -184,7 +183,7 @@ def convert_from_zscii(zscii_char: int, unicode_table: int) -> str:
         return chr(ut[zscii_char - 155])
 
 
-def encode_text(text: list) -> array:
+def encode_text(text: list) -> bytearray:
     container = Container()
     header = cast(ZHeader, container.resolve("ZHeader"))
     version = header.version
@@ -239,7 +238,7 @@ def encode_text(text: list) -> array:
     if char_count < buffer_limit:
         buf.extend([5] * (buffer_limit - char_count))
     output = convert_to_z_bytes(buf)
-    return array("B", output)
+    return bytearray(output)
 
 
 # Note: ztext module contains utility functions, not a class to register

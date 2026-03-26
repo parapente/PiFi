@@ -1,23 +1,19 @@
-from array import array
 from io import BufferedReader
 from lib.container.container import Container
 from lib.error import InvalidHighMemoryException
 
 
 class ZMemory:
-    mem = None
     static_beg = 0
     static_end = 0
     high_beg = 0
     high_end = 0
 
-    def initialize(
-        self, story_file: BufferedReader = None, max_length: int = None
-    ) -> None:
-        self.mem = array("B")
+    def initialize(self, story_file: BufferedReader, max_length: int) -> None:
+        self.mem = bytearray()
         if story_file:
             try:
-                self.mem.fromfile(story_file, max_length)
+                self.mem.extend(story_file.read(max_length))
             except EOFError:
                 print(("file size:", story_file.tell()))
                 need = max_length - story_file.tell()

@@ -1,4 +1,3 @@
-from array import array
 from typing import cast
 import pytest
 from lib.container import initialize_container
@@ -63,13 +62,13 @@ def test_ztext_decode_text(decode_text_data):
     container = initialize_container()
     # Create dummy empty 1k memory
     memory = cast(ZMemory, container.resolve("ZMemory"))
-    memory.mem = array("B")
+    memory.mem = bytearray()
     memory.mem.extend([0] * 1024)
 
     mem = memory.mem
     for data in decode_text_data:
         version, text, z_chars = data
-        text_buffer = array("B", z_chars)
+        text_buffer = bytearray(z_chars)
         print(data)
         header = cast(ZHeader, container.resolve("ZHeader"))
         header.version = version
@@ -81,7 +80,7 @@ def test_ztext_encode_text(encode_text_data):
     container = initialize_container()
     # Create dummy empty 1k memory
     memory = cast(ZMemory, container.resolve("ZMemory"))
-    memory.mem = array("B")
+    memory.mem = bytearray()
     memory.mem.extend([0] * 1024)
 
     for data in encode_text_data:
