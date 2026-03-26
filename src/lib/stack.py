@@ -77,3 +77,7 @@ class ZStack:
         self.queue = self.pop_frame()
         self.queuepos = len(self.queue)
         self.queuemaxpos = self.queuepos
+
+
+# Register the class with the container
+Container.register("ZStack", ZStack)
