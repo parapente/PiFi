@@ -1,5 +1,3 @@
-# -*- coding: utf-8
-
 from array import array
 from io import BufferedReader
 from typing import cast
@@ -13,9 +11,6 @@ from lib.output import ZOutput
 from plugins.plugskel import PluginSkeleton
 from sys import exit
 from threading import Lock
-
-__author__ = "Theofilos Intzoglou"
-__date__ = "$1 Ιουλ 2009 4:39:00 μμ$"
 
 
 class ZMachine:
@@ -828,3 +823,7 @@ class ZMachine:
         self.plugin.set_default_fg(9)
 
         header.transcripting_is_on = False
+
+
+# Register the class with the container
+Container.register("ZMachine", ZMachine)

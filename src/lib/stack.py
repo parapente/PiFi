@@ -1,7 +1,4 @@
-# -*- coding: utf-8
-
-__author__ = "Theofilos Intzoglou"
-__date__ = "$7 Ιουλ 2009 3:35:43 μμ$"
+from lib.container.container import Container
 
 
 class ZStack:

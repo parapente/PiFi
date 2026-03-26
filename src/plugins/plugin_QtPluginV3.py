@@ -1,14 +1,9 @@
-# -*- coding: utf-8
-
 from plugins.qtztextwidget_v3 import ZTextWidget
 from PyQt6 import QtWidgets
 from PyQt6 import QtCore
 from plugins.plugskel import PluginSkeleton
 import traceback
 import sys
-
-__author__ = "Theofilos Intzoglou"
-__date__ = "$20 Σεπ 2009 2:39:20 μμ$"
 
 
 class QtPluginV3(PluginSkeleton):

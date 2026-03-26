@@ -1,13 +1,8 @@
-# -*- coding: utf-8
-
 from typing import cast
 from lib.container.container import Container
 from lib.header import ZHeader
 from lib.memory import ZMemory
 from .ztext import decode_text
-
-__author__ = "oscar"
-__date__ = "$28 Ιουλ 2009 3:33:47 μμ$"
 
 
 class ZDictionary:
@@ -55,3 +50,7 @@ class ZDictionary:
         if w not in self.dict:
             return 0
         return self.dict[self.dict.index(w) + 1]
+
+
+# Register the class with the container
+Container.register("ZDictionary", ZDictionary)

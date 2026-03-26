@@ -1,12 +1,7 @@
-# -*- coding: utf-8
-
 from lib.container.container import Container
 from lib.stream import ZStream
 from plugins.plugskel import PluginSkeleton
 from typing import Callable, cast
-
-__author__ = "Theofilos Intzoglou"
-__date__ = "$1 Ιουλ 2009 6:24:20 μμ$"
 
 
 class ZInput:
@@ -57,3 +52,7 @@ class ZInput:
 
     def hide_cursor(self) -> None:
         self.plugin.hide_cursor()
+
+
+# Register the class with the container
+Container.register("ZInput", ZInput)

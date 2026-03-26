@@ -1,13 +1,9 @@
-# -*- coding: utf-8
 import sys
 from typing import cast
 
 from lib.container.container import Container
 from lib.memory import ZMemory
 from plugins.plugskel import PluginSkeleton
-
-__author__ = "Theofilos Intzoglou"
-__date__ = "$1 Ιουλ 2009 5:20:39 μμ$"
 
 
 class ZOutput:
@@ -138,3 +134,7 @@ class ZOutput:
             w = 255
         self.mem[0x20] = h
         self.mem[0x21] = w
+
+
+# Register the class with the container
+Container.register("ZOutput", ZOutput)

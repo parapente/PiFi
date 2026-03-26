@@ -1,13 +1,8 @@
-# -*- coding: utf-8
-
 from typing import Callable, cast
 from lib.container.container import Container
 from lib.window import ZWindow
 from lib.stream import ZStream
 import sys
-
-__author__ = "Theofilos Intzoglou"
-__date__ = "$9 Ιαν 2011 1:56:17 πμ$"
 
 
 class PluginSkeleton(object):

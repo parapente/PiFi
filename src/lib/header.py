@@ -1,9 +1,3 @@
-# -*- coding: utf-8
-
-__author__ = "Theofilos Intzoglou"
-__date__ = "$24 Ιουν 2009 2:39:50 πμ$"
-
-
 from functools import cache
 from typing import cast
 from lib.container.container import Container
@@ -414,3 +408,7 @@ class ZHeader:
         plugin.debug_print(f"Header ext table: {self.header_ext_table}", 2)
         plugin.debug_print(f"Object table: {self.obj_table}", 2)
         plugin.debug_print(f"Static strings offset: {self.strings}", 2)
+
+
+# Register the class with the container
+Container.register("ZHeader", ZHeader)

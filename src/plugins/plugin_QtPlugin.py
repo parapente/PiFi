@@ -1,4 +1,3 @@
-# -*- coding: utf-8
 # To change this template, choose Tools | Templates
 # and open the template in the editor.
 
@@ -7,9 +6,6 @@ from plugins.qtztextwidget import ZTextWidget
 from PyQt6 import QtWidgets
 from PyQt6 import QtCore
 from plugins.plugskel import PluginSkeleton
-
-__author__ = "Theofilos Intzoglou"
-__date__ = "$20 Σεπ 2009 2:39:20 μμ$"
 
 
 class QtPlugin(PluginSkeleton):
@@ -30,9 +26,11 @@ class QtPlugin(PluginSkeleton):
         hbl.itemAt(0).widget().setVisible(False)
         hbl.itemAt(1).widget().setVisible(False)
         hbl.itemAt(1).widget().setAlignment(
-            QtCore.Qt.AlignmentFlag(QtCore.Qt.AlignmentFlag.AlignRight))
+            QtCore.Qt.AlignmentFlag(QtCore.Qt.AlignmentFlag.AlignRight)
+        )
         hbl.itemAt(1).widget().setSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Preferred)
+            QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Preferred
+        )
         self.widget = ZTextWidget()
         vbl = QtWidgets.QVBoxLayout()
         vbl.addLayout(hbl)
@@ -59,12 +57,14 @@ class QtPlugin(PluginSkeleton):
     def hide_cursor(self) -> None:
         self.widget.hide_cursor()
 
-    def read_char(self, callback: Callable, time: int,
-                  timeout_callback: Callable) -> None:
+    def read_char(
+        self, callback: Callable, time: int, timeout_callback: Callable
+    ) -> None:
         self.widget.read_char(callback)
 
-    def read_line(self, callback: Callable, time: int,
-                  timeout_callback: Callable, reset: bool) -> None:
+    def read_line(
+        self, callback: Callable, time: int, timeout_callback: Callable, reset: bool
+    ) -> None:
         self.read_line_enabled = True
         self.widget.read_line(callback)
 

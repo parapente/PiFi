@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-# -*- coding: utf-8
 """Python Interactive Fiction Interpreter"""
 
 from typing import cast
@@ -13,9 +12,6 @@ import argparse
 import signal
 
 from plugins.plugskel import PluginSkeleton
-
-__author__ = "Theofilos Intzoglou"
-__date__ = "$17 Ιουν 2009 2:24:30 πμ$"
 
 
 def discover_plugins():

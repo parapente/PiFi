@@ -1,11 +1,7 @@
-# -*- coding: utf-8
-
 from array import array
 from io import BufferedReader
+from lib.container.container import Container
 from lib.error import InvalidHighMemoryException
-
-__author__ = "Theofilos Intzoglou"
-__date__ = "$17 Ιουν 2009 1:35:47 μμ$"
 
 
 class ZMemory:
@@ -70,3 +66,7 @@ class ZMemory:
         self.mem[address] &= 0xFF - (1 << bit)
         if value:
             self.mem[address] |= 1 << bit
+
+
+# Register the class with the container
+Container.register("ZMemory", ZMemory)

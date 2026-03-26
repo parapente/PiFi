@@ -1,5 +1,3 @@
-# -*- coding: utf-8
-
 from typing import cast
 from lib.container.container import Container
 from lib.header import ZHeader
@@ -10,10 +8,6 @@ from lib.zrandom import ZRandom
 from lib.ztext import decode_text, encode_text, convert_from_zscii
 from plugins.plugskel import PluginSkeleton
 from sys import exit
-
-
-__author__ = "Theofilos Intzoglou"
-__date__ = "$24 Ιουν 2009 4:21:45 πμ$"
 
 
 class ZCpu:
@@ -2715,3 +2709,7 @@ class ZCpu:
             else:
                 self.pc = self.pc + gf
         return [jif, offset]
+
+
+# Register the class with the container
+Container.register("ZCpu", ZCpu)

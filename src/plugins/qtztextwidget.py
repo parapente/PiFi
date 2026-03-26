@@ -1,4 +1,3 @@
-# -*- coding: utf-8
 # To change this template, choose Tools | Templates
 # and open the template in the editor.
 
@@ -14,9 +13,6 @@ from PyQt6.QtCore import QSize
 from PyQt6.QtCore import pyqtSignal
 from lib.stream import ZStream
 import sys
-
-__author__ = "Theofilos Intzoglou"
-__date__ = "$15 Αυγ 2009 10:46:38 μμ$"
 
 
 class ZTextWidget(QWidget):
@@ -60,92 +56,166 @@ class ZTextWidget(QWidget):
 
     def paintEvent(self, e):
         painter = QPainter(self)
-        painter.fillRect(0, 0, self.width * self.fixed_font_width + 2,
-                         self.height * self.fixed_font_height, Qt.black)
+        painter.fillRect(
+            0,
+            0,
+            self.width * self.fixed_font_width + 2,
+            self.height * self.fixed_font_height,
+            Qt.black,
+        )
         painter.setPen(Qt.gray)
         painter.setRenderHint(QPainter.TextAntialiasing)
         painter.setFont(self.fixed_font)
         painter.setBackgroundMode(Qt.OpaqueMode)
         # Print main window
         l = self.height
-        while (l > 0):
+        while l > 0:
             c = 1
-            while (c <= self.width):
+            while c <= self.width:
                 y = self.fixed_font_metrics.ascent() + (l - 1) * self.fixed_font_height
                 x = 1 + ((c - 1) * self.fixed_font_width)
                 # print "**",l,"**",c
                 if self.buf[(((self.height - l) * self.width) + c - 1) * 4] == 0:
                     painter.setPen(self.ztoq_color(self.cur_fg))
                 else:
-                    painter.setPen(self.ztoq_color(
-                        self.buf[(((self.height - l) * self.width) + c - 1) * 4]))
+                    painter.setPen(
+                        self.ztoq_color(
+                            self.buf[(((self.height - l) * self.width) + c - 1) * 4]
+                        )
+                    )
                 if self.buf[((((self.height - l) * self.width) + c - 1) * 4) + 1] == 0:
                     painter.setBackground(QBrush(self.ztoq_color(self.cur_bg)))
                 else:
-                    painter.setBackground(QBrush(self.ztoq_color(
-                        self.buf[((((self.height - l) * self.width) + c - 1) * 4) + 1])))
+                    painter.setBackground(
+                        QBrush(
+                            self.ztoq_color(
+                                self.buf[
+                                    ((((self.height - l) * self.width) + c - 1) * 4) + 1
+                                ]
+                            )
+                        )
+                    )
                 # Set appropriate font style
                 if self.buf[((((self.height - l) * self.width) + c - 1) * 4) + 2] == 0:
                     f = painter.font()
                     f.setBold(False)
                     f.setItalic(False)
                     painter.setFont(f)
-                if self.buf[((((self.height - l) * self.width) + c - 1) * 4) + 2] & 1:  # Reverse video
-                    painter.setPen(self.ztoq_color(
-                        self.buf[((((self.height - l) * self.width) + c - 1) * 4) + 1]))
-                    painter.setBackground(QBrush(self.ztoq_color(
-                        self.buf[(((self.height - l) * self.width) + c - 1) * 4])))
-                if self.buf[((((self.height - l) * self.width) + c - 1) * 4) + 2] & 2:  # Bold
+                if (
+                    self.buf[((((self.height - l) * self.width) + c - 1) * 4) + 2] & 1
+                ):  # Reverse video
+                    painter.setPen(
+                        self.ztoq_color(
+                            self.buf[
+                                ((((self.height - l) * self.width) + c - 1) * 4) + 1
+                            ]
+                        )
+                    )
+                    painter.setBackground(
+                        QBrush(
+                            self.ztoq_color(
+                                self.buf[(((self.height - l) * self.width) + c - 1) * 4]
+                            )
+                        )
+                    )
+                if (
+                    self.buf[((((self.height - l) * self.width) + c - 1) * 4) + 2] & 2
+                ):  # Bold
                     f = painter.font()
                     f.setBold(True)
                     painter.setFont(f)
-                if self.buf[((((self.height - l) * self.width) + c - 1) * 4) + 2] & 4:  # Italic
+                if (
+                    self.buf[((((self.height - l) * self.width) + c - 1) * 4) + 2] & 4
+                ):  # Italic
                     f = painter.font()
                     f.setItalic(True)
                     painter.setFont(f)
                 if self.buf[((((self.height - l) * self.width) + c - 1) * 4) + 3] != 0:
                     painter.drawText(
-                        x, y, self.buf[((((self.height - l) * self.width) + c - 1) * 4) + 3])
+                        x,
+                        y,
+                        self.buf[((((self.height - l) * self.width) + c - 1) * 4) + 3],
+                    )
                 c += 1
             l -= 1
             c = 1
         # Print upper window
         if self.upper_buf != []:
             l = 1
-            while (l <= self.upper_buf_height):
+            while l <= self.upper_buf_height:
                 c = 1
-                while (c <= self.width):
-                    y = self.fixed_font_metrics.ascent() + (l - 1) * self.fixed_font_height
+                while c <= self.width:
+                    y = (
+                        self.fixed_font_metrics.ascent()
+                        + (l - 1) * self.fixed_font_height
+                    )
                     x = 1 + ((c - 1) * self.fixed_font_width)
                     # print "**",l,"**",c
                     if self.upper_buf[((((l - 1) * self.width) + c - 1) * 4) + 3] != 0:
-                        painter.setPen(self.ztoq_color(
-                            self.upper_buf[(((l - 1) * self.width) + c - 1) * 4]))
-                        painter.setBackground(QBrush(self.ztoq_color(
-                            self.upper_buf[((((l - 1) * self.width) + c - 1) * 4) + 1])))
+                        painter.setPen(
+                            self.ztoq_color(
+                                self.upper_buf[(((l - 1) * self.width) + c - 1) * 4]
+                            )
+                        )
+                        painter.setBackground(
+                            QBrush(
+                                self.ztoq_color(
+                                    self.upper_buf[
+                                        ((((l - 1) * self.width) + c - 1) * 4) + 1
+                                    ]
+                                )
+                            )
+                        )
                         # Set appropriate font style
-                        if self.upper_buf[((((l - 1) * self.width) + c - 1) * 4) + 2] == 0:
+                        if (
+                            self.upper_buf[((((l - 1) * self.width) + c - 1) * 4) + 2]
+                            == 0
+                        ):
                             f = painter.font()
                             f.setBold(False)
                             f.setItalic(False)
                             painter.setFont(f)
                         # Reverse video
-                        if self.upper_buf[((((l - 1) * self.width) + c - 1) * 4) + 2] & 1:
-                            painter.setPen(self.ztoq_color(
-                                self.upper_buf[((((l - 1) * self.width) + c - 1) * 4) + 1]))
-                            painter.setBackground(QBrush(self.ztoq_color(
-                                self.upper_buf[(((l - 1) * self.width) + c - 1) * 4])))
-                        if self.upper_buf[((((l - 1) * self.width) + c - 1) * 4) + 2] & 2:  # Bold
+                        if (
+                            self.upper_buf[((((l - 1) * self.width) + c - 1) * 4) + 2]
+                            & 1
+                        ):
+                            painter.setPen(
+                                self.ztoq_color(
+                                    self.upper_buf[
+                                        ((((l - 1) * self.width) + c - 1) * 4) + 1
+                                    ]
+                                )
+                            )
+                            painter.setBackground(
+                                QBrush(
+                                    self.ztoq_color(
+                                        self.upper_buf[
+                                            (((l - 1) * self.width) + c - 1) * 4
+                                        ]
+                                    )
+                                )
+                            )
+                        if (
+                            self.upper_buf[((((l - 1) * self.width) + c - 1) * 4) + 2]
+                            & 2
+                        ):  # Bold
                             f = painter.font()
                             f.setBold(True)
                             painter.setFont(f)
                         # Italic
-                        if self.upper_buf[((((l - 1) * self.width) + c - 1) * 4) + 2] & 4:
+                        if (
+                            self.upper_buf[((((l - 1) * self.width) + c - 1) * 4) + 2]
+                            & 4
+                        ):
                             f = painter.font()
                             f.setItalic(True)
                             painter.setFont(f)
-                        painter.drawText(x, y, self.upper_buf[(
-                            (((l - 1) * self.width) + c - 1) * 4) + 3])
+                        painter.drawText(
+                            x,
+                            y,
+                            self.upper_buf[((((l - 1) * self.width) + c - 1) * 4) + 3],
+                        )
                     c += 1
                 l += 1
         # Print cursor if visible
@@ -208,9 +278,9 @@ class ZTextWidget(QWidget):
                 i = 0
                 total = len(txt)
                 # print "Total -", total
-                while (i < total):
+                while i < total:
                     s = ""
-                    while (i < total) and (txt[i] != '\n') and (c <= self.width):
+                    while (i < total) and (txt[i] != "\n") and (c <= self.width):
                         s += txt[i]
                         i += 1
                         c += 1
@@ -220,7 +290,7 @@ class ZTextWidget(QWidget):
                         self.insert_new_line()
                         self.lower_win_cursor = 1
                         c = 1
-                    elif (i < total) and (txt[i] == '\n'):
+                    elif (i < total) and (txt[i] == "\n"):
                         self.insert_new_line()
                         self.lower_win_cursor = 1
                         c = 1
@@ -235,15 +305,19 @@ class ZTextWidget(QWidget):
                 # print "-", i, l, "-", txt
                 # print "len upperbuf=", len(self.upper_buf)
                 while (i <= self.width) and (j < len(txt)):
-                    if txt[j] != '\n':
-                        self.upper_buf[(((l - 1) * self.width) +
-                                        (i - 1)) * 4] = self.cur_fg
-                        self.upper_buf[(
-                            (((l - 1) * self.width) + (i - 1)) * 4) + 1] = self.cur_bg
-                        self.upper_buf[(
-                            (((l - 1) * self.width) + (i - 1)) * 4) + 2] = self.cur_style
-                        self.upper_buf[(
-                            (((l - 1) * self.width) + (i - 1)) * 4) + 3] = txt[j]
+                    if txt[j] != "\n":
+                        self.upper_buf[(((l - 1) * self.width) + (i - 1)) * 4] = (
+                            self.cur_fg
+                        )
+                        self.upper_buf[((((l - 1) * self.width) + (i - 1)) * 4) + 1] = (
+                            self.cur_bg
+                        )
+                        self.upper_buf[((((l - 1) * self.width) + (i - 1)) * 4) + 2] = (
+                            self.cur_style
+                        )
+                        self.upper_buf[((((l - 1) * self.width) + (i - 1)) * 4) + 3] = (
+                            txt[j]
+                        )
                         i += 1
                         j += 1
                     else:
@@ -267,7 +341,7 @@ class ZTextWidget(QWidget):
     def print_char(self, c):
         col = self.lower_win_cursor
         if self.cur_win == 0:  # Lower win
-            if c != '\n':
+            if c != "\n":
                 self.buf[(col - 1) * 4] = self.cur_fg
                 self.buf[((col - 1) * 4) + 1] = self.cur_bg
                 self.buf[((col - 1) * 4) + 2] = self.cur_style
@@ -277,7 +351,7 @@ class ZTextWidget(QWidget):
                 # print "I insert a newline"
                 self.insert_new_line()
                 self.lower_win_cursor = 1
-            elif c == '\n':
+            elif c == "\n":
                 self.insert_new_line()
                 self.lower_win_cursor = 1
         self.update()
@@ -300,7 +374,9 @@ class ZTextWidget(QWidget):
     def display_cursor(self):
         painter = QPainter(self)
         col = self.cur_pos
-        y = self.fixed_font_metrics.ascent() + ((self.height - 1) * self.fixed_font_height)
+        y = self.fixed_font_metrics.ascent() + (
+            (self.height - 1) * self.fixed_font_height
+        )
         x = 1 + ((col - 1) * self.fixed_font_width)
         painter.setPen(self.ztoq_color(self.cur_fg))
         painter.setBackground(QBrush(self.ztoq_color(self.cur_bg)))
@@ -360,12 +436,12 @@ class ZTextWidget(QWidget):
             for i in range(len(self.input_buf)):
                 text += self.input_buf[i]
             # print text
-            self.print_char('\n')
+            self.print_char("\n")
             self.hide_cursor()
             self.keyPressed.emit(13)
             self.returnPressed.emit(text)
             e.accept()
-        elif ((e.key() >= Qt.Key_F1) and (e.key() <= Qt.Key_F12)):
+        elif (e.key() >= Qt.Key_F1) and (e.key() <= Qt.Key_F12):
             e.accept()
             self.keyPressed.emit(133 + e.key() - Qt.Key_F1)
         elif e.key() == Qt.Key_Escape:
@@ -378,7 +454,8 @@ class ZTextWidget(QWidget):
                 self.top_pos += 1
                 if (self.cur_pos - self.start_pos) <= len(self.input_buf):
                     self.input_buf.insert(
-                        self.cur_pos - self.start_pos - 1, str(e.text()))
+                        self.cur_pos - self.start_pos - 1, str(e.text())
+                    )
                     # print "CurPos:", self.cur_pos
                     col = self.cur_pos - 2
                     self.buf[col * 4 + 3] = str(e.text())
@@ -420,18 +497,21 @@ class ZTextWidget(QWidget):
         self.cur_win = 0  # Default win is the lower (1 is for upper win)
 
     def split_window(self, lines, ver):
-        if self.upper_buf_height > lines:  # New upper win is smaller. I should copy the rest of the buffer to main buffer
+        if (
+            self.upper_buf_height > lines
+        ):  # New upper win is smaller. I should copy the rest of the buffer to main buffer
             # print "Copying..."
             l = lines + 1
             while l <= self.upper_buf_height:
                 for i in range(self.width * 4):
-                    self.buf[(((self.height - l + 1) * self.width) * 4) +
-                             i] = self.upper_buf[(((l - 1) * self.width) * 4) + i]
+                    self.buf[(((self.height - l + 1) * self.width) * 4) + i] = (
+                        self.upper_buf[(((l - 1) * self.width) * 4) + i]
+                    )
                 l += 1
         self.upper_buf_height = lines
         if (self.upper_buf == []) or (ver == 3):
             # It isn't necessary to occupy that much memory but it helps to be prepared! :-P
-            for i in range(self.upper_buf_height*self.width*4):
+            for i in range(self.upper_buf_height * self.width * 4):
                 self.upper_buf.append(0)
         if (self.upper_win_cursor == []) or (self.upper_win_cursor[1] > lines):
             self.upper_win_cursor = [1, 1]
@@ -457,17 +537,17 @@ class ZTextWidget(QWidget):
 
     def read_char(self, callback):
         QObject.connect(self, SIGNAL("keyPressed(int)"), callback)
-        print('Connect char')
+        print("Connect char")
 
     def disconnect_read_char(self, callback):
         QObject.disconnect(self, SIGNAL("keyPressed(int)"), callback)
-        print('Disconnect char')
+        print("Disconnect char")
 
     def selected_output_streams(self):
         s = []
         for i in range(4):
             if self._output_stream[i].selected == True:
-                s.append(i+1)
+                s.append(i + 1)
         return s
 
     def new_line(self):

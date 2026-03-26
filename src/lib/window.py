@@ -1,7 +1,4 @@
-# -*- coding: utf-8
-
-__author__ = "Theofilos Intzoglou"
-__date__ = "$2 Ιουλ 2011 10:14:46 μμ$"
+from lib.container.container import Container
 
 
 class ZWindow:
@@ -70,3 +67,7 @@ class ZWindow:
 
     def set_line_count(self, count):
         self.line_count = count
+
+
+# Register the class with the container
+Container.register("ZWindow", ZWindow)

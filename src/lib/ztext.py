@@ -1,14 +1,9 @@
-# -*- coding: utf-8
-
 from array import array
 from typing import cast
 
 from lib.container.container import Container
 from lib.header import ZHeader
 from lib.memory import ZMemory
-
-__author__ = "Theofilos Intzoglou"
-__date__ = "$24 Ιουν 2009 10:28:44 μμ$"
 
 
 def decode_text(
@@ -245,6 +240,9 @@ def encode_text(text: list) -> array:
         buf.extend([5] * (buffer_limit - char_count))
     output = convert_to_z_bytes(buf)
     return array("B", output)
+
+
+# Note: ztext module contains utility functions, not a class to register
 
 
 def convert_to_z_bytes(buf: list) -> list:

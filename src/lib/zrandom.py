@@ -1,9 +1,6 @@
-# -*- coding: utf-8
-
 import random
 
-__author__ = "Theofilos Intzoglou"
-__date__ = "$22 Ιουν 2009 12:28:10 πμ$"
+from lib.container.container import Container
 
 
 class ZRandom:
@@ -22,3 +19,7 @@ class ZRandom:
 
     def get_random(self, e):
         return self.r.randint(1, e)
+
+
+# Register the class with the container
+Container.register("ZRandom", ZRandom)

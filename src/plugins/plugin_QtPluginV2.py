@@ -1,14 +1,9 @@
-# -*- coding: utf-8
-
 from plugins.qtztextwidget_v2 import ZTextWidget
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from plugins.plugskel import PluginSkeleton
 import traceback
 import sys
-
-__author__ = "Theofilos Intzoglou"
-__date__ = "$20 Σεπ 2009 2:39:20 μμ$"
 
 
 class QtPluginV2(PluginSkeleton):
@@ -29,10 +24,10 @@ class QtPluginV2(PluginSkeleton):
         hbl.addWidget(QtWidgets.QLabel())
         hbl.itemAt(0).widget().setVisible(False)
         hbl.itemAt(1).widget().setVisible(False)
-        hbl.itemAt(1).widget().setAlignment(
-            QtCore.Qt.Alignment(QtCore.Qt.AlignRight))
+        hbl.itemAt(1).widget().setAlignment(QtCore.Qt.Alignment(QtCore.Qt.AlignRight))
         hbl.itemAt(1).widget().setSizePolicy(
-            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
+            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred
+        )
         self.widget = ZTextWidget()
         vbl = QtWidgets.QVBoxLayout()
         vbl.addLayout(hbl)
@@ -59,21 +54,20 @@ class QtPluginV2(PluginSkeleton):
         s2.setText(status)
 
     def new_line(self) -> None:
-        self.widget.print_string('\n', self.window[self.current_window])
+        self.widget.print_string("\n", self.window[self.current_window])
 
     def print_string(self, string: str) -> None:
-        if (self._output_stream[0].selected is True):
+        if self._output_stream[0].selected is True:
             self.widget.print_string(string, self.window[self.current_window])
 
     def split_window(self, lines: int, ver: int) -> None:
-        if (ver == 6):
+        if ver == 6:
             traceback.print_stack()
             sys.exit()
         else:
-            if (self.window[1].line_count < lines):
+            if self.window[1].line_count < lines:
                 self.window[1].set_cursor_position(1, 1)
-                self.window[1].set_cursor_real_position(
-                    2, self.widget.linesize)
+                self.window[1].set_cursor_real_position(2, self.widget.linesize)
             self.window[1].set_line_count(lines)
             self.widget.split_window(lines, ver)
 
@@ -85,12 +79,12 @@ class QtPluginV2(PluginSkeleton):
 
     def set_window(self, window: int) -> None:
         self.current_window = window
-        if (self.zver != 6 and window == 1):
+        if self.zver != 6 and window == 1:
             self.window[1].set_cursor_position(1, 1)
             self.widget.update_real_cursor_position(self.window[1])
 
     def set_cursor(self, x: int, y: int) -> None:
-        if (self.current_window == 1):
+        if self.current_window == 1:
             self.window[1].set_cursor_position(x, y)
             self.widget.update_real_cursor_position(self.window[1])
 
@@ -98,6 +92,6 @@ class QtPluginV2(PluginSkeleton):
         self.win.close()
 
     def unsplit(self) -> None:
-        self.widget.pbuffer_painter = [None]*8
-        self.widget.pbuffer = [None]*8
+        self.widget.pbuffer_painter = [None] * 8
+        self.widget.pbuffer = [None] * 8
         self.widget.init0()

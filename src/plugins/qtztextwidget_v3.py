@@ -1,5 +1,3 @@
-# -*- coding: utf-8
-
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui import QPainter
 from PyQt6.QtGui import QBrush
@@ -22,9 +20,6 @@ from lib.window import ZWindow
 from lib.stream import ZStream
 import traceback
 import sys
-
-__author__ = "Theofilos Intzoglou"
-__date__ = "$04 Ιουλ 2011 07:36:38 μμ$"
 
 
 class ZTextWidget(QTextEdit):
@@ -96,7 +91,9 @@ class ZTextWidget(QTextEdit):
 
         self.line_size = self.font_metrics.height()
         self.avg_width = self.font_metrics.averageCharWidth()
-        print(f"Line size (font height): {self.line_size}, Average Char Width: {self.avg_width}")
+        print(
+            f"Line size (font height): {self.line_size}, Average Char Width: {self.avg_width}"
+        )
         # print(self.font_metrics.height())
         self.width = super(ZTextWidget, self).width() // self.avg_width
         self.height = super(ZTextWidget, self).height() // self.line_size

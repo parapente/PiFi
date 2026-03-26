@@ -1,8 +1,5 @@
-# -*- coding: utf-8
-
 import queue
-__author__ = "Theofilos Intzoglou"
-__date__ = "$29 Σεπ 2010 10:46:21 πμ$"
+from lib.container.container import Container
 
 
 class ZUndo:
@@ -28,3 +25,7 @@ class ZUndo:
         self.retval.put(self.stackstk.get())
         self.retval.put(self.changestk.get())
         return self.retval
+
+
+# Register the class with the container
+Container.register("ZUndo", ZUndo)

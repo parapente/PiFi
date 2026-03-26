@@ -1,9 +1,10 @@
-# -*- coding: utf-8
-
-__author__ = "Theofilos Intzoglou"
-__date__ = "$1 Ιουλ 2009 6:21:20 μμ$"
+from lib.container.container import Container
 
 
 class ZStream:
     selected = False
     filename = None
+
+
+# Register the class with the container
+Container.register("ZStream", ZStream)
