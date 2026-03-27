@@ -272,7 +272,7 @@ class ZMachine:
         try:
             # Check if file exists using context manager
             try:
-                with open(filename, 'rb') as _:
+                with open(filename, "rb") as _:
                     pass  # file exists
                 # File exists, ask user
                 self.pending_save_filename = filename
@@ -281,11 +281,11 @@ class ZMachine:
                 return
             except IOError:
                 # File doesn't exist, save directly
-                with open(filename, 'wb') as f:
+                with open(filename, "wb") as f:
                     self._save_state_to_file(f)
         except IOError as cannot_save_file:
             (errno, strerror) = cannot_save_file.args
-            print("I/O error ({0}): {1}".format(errno, strerror))
+            print(f"I/O error ({errno}): {strerror}")
             self.plugin.print_string("Save failed!\n")
             self.mutex.release()
             self.save_state_return_fail()
@@ -302,7 +302,7 @@ class ZMachine:
                 self.header.header[0x10] = self.header.header[0x10] | bits
         except IOError as cannot_restore_file:
             (errno, strerror) = cannot_restore_file.args
-            print("I/O error ({0}): {1}".format(errno, strerror))
+            print(f"I/O error ({errno}): {strerror}")
             self.plugin.print_string("Restore failed!\n")
             self.mutex.release()
             self.restore_state_return_fail()
@@ -310,17 +310,17 @@ class ZMachine:
     def _handle_save_confirmation(self, key: str):
         """Handle user response to overwrite confirmation."""
         filename = self.pending_save_filename
-        if key in ('y', 'Y'):
+        if key in ("y", "Y"):
             try:
-                with open(filename, 'wb') as f:
+                with open(filename, "wb") as f:
                     self._save_state_to_file(f)
             except IOError as cannot_save_file:
                 (errno, strerror) = cannot_save_file.args
-                print("I/O error ({0}): {1}".format(errno, strerror))
+                print(f"I/O error ({errno}): {strerror}")
                 self.plugin.print_string("Save failed!\n")
                 self.mutex.release()
                 self.save_state_return_fail()
-        elif key in ('n', 'N'):
+        elif key in ("n", "N"):
             self.save_state_return_fail()
         else:
             self.input.read_char(lambda k: self._handle_save_confirmation(k))
@@ -795,13 +795,9 @@ class ZMachine:
         self.cpu = cast(ZCpu, self.container.resolve("ZCpu", self.output, self.plugin))
         self.cpu.file = story_file
         self.dict = cast(ZDictionary, self.container.resolve("ZDictionary"))
-        self.plugin.debug_print("Version of story file: {0}".format(self.zver), 1)
-        self.plugin.debug_print(
-            "Length of file: {0}".format(self.header.length_of_file), 1
-        )
-        self.plugin.debug_print(
-            "Static memory begins at: {0}".format(self.mem.static_beg), 1
-        )
+        self.plugin.debug_print(f"Version of story file: {self.zver}", 1)
+        self.plugin.debug_print(f"Length of file: {self.header.length_of_file}", 1)
+        self.plugin.debug_print(f"Static memory begins at: {self.mem.static_beg}", 1)
 
     def init(self):
         # Set the default options
