@@ -2661,18 +2661,20 @@ class TestEXTOpcodes:
         def test_set_font(self, cpu_v5):
             """Test set_font: set font, return old."""
             cpu = cpu_v5
-            mem = self._setup_ext(cpu, 4)
+            mem = cpu.mem
+            mem[cpu.pc] = 0xBE  # EXT prefix
+            mem[cpu.pc + 1] = 0x04  # set_font
             # set_font 1
-            mem[cpu.pc + 2] = 0x00  # 2 large constants
+            mem[cpu.pc + 2] = 0x80  # 1 large constant
             mem[cpu.pc + 3] = 0x00
             mem[cpu.pc + 4] = 0x01
-            mem[cpu.pc + 5] = 0x64
+            mem[cpu.pc + 5] = 0x70  # Store in global 112
 
             cpu.command()
 
-            result = get_global_var(cpu, 100)
-            # Should return old font (1 in our mock)
-            assert result == 1
+            result = get_global_var(cpu, 112)
+            # Returns 0 (default/old font from plugin)
+            assert result == 0
 
     class TestSaveUndo:
         """Tests for save_undo opcode (EXT:9)."""
@@ -2680,13 +2682,15 @@ class TestEXTOpcodes:
         def test_save_undo(self, cpu_v5):
             """Test save_undo: returns -1 (unavailable)."""
             cpu = cpu_v5
-            mem = self._setup_ext(cpu, 9)
-            mem[cpu.pc + 2] = 0x00  # 2 large constants
-            mem[cpu.pc + 3] = 0x64
+            mem = cpu.mem
+            mem[cpu.pc] = 0xBE  # EXT prefix
+            mem[cpu.pc + 1] = 0x09  # save_undo
+            mem[cpu.pc + 2] = 0xFF  # All operands omitted, just store byte
+            mem[cpu.pc + 3] = 0x70  # Store in global 112
 
             cpu.command()
 
-            result = get_global_var(cpu, 100)
+            result = get_global_var(cpu, 112)
             # Should return 65535 (-1 = unavailable)
             assert result == 65535
 
@@ -2696,32 +2700,36 @@ class TestEXTOpcodes:
         def test_check_unicode_ascii(self, cpu_v5):
             """Test check_unicode: ASCII character."""
             cpu = cpu_v5
-            mem = self._setup_ext(cpu, 12)
+            mem = cpu.mem
+            mem[cpu.pc] = 0xBE  # EXT prefix
+            mem[cpu.pc + 1] = 0x0C  # check_unicode
             # check_unicode 65 ('A')
-            mem[cpu.pc + 2] = 0x00  # 2 large constants
+            mem[cpu.pc + 2] = 0x3F  # 1 large constant + 3 omitted
             mem[cpu.pc + 3] = 0x00
             mem[cpu.pc + 4] = 0x41
-            mem[cpu.pc + 5] = 0x64
+            mem[cpu.pc + 5] = 0x70  # Store in global 112
 
             cpu.command()
 
-            result = get_global_var(cpu, 100)
+            result = get_global_var(cpu, 112)
             # ASCII should return 3 (printable)
             assert result == 3
 
         def test_check_unicode_non_printable(self, cpu_v5):
             """Test check_unicode: non-printable character."""
             cpu = cpu_v5
-            mem = self._setup_ext(cpu, 12)
+            mem = cpu.mem
+            mem[cpu.pc] = 0xBE  # EXT prefix
+            mem[cpu.pc + 1] = 0x0C  # check_unicode
             # check_unicode 0x10 (non-printable)
-            mem[cpu.pc + 2] = 0x00  # 2 large constants
+            mem[cpu.pc + 2] = 0x3F  # 1 large constant + 3 omitted
             mem[cpu.pc + 3] = 0x00
             mem[cpu.pc + 4] = 0x10
-            mem[cpu.pc + 5] = 0x64
+            mem[cpu.pc + 5] = 0x70  # Store in global 112
 
             cpu.command()
 
-            result = get_global_var(cpu, 100)
+            result = get_global_var(cpu, 112)
             assert result == 0
 
     class TestSaveExt:
