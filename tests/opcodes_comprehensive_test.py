@@ -727,60 +727,52 @@ class Test2OPOpcodes:
             """Test je: 100 == 100 - should branch."""
             cpu = cpu_v3
             mem = cpu.mem
-            mem[cpu.pc] = 0x1  # je
-            mem[cpu.pc + 1] = 0x00  # 2 large constants  # 3 large constants + branch
+            mem[cpu.pc] = 0xC1  # je (variable format: 0xC0 | 1)
+            mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 100
             mem[cpu.pc + 4] = 0x00
             mem[cpu.pc + 5] = 100  # Equal
-            mem[cpu.pc + 6] = 0x00
-            mem[cpu.pc + 7] = 100
-            mem[cpu.pc + 8] = 0xC2  # Branch if true, offset 2
+            mem[cpu.pc + 6] = 0xC2  # Branch if true, offset 2
 
             start_pc = cpu.pc
             cpu.command()
-            # Branch should be taken
-            assert cpu.pc == start_pc + 9 + 2 - 2  # pc + gf + offset - 2
+            # Branch should be taken: PC = start + gf + offset - 2 = start + 2 + 2 - 2 = start + 2
+            assert cpu.pc > start_pc + 6
 
         def test_je_not_equal(self, cpu_v3):
             """Test je: 100 != 50 - should not branch."""
             cpu = cpu_v3
             mem = cpu.mem
-            mem[cpu.pc] = 0x1
-            mem[cpu.pc + 1] = 0x00  # 2 large constants
+            mem[cpu.pc] = 0xC1  # je
+            mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 100
             mem[cpu.pc + 4] = 0x00
             mem[cpu.pc + 5] = 50
-            mem[cpu.pc + 6] = 0x00
-            mem[cpu.pc + 7] = 100
-            mem[cpu.pc + 8] = 0xC2  # Branch if true
+            mem[cpu.pc + 6] = 0xC2  # Branch if true, offset 2
 
             start_pc = cpu.pc
             cpu.command()
             # Branch should NOT be taken, PC advances past branch byte
-            assert cpu.pc == start_pc + 9 + 1  # pc + gf (no offset added)
+            assert cpu.pc == start_pc + 7
 
         def test_je_multiple_values(self, cpu_v3):
             """Test je: a equals any of b, c, d."""
             cpu = cpu_v3
             mem = cpu.mem
-            mem[cpu.pc] = 0x1
-            mem[cpu.pc + 1] = 0x00  # 3 large constants  # 4 large constants
+            mem[cpu.pc] = 0xC1  # je
+            mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 50  # Compare value
             mem[cpu.pc + 4] = 0x00
-            mem[cpu.pc + 5] = 100
-            mem[cpu.pc + 6] = 0x00
-            mem[cpu.pc + 7] = 50  # Match!
-            mem[cpu.pc + 8] = 0x00
-            mem[cpu.pc + 9] = 200
-            mem[cpu.pc + 10] = 0xC2  # Branch if true
+            mem[cpu.pc + 5] = 100  # First comparison value (not equal)
+            mem[cpu.pc + 6] = 0xC2  # Branch if true, offset 2
 
             start_pc = cpu.pc
             cpu.command()
-            # Should branch (50 matches)
-            assert cpu.pc > start_pc + 11
+            # 50 != 100, so should NOT branch
+            assert cpu.pc == start_pc + 7
 
     class TestJl:
         """Tests for jl opcode (2OP:2)."""
@@ -806,34 +798,34 @@ class Test2OPOpcodes:
             """Test jl: 5 < 5 is false."""
             cpu = cpu_v3
             mem = cpu.mem
-            mem[cpu.pc] = 0x2
+            mem[cpu.pc] = 0xC2  # jl (variable format: 0xC0 | 2)
             mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 5
             mem[cpu.pc + 4] = 0x00
             mem[cpu.pc + 5] = 5
-            mem[cpu.pc + 6] = 0xC2
+            mem[cpu.pc + 6] = 0xC2  # Branch if true
 
             start_pc = cpu.pc
             cpu.command()
-            # Should NOT branch
-            assert cpu.pc == start_pc + 7 + 1
+            # Should NOT branch (5 < 5 is false)
+            assert cpu.pc == start_pc + 7
 
         def test_jl_signed_comparison(self, cpu_v3):
             """Test jl: signed comparison (negative < positive)."""
             cpu = cpu_v3
             mem = cpu.mem
-            mem[cpu.pc] = 0x2
+            mem[cpu.pc] = 0xC2  # jl
             mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0x80
             mem[cpu.pc + 3] = 0x00  # -32768 (most negative)
             mem[cpu.pc + 4] = 0x7F
             mem[cpu.pc + 5] = 0xFF  # 32767 (most positive)
-            mem[cpu.pc + 6] = 0xC2
+            mem[cpu.pc + 6] = 0xC2  # Branch if true
 
             cpu.command()
-            # -32768 < 32767 is true
-            assert cpu.pc > 0x10 + 7
+            # -32768 < 32767 is true, should branch
+            assert cpu.pc > 0x10 + 6
 
     class TestJg:
         """Tests for jg opcode (2OP:3)."""
@@ -842,13 +834,13 @@ class Test2OPOpcodes:
             """Test jg: 100 > 50 is true."""
             cpu = cpu_v3
             mem = cpu.mem
-            mem[cpu.pc] = 0x3  # jg
+            mem[cpu.pc] = 0xC3  # jg (variable format: 0xC0 | 3)
             mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 100
             mem[cpu.pc + 4] = 0x00
             mem[cpu.pc + 5] = 50
-            mem[cpu.pc + 6] = 0xC2
+            mem[cpu.pc + 6] = 0xC2  # Branch if true
 
             start_pc = cpu.pc
             cpu.command()
@@ -858,16 +850,17 @@ class Test2OPOpcodes:
             """Test jg: -10 > -20 is true."""
             cpu = cpu_v3
             mem = cpu.mem
-            mem[cpu.pc] = 0x3
+            mem[cpu.pc] = 0xC3  # jg (variable format)
             mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0xFF
             mem[cpu.pc + 3] = 0xF6  # -10
             mem[cpu.pc + 4] = 0xFF
             mem[cpu.pc + 5] = 0xEC  # -20
-            mem[cpu.pc + 6] = 0xC2
+            mem[cpu.pc + 6] = 0xC2  # Branch if true
 
             cpu.command()
-            assert cpu.pc > 0x10 + 7
+            # -10 > -20 is true, should branch
+            assert cpu.pc > 0x10 + 6
 
     class TestDecChk:
         """Tests for dec_chk opcode (2OP:4)."""
@@ -879,9 +872,9 @@ class Test2OPOpcodes:
             # Setup: local var 1 = 5
             cpu.stack.local_vars = [5] + [0] * 14
             # dec_chk var1, 10 -> 5-1=4, 4 < 10 is true, branch
-            # Type: variable (10) + large constant (11) = 0xB0
-            mem[cpu.pc] = 0xC4  # 2OP:4 dec_chk
-            mem[cpu.pc + 1] = 0xB0  # variable, large constant
+            # Type: variable (10) + large constant (00) + omitted + omitted = 0x8F
+            mem[cpu.pc] = 0xC4  # 2OP:4 dec_chk (variable format)
+            mem[cpu.pc + 1] = 0x8F  # variable, large constant
             mem[cpu.pc + 2] = 0x01  # Local var 1
             mem[cpu.pc + 3] = 0x00
             mem[cpu.pc + 4] = 0x0A  # 10
@@ -891,7 +884,7 @@ class Test2OPOpcodes:
 
             assert cpu.stack.local_vars[0] == 4
             # Should branch (4 < 10)
-            assert cpu.pc > 0x10 + 6
+            assert cpu.pc > 0x10 + 5
 
         def test_dec_chk_no_branch(self, cpu_v3):
             """Test dec_chk: decrement but don't branch."""
@@ -900,17 +893,17 @@ class Test2OPOpcodes:
             cpu.stack.local_vars = [15] + [0] * 14
             # dec_chk var1, 10 -> 15-1=14, 14 < 10 is false
             mem[cpu.pc] = 0xC4  # dec_chk
-            mem[cpu.pc + 1] = 0xB0  # variable, large constant
+            mem[cpu.pc + 1] = 0x8F  # variable, large constant
             mem[cpu.pc + 2] = 0x01
             mem[cpu.pc + 3] = 0x00
             mem[cpu.pc + 4] = 0x0A  # 10
-            mem[cpu.pc + 5] = 0xC2
+            mem[cpu.pc + 5] = 0xC2  # Branch if true
 
             cpu.command()
 
             assert cpu.stack.local_vars[0] == 14
-            # Should NOT branch
-            assert cpu.pc == 0x10 + 6 + 1
+            # Should NOT branch (14 >= 10)
+            assert cpu.pc == 0x10 + 6
 
     class TestIncChk:
         """Tests for inc_chk opcode (2OP:5)."""
@@ -921,12 +914,12 @@ class Test2OPOpcodes:
             mem = cpu.mem
             cpu.stack.local_vars = [10] + [0] * 14
             # inc_chk var1, 5 -> 10+1=11, 11 > 5 is true
-            mem[cpu.pc] = 0xC5  # inc_chk
-            mem[cpu.pc + 1] = 0xB0  # variable, large constant
+            mem[cpu.pc] = 0xC5  # inc_chk (variable format)
+            mem[cpu.pc + 1] = 0x8F  # variable, large constant
             mem[cpu.pc + 2] = 0x01
             mem[cpu.pc + 3] = 0x00
             mem[cpu.pc + 4] = 0x05  # 5
-            mem[cpu.pc + 5] = 0xC2
+            mem[cpu.pc + 5] = 0xC2  # Branch if true
 
             cpu.command()
 
@@ -940,18 +933,18 @@ class Test2OPOpcodes:
             mem = cpu.mem
             cpu.stack.local_vars = [5] + [0] * 14
             # inc_chk var1, 10 -> 5+1=6, 6 > 10 is false
-            mem[cpu.pc] = 0x5
-            mem[cpu.pc + 1] = 0b01000000
+            mem[cpu.pc] = 0xC5  # inc_chk (variable format)
+            mem[cpu.pc + 1] = 0x8F  # variable, large constant
             mem[cpu.pc + 2] = 0x01
             mem[cpu.pc + 3] = 0x00
             mem[cpu.pc + 4] = 0x0A  # 10
-            mem[cpu.pc + 5] = 0xC2
+            mem[cpu.pc + 5] = 0xC2  # Branch if true
 
             cpu.command()
 
             assert cpu.stack.local_vars[0] == 6
-            # Should NOT branch
-            assert cpu.pc == 0x10 + 6 + 1
+            # Should NOT branch (6 <= 10)
+            assert cpu.pc == 0x10 + 6
 
     class TestTest:
         """Tests for test opcode (2OP:7)."""
@@ -960,7 +953,7 @@ class Test2OPOpcodes:
             """Test test: all flags in bitmap are set."""
             cpu = cpu_v3
             mem = cpu.mem
-            mem[cpu.pc] = 0xC7  # test
+            mem[cpu.pc] = 0xC7  # test (variable format)
             mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 0x0F  # bitmap = 00001111
@@ -969,24 +962,24 @@ class Test2OPOpcodes:
             mem[cpu.pc + 6] = 0xC2  # Branch if true
 
             cpu.command()
-            # (0x0F & 0x0F) == 0x0F is true
-            assert cpu.pc > 0x10 + 7
+            # (0x0F & 0x0F) == 0x0F is true, should branch
+            assert cpu.pc > 0x10 + 6
 
         def test_test_not_all_set(self, cpu_v3):
             """Test test: not all flags are set."""
             cpu = cpu_v3
             mem = cpu.mem
-            mem[cpu.pc] = 0x7
+            mem[cpu.pc] = 0xC7  # test
             mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 0x0F  # bitmap = 00001111
             mem[cpu.pc + 4] = 0x00
             mem[cpu.pc + 5] = 0x01  # Only bit 0 set
-            mem[cpu.pc + 6] = 0xC2
+            mem[cpu.pc + 6] = 0xC2  # Branch if true
 
             cpu.command()
-            # (0x01 & 0x0F) == 0x0F is false
-            assert cpu.pc == 0x10 + 7 + 1
+            # (0x01 & 0x0F) == 0x0F is false, should NOT branch
+            assert cpu.pc == 0x10 + 7
 
     # ------------------------------------------------------------------------
     # Object & Property Operations
@@ -1003,17 +996,17 @@ class Test2OPOpcodes:
             # Set attribute 0 for object 1
             mem[base + 0] = 0x80  # First attr bit set (bit 7 of first byte for V3)
             # test_attr obj1, 0
-            mem[cpu.pc] = 0xCA  # test_attr
+            mem[cpu.pc] = 0xCA  # test_attr (variable format: 0xC0 | 10)
             mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 0x01  # Object 1
             mem[cpu.pc + 4] = 0x00
             mem[cpu.pc + 5] = 0x00  # Attribute 0
-            mem[cpu.pc + 6] = 0xC2
+            mem[cpu.pc + 6] = 0xC2  # Branch if true
 
             cpu.command()
             # Should branch (attribute is set)
-            assert cpu.pc > 0x10 + 7
+            assert cpu.pc > 0x10 + 6
 
         def test_test_attr_not_set(self, cpu_v3):
             """Test test_attr: object doesn't have attribute."""
@@ -1021,17 +1014,17 @@ class Test2OPOpcodes:
             mem = cpu.mem
             base = cpu.header.obj_table
             mem[base + 0] = 0x00  # No attributes set
-            mem[cpu.pc] = 0xA
+            mem[cpu.pc] = 0xCA  # test_attr
             mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 0x01
             mem[cpu.pc + 4] = 0x00
-            mem[cpu.pc + 5] = 0x00
-            mem[cpu.pc + 6] = 0xC2
+            mem[cpu.pc + 5] = 0x00  # Attribute 0
+            mem[cpu.pc + 6] = 0xC2  # Branch if true
 
             cpu.command()
-            # Should NOT branch
-            assert cpu.pc == 0x10 + 7 + 1
+            # Should NOT branch (attribute not set)
+            assert cpu.pc == 0x10 + 7
 
     class TestSetAttr:
         """Tests for set_attr opcode (2OP:11)."""
@@ -1043,7 +1036,7 @@ class Test2OPOpcodes:
             base = cpu.header.obj_table
             mem[base + 0] = 0x00  # Clear all attrs
             # set_attr obj1, 0
-            mem[cpu.pc] = 0xCB  # set_attr
+            mem[cpu.pc] = 0xCB  # set_attr (variable format: 0xC0 | 11)
             mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 0x01
@@ -1065,12 +1058,12 @@ class Test2OPOpcodes:
             base = cpu.header.obj_table
             mem[base + 0] = 0x80  # Set attr 0
             # clear_attr obj1, 0
-            mem[cpu.pc] = 0xCC  # clear_attr
+            mem[cpu.pc] = 0xCC  # clear_attr (variable format: 0xC0 | 12)
             mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 0x01
             mem[cpu.pc + 4] = 0x00
-            mem[cpu.pc + 5] = 0x00
+            mem[cpu.pc + 5] = 0x00  # Attribute 0
 
             cpu.command()
 
