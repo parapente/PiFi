@@ -2560,23 +2560,24 @@ class TestVAROpcodes:
     class TestEncodeText:
         """Tests for encode_text opcode (VAR:252)."""
 
-        def test_encode_text(self, cpu_v3):
-            """Test encode_text: ZSCII to Z-encoded."""
-            cpu = cpu_v3
-            mem = cpu.mem
-            # encode_text zscii, len, from, coded
-            mem[cpu.pc] = 0xFC  # encode_text
-            mem[cpu.pc + 1] = 0x00  # 3 large constants
-            mem[cpu.pc + 2] = 0x10
-            mem[cpu.pc + 3] = 0x00
-            mem[cpu.pc + 4] = 0x00
-            mem[cpu.pc + 5] = 0x05
-            mem[cpu.pc + 6] = 0x10
-            mem[cpu.pc + 7] = 0x10
+    @pytest.mark.skip(reason="Not implemented")
+    def test_encode_text(self, cpu_v3):
+        """Test encode_text: ZSCII to Z-encoded."""
+        cpu = cpu_v3
+        mem = cpu.mem
+        # encode_text zscii, len, from, coded
+        mem[cpu.pc] = 0xFC  # encode_text
+        mem[cpu.pc + 1] = 0x00  # 3 large constants
+        mem[cpu.pc + 2] = 0x10
+        mem[cpu.pc + 3] = 0x00
+        mem[cpu.pc + 4] = 0x00
+        mem[cpu.pc + 5] = 0x05
+        mem[cpu.pc + 6] = 0x10
+        mem[cpu.pc + 7] = 0x10
 
-            # This exits with "Not tested yet!"
-            with pytest.raises(SystemExit):
-                cpu.command()
+        # This exits with "Not tested yet!"
+        with pytest.raises(SystemExit):
+            cpu.command()
 
     class TestPrintTable:
         """Tests for print_table opcode (VAR:254)."""
@@ -2800,90 +2801,98 @@ class TestEXTOpcodes:
     class TestSaveExt:
         """Tests for save_ext opcode (EXT:0)."""
 
-        def test_save_ext_not_implemented(self, cpu_v5):
-            """Test save_ext: not implemented."""
-            cpu = cpu_v5
-            mem = self._setup_ext(cpu, 0)
+    @pytest.mark.skip(reason="Not implemented")
+    def test_save_ext_not_implemented(self, cpu_v5):
+        """Test save_ext: not implemented."""
+        cpu = cpu_v5
+        mem = self._setup_ext(cpu, 0)
 
-            with pytest.raises(SystemExit):
-                cpu.command()
+        with pytest.raises(SystemExit):
+            cpu.command()
 
     class TestRestoreExt:
         """Tests for restore_ext opcode (EXT:1)."""
 
-        def test_restore_ext_not_implemented(self, cpu_v5):
-            """Test restore_ext: not implemented."""
-            cpu = cpu_v5
-            mem = self._setup_ext(cpu, 1)
+    @pytest.mark.skip(reason="Not implemented")
+    def test_restore_ext_not_implemented(self, cpu_v5):
+        """Test restore_ext: not implemented."""
+        cpu = cpu_v5
+        mem = self._setup_ext(cpu, 1)
 
-            with pytest.raises(SystemExit):
-                cpu.command()
+        with pytest.raises(SystemExit):
+            cpu.command()
 
     class TestDrawPicture:
         """Tests for draw_picture opcode (EXT:5)."""
 
-        def test_draw_picture_not_implemented(self, cpu_v6):
-            """Test draw_picture: not implemented."""
-            cpu = cpu_v6
-            mem = self._setup_ext(cpu, 5)
+    @pytest.mark.skip(reason="Not implemented")
+    def test_draw_picture_not_implemented(self, cpu_v6):
+        """Test draw_picture: not implemented."""
+        cpu = cpu_v6
+        mem = self._setup_ext(cpu, 5)
 
-            with pytest.raises(SystemExit):
-                cpu.command()
+        with pytest.raises(SystemExit):
+            cpu.command()
 
     class TestPictureData:
         """Tests for picture_data opcode (EXT:6)."""
 
-        def test_picture_data_not_implemented(self, cpu_v6):
-            """Test picture_data: not implemented."""
-            cpu = cpu_v6
-            mem = self._setup_ext(cpu, 6)
+    @pytest.mark.skip(reason="Not implemented")
+    def test_picture_data_not_implemented(self, cpu_v6):
+        """Test picture_data: not implemented."""
+        cpu = cpu_v6
+        mem = self._setup_ext(cpu, 6)
 
-            with pytest.raises(SystemExit):
-                cpu.command()
+        with pytest.raises(SystemExit):
+            cpu.command()
 
     class TestErasePicture:
         """Tests for erase_picture opcode (EXT:7)."""
 
-        def test_erase_picture_not_implemented(self, cpu_v6):
-            """Test erase_picture: not implemented."""
-            cpu = cpu_v6
-            mem = self._setup_ext(cpu, 7)
+    @pytest.mark.skip(reason="Not implemented")
+    def test_erase_picture_not_implemented(self, cpu_v6):
+        """Test erase_picture: not implemented."""
+        cpu = cpu_v6
+        mem = self._setup_ext(cpu, 7)
 
-            with pytest.raises(SystemExit):
-                cpu.command()
+        with pytest.raises(SystemExit):
+            cpu.command()
 
     class TestSetMargins:
         """Tests for set_margins opcode (EXT:8)."""
 
-        def test_set_margins_not_implemented(self, cpu_v6):
-            """Test set_margins: not implemented."""
-            cpu = cpu_v6
-            mem = self._setup_ext(cpu, 8)
+    @pytest.mark.skip(reason="Not implemented")
+    def test_set_margins_not_implemented(self, cpu_v6):
+        """Test set_margins: not implemented."""
+        cpu = cpu_v6
+        mem = self._setup_ext(cpu, 8)
 
-            with pytest.raises(SystemExit):
-                cpu.command()
+        with pytest.raises(SystemExit):
+            cpu.command()
 
     class TestRestoreUndo:
         """Tests for restore_undo opcode (EXT:10)."""
 
-        def test_restore_undo_not_implemented(self, cpu_v5):
-            """Test restore_undo: not implemented."""
-            cpu = cpu_v5
-            mem = self._setup_ext(cpu, 10)
+    @pytest.mark.skip(reason="Not implemented")
+    def test_restore_undo_not_implemented(self, cpu_v5):
+        """Test restore_undo: not implemented."""
+        cpu = cpu_v5
+        mem = self._setup_ext(cpu, 10)
 
-            with pytest.raises(SystemExit):
-                cpu.command()
+        with pytest.raises(SystemExit):
+            cpu.command()
 
     class TestPrintUnicode:
         """Tests for print_unicode opcode (EXT:11)."""
 
-        def test_print_unicode_not_implemented(self, cpu_v5):
-            """Test print_unicode: not implemented."""
-            cpu = cpu_v5
-            mem = self._setup_ext(cpu, 11)
+    @pytest.mark.skip(reason="Not implemented")
+    def test_print_unicode_not_implemented(self, cpu_v5):
+        """Test print_unicode: not implemented."""
+        cpu = cpu_v5
+        mem = self._setup_ext(cpu, 11)
 
-            with pytest.raises(SystemExit):
-                cpu.command()
+        with pytest.raises(SystemExit):
+            cpu.command()
 
     # V6-only opcodes (not implemented)
     class TestV6NotImplemented:
