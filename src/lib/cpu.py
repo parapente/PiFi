@@ -189,39 +189,43 @@ class ZCpu:
 
     def command(self):
         value = self.mem[self.pc]
-        try:
-            cmd = self.command_dict[value]
-            if value == 0xBE:
-                self.pc += 1
-            cmd()
-        except KeyError:
-            if value < 0x80:  # LONG 2OP
-                code = value & 31
-                if value == 0:
-                    exit("Invalid opcode!")
-                self.command_dict[value] = self.t2op[code]
-                self.t2op[code]()
-            elif value < 0xB0:  # SHORT 1OP
-                code = (value & 15) + 128
-                self.command_dict[value] = self.t1op[code]
-                self.t1op[code]()
-            elif (value < 0xC0) and (value != 0xBE):  # SHORT 0OP
-                code = (value & 15) + 176
-                self.command_dict[value] = self.t0op[code]
-                self.t0op[code]()
-            elif value == 0xBE:  # EXTENDED VAR
-                self.pc += 1
-                code = self.mem[self.pc]
-                self.command_dict[value] = self.text[code]
-                self.text[code]()
-            elif value < 0xE0:  # VARIABLE 2OP
-                code = value & 31
-                self.command_dict[value] = self.t2op[code]
-                self.t2op[code]()
+        # EXT opcodes (0xBE) can't be cached because the actual opcode is in the next byte
+        if value == 0xBE:
+            self.pc += 1
+            code = self.mem[self.pc]
+            ext_key = 0xBE00 | code
+            if ext_key in self.command_dict:
+                self.command_dict[ext_key]()
             else:
-                code = (value & 31) + 224
-                self.command_dict[value] = self.tvar[code]
-                self.tvar[code]()
+                self.command_dict[ext_key] = self.text[code]
+                self.text[code]()
+        else:
+            try:
+                cmd = self.command_dict[value]
+                cmd()
+            except KeyError:
+                if value < 0x80:  # LONG 2OP
+                    code = value & 31
+                    if value == 0:
+                        exit("Invalid opcode!")
+                    self.command_dict[value] = self.t2op[code]
+                    self.t2op[code]()
+                elif value < 0xB0:  # SHORT 1OP
+                    code = (value & 15) + 128
+                    self.command_dict[value] = self.t1op[code]
+                    self.t1op[code]()
+                elif value < 0xC0:  # SHORT 0OP
+                    code = (value & 15) + 176
+                    self.command_dict[value] = self.t0op[code]
+                    self.t0op[code]()
+                elif value < 0xE0:  # VARIABLE 2OP
+                    code = value & 31
+                    self.command_dict[value] = self.t2op[code]
+                    self.t2op[code]()
+                else:
+                    code = (value & 31) + 224
+                    self.command_dict[value] = self.tvar[code]
+                    self.tvar[code]()
 
     def _je(self):
         pc = self.pc
@@ -2476,39 +2480,43 @@ class ZCpu:
         while self.intr == 0:
             # self.command()
             value = self.mem[self.pc]
-            try:
-                cmd = cmddict[value]
-                if value == 0xBE:
-                    self.pc += 1
-                cmd()
-            except KeyError:
-                if value < 0x80:  # LONG 2OP
-                    code = value & 31
-                    if value == 0:
-                        exit("Invalid opcode!")
-                    cmddict[value] = t2op[code]
-                    t2op[code]()
-                elif value < 0xB0:  # SHORT 1OP
-                    code = (value & 15) + 128
-                    cmddict[value] = t1op[code]
-                    t1op[code]()
-                elif (value < 0xC0) and (value != 0xBE):  # SHORT 0OP
-                    code = (value & 15) + 176
-                    cmddict[value] = t0op[code]
-                    t0op[code]()
-                elif value == 0xBE:  # EXTENDED VAR
-                    self.pc += 1
-                    code = self.mem[self.pc]
-                    cmddict[value] = text[code]
-                    text[code]()
-                elif value < 0xE0:  # VARIABLE 2OP
-                    code = value & 31
-                    cmddict[value] = t2op[code]
-                    t2op[code]()
+            # EXT opcodes (0xBE) can't be cached because the actual opcode is in the next byte
+            if value == 0xBE:
+                self.pc += 1
+                code = self.mem[self.pc]
+                ext_key = 0xBE00 | code
+                if ext_key in cmddict:
+                    cmddict[ext_key]()
                 else:
-                    code = (value & 31) + 224
-                    cmddict[value] = tvar[code]
-                    tvar[code]()
+                    cmddict[ext_key] = text[code]
+                    text[code]()
+            else:
+                try:
+                    cmd = cmddict[value]
+                    cmd()
+                except KeyError:
+                    if value < 0x80:  # LONG 2OP
+                        code = value & 31
+                        if value == 0:
+                            exit("Invalid opcode!")
+                        cmddict[value] = t2op[code]
+                        t2op[code]()
+                    elif value < 0xB0:  # SHORT 1OP
+                        code = (value & 15) + 128
+                        cmddict[value] = t1op[code]
+                        t1op[code]()
+                    elif value < 0xC0:  # SHORT 0OP
+                        code = (value & 15) + 176
+                        cmddict[value] = t0op[code]
+                        t0op[code]()
+                    elif value < 0xE0:  # VARIABLE 2OP
+                        code = value & 31
+                        cmddict[value] = t2op[code]
+                        t2op[code]()
+                    else:
+                        code = (value & 31) + 224
+                        cmddict[value] = tvar[code]
+                        tvar[code]()
 
     def start6(self):
         print((self.pc))
