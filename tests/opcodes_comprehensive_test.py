@@ -2029,10 +2029,11 @@ class TestVAROpcodes:
             cpu = cpu_v3
             mem = cpu.mem
             cpu.stack.push(0xDEAD)
-            # pull global100
+            # pull global112 - need to pre-init global 112 with value 112
+            set_global_var(cpu, 112, 112)  # Pre-init: var 112 = 112
             mem[cpu.pc] = 0xE9  # pull
-            mem[cpu.pc + 1] = 0xBF  # 1 variable (0x80 | 0x3F for omitted)
-            mem[cpu.pc + 2] = 0x80  # Global 112 (operand >= 0x80 for variable encoding)
+            mem[cpu.pc + 1] = 0x80  # 1 variable operand
+            mem[cpu.pc + 2] = 0x70  # Global 112 (reads VALUE = 112)
 
             cpu.command()
 
@@ -2046,12 +2047,12 @@ class TestVAROpcodes:
             """Test random: get random number in range."""
             cpu = cpu_v3
             mem = cpu.mem
-            # random 10 -> global100
+            # random 10 -> global112
             mem[cpu.pc] = 0xE7  # random
-            mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
+            mem[cpu.pc + 1] = 0x3F  # 1 large constant + 3 omitted
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 0x0A  # Range 10
-            mem[cpu.pc + 4] = 0x64
+            mem[cpu.pc + 4] = 0x70  # Store in global 112
 
             cpu.command()
 
@@ -2153,12 +2154,13 @@ class TestVAROpcodes:
             mem = cpu.mem
             # storeb 0x1000, 0, 0x42
             mem[cpu.pc] = 0xE2  # storeb
-            mem[cpu.pc + 1] = 0x00  # 3 large constants
+            mem[cpu.pc + 1] = 0x03  # 3 large constants
             mem[cpu.pc + 2] = 0x10
-            mem[cpu.pc + 3] = 0x00
+            mem[cpu.pc + 3] = 0x00  # Address 0x1000
             mem[cpu.pc + 4] = 0x00
-            mem[cpu.pc + 5] = 0x00
-            mem[cpu.pc + 6] = 0x42
+            mem[cpu.pc + 5] = 0x00  # Offset 0
+            mem[cpu.pc + 6] = 0x00
+            mem[cpu.pc + 7] = 0x42  # Value 0x42
 
             cpu.command()
 
@@ -2255,13 +2257,13 @@ class TestVAROpcodes:
     class TestBufferMode:
         """Tests for buffer_mode opcode (VAR:242)."""
 
-        def test_buffer_mode(self, cpu_v3):
+        def test_buffer_mode(self, cpu_v5):
             """Test buffer_mode: set buffering."""
-            cpu = cpu_v3
+            cpu = cpu_v5
             mem = cpu.mem
             # buffer_mode 0 (no buffering)
             mem[cpu.pc] = 0xF2  # buffer_mode
-            mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
+            mem[cpu.pc + 1] = 0x3F  # 1 large constant + 3 omitted
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 0x00
 
@@ -2332,16 +2334,16 @@ class TestVAROpcodes:
             """Test not_var: bitwise NOT (V5+)."""
             cpu = cpu_v5
             mem = cpu.mem
-            # not_var 0xAA -> global100
+            # not_var 0xAA -> global112
             mem[cpu.pc] = 0xF8  # not_var
-            mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
+            mem[cpu.pc + 1] = 0x3F  # 1 large constant + 3 omitted
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 0xAA
-            mem[cpu.pc + 4] = 0x64
+            mem[cpu.pc + 4] = 0x70  # Store in global 112
 
             cpu.command()
 
-            result = get_global_var(cpu, 100)
+            result = get_global_var(cpu, 112)
             assert result == 0xFF55
 
     class TestCopyTable:
@@ -2433,13 +2435,13 @@ class TestVAROpcodes:
             mem[0x63] = 0x00  # Value low
             # put_prop obj1, 1, 0x1234
             mem[cpu.pc] = 0xE3  # put_prop
-            mem[cpu.pc + 1] = 0x00  # 3 large constants
+            mem[cpu.pc + 1] = 0x03  # 3 large constants
             mem[cpu.pc + 2] = 0x00
-            mem[cpu.pc + 3] = 0x01
+            mem[cpu.pc + 3] = 0x01  # Object 1
             mem[cpu.pc + 4] = 0x00
-            mem[cpu.pc + 5] = 0x01
+            mem[cpu.pc + 5] = 0x01  # Property 1
             mem[cpu.pc + 6] = 0x12
-            mem[cpu.pc + 7] = 0x34
+            mem[cpu.pc + 7] = 0x34  # Value 0x1234
 
             cpu.command()
 
@@ -2455,11 +2457,11 @@ class TestVAROpcodes:
             mem = cpu.mem
             # sread buffer, parse
             mem[cpu.pc] = 0xE4  # sread
-            mem[cpu.pc + 1] = 0x00  # 2 large constants
+            mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0x10
-            mem[cpu.pc + 3] = 0x00
+            mem[cpu.pc + 3] = 0x00  # Buffer address
             mem[cpu.pc + 4] = 0x10
-            mem[cpu.pc + 5] = 0x10
+            mem[cpu.pc + 5] = 0x10  # Parse address
 
             cpu.command()
 
