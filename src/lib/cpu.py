@@ -1314,8 +1314,8 @@ class ZCpu:
         elif ops[0] < 16:
             data = self.stack.local_vars[ops[0] - 1]
         elif ops[0] < 256:
-            data = self.mem[self.header.global_variables_table + (where - 16) * 2] << 8
-            data += self.mem[self.header.global_variables_table + (where - 16) * 2 + 1]
+            data = self.mem[self.header.global_variables_table + (ops[0] - 16) * 2] << 8
+            data += self.mem[self.header.global_variables_table + (ops[0] - 16) * 2 + 1]
         else:
             exit("No such variable!!!")
         self._zstore(data, self.pc)
