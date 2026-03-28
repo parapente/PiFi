@@ -418,7 +418,7 @@ class Test2OPOpcodes:
             mem[cpu.pc + 1] = 0x5F  # 2 small constants, rest omitted
             mem[cpu.pc + 2] = 10  # First operand (small)
             mem[cpu.pc + 3] = 20  # Second operand (small)
-            mem[cpu.pc + 4] = 0x64
+            mem[cpu.pc + 4] = 0x70  # Store in global 112
 
             cpu.command()
 
@@ -438,11 +438,11 @@ class Test2OPOpcodes:
             mem[cpu.pc + 3] = 100
             mem[cpu.pc + 4] = 0x00
             mem[cpu.pc + 5] = 50
-            mem[cpu.pc + 6] = 0x65
+            mem[cpu.pc + 6] = 0x70  # Store in global 112
 
             cpu.command()
 
-            result = get_global_var(cpu, 101)
+            result = get_global_var(cpu, 112)
             assert result == 50
 
         def test_sub_negative_result(self, cpu_v3):
@@ -475,11 +475,11 @@ class Test2OPOpcodes:
             mem[cpu.pc + 3] = 100
             mem[cpu.pc + 4] = 0x00
             mem[cpu.pc + 5] = 50
-            mem[cpu.pc + 6] = 0x65
+            mem[cpu.pc + 6] = 0x70  # Store in global 112
 
             cpu.command()
 
-            result = get_global_var(cpu, 101)
+            result = get_global_var(cpu, 112)
             assert result == 5000
 
         def test_mul_overflow(self, cpu_v3):
@@ -487,16 +487,16 @@ class Test2OPOpcodes:
             cpu = cpu_v3
             mem = cpu.mem
             mem[cpu.pc] = 0xD6  # mul
-            mem[cpu.pc + 1] = 0xF0
+            mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0xFF
             mem[cpu.pc + 3] = 0xFF  # 65535
             mem[cpu.pc + 4] = 0x00
             mem[cpu.pc + 5] = 0x02  # 2
-            mem[cpu.pc + 6] = 0x65
+            mem[cpu.pc + 6] = 0x70  # Store in global 112
 
             cpu.command()
 
-            result = get_global_var(cpu, 101)
+            result = get_global_var(cpu, 112)
             assert result == 0xFFFE  # 65534
 
         def test_mul_negative(self, cpu_v3):
@@ -504,16 +504,16 @@ class Test2OPOpcodes:
             cpu = cpu_v3
             mem = cpu.mem
             mem[cpu.pc] = 0xD6  # mul
-            mem[cpu.pc + 1] = 0xF0
+            mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0xFF
             mem[cpu.pc + 3] = 0xF6  # -10
             mem[cpu.pc + 4] = 0x00
             mem[cpu.pc + 5] = 0x05  # 5
-            mem[cpu.pc + 6] = 0x65
+            mem[cpu.pc + 6] = 0x70  # Store in global 112
 
             cpu.command()
 
-            result = get_global_var(cpu, 101)
+            result = get_global_var(cpu, 112)
             assert result == 0xFFCE  # -50
 
     class TestDiv:
@@ -529,11 +529,11 @@ class Test2OPOpcodes:
             mem[cpu.pc + 3] = 100
             mem[cpu.pc + 4] = 0x00
             mem[cpu.pc + 5] = 50
-            mem[cpu.pc + 6] = 0x65
+            mem[cpu.pc + 6] = 0x70  # Store in global 112
 
             cpu.command()
 
-            result = get_global_var(cpu, 101)
+            result = get_global_var(cpu, 112)
             assert result == 2
 
         def test_div_by_zero(self, cpu_v3):
@@ -541,12 +541,12 @@ class Test2OPOpcodes:
             cpu = cpu_v3
             mem = cpu.mem
             mem[cpu.pc] = 0xD7  # div
-            mem[cpu.pc + 1] = 0xF0
+            mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 100
             mem[cpu.pc + 4] = 0x00
             mem[cpu.pc + 5] = 0x00  # 0
-            mem[cpu.pc + 6] = 0x65
+            mem[cpu.pc + 6] = 0x70  # Store in global 112
 
             with pytest.raises(SystemExit) as excinfo:
                 cpu.command()
@@ -557,16 +557,16 @@ class Test2OPOpcodes:
             cpu = cpu_v3
             mem = cpu.mem
             mem[cpu.pc] = 0xD7  # div
-            mem[cpu.pc + 1] = 0xF0
+            mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0xFF
             mem[cpu.pc + 3] = 0x9C  # -100
             mem[cpu.pc + 4] = 0x00
             mem[cpu.pc + 5] = 0x32  # 50
-            mem[cpu.pc + 6] = 0x65
+            mem[cpu.pc + 6] = 0x70  # Store in global 112
 
             cpu.command()
 
-            result = get_global_var(cpu, 101)
+            result = get_global_var(cpu, 112)
             assert result == 0xFFFE  # -2
 
         def test_div_truncation(self, cpu_v3):
@@ -574,16 +574,16 @@ class Test2OPOpcodes:
             cpu = cpu_v3
             mem = cpu.mem
             mem[cpu.pc] = 0xD7  # div
-            mem[cpu.pc + 1] = 0xF0
+            mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 7
             mem[cpu.pc + 4] = 0x00
             mem[cpu.pc + 5] = 2
-            mem[cpu.pc + 6] = 0x65
+            mem[cpu.pc + 6] = 0x70  # Store in global 112
 
             cpu.command()
 
-            result = get_global_var(cpu, 101)
+            result = get_global_var(cpu, 112)
             assert result == 3
 
     class TestMod:
@@ -599,11 +599,11 @@ class Test2OPOpcodes:
             mem[cpu.pc + 3] = 100
             mem[cpu.pc + 4] = 0x00
             mem[cpu.pc + 5] = 30
-            mem[cpu.pc + 6] = 0x65
+            mem[cpu.pc + 6] = 0x70  # Store in global 112
 
             cpu.command()
 
-            result = get_global_var(cpu, 101)
+            result = get_global_var(cpu, 112)
             assert result == 10
 
         def test_mod_negative(self, cpu_v3):
@@ -611,29 +611,29 @@ class Test2OPOpcodes:
             cpu = cpu_v3
             mem = cpu.mem
             mem[cpu.pc] = 0xD8  # mod
-            mem[cpu.pc + 1] = 0xF0
+            mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0xFF
             mem[cpu.pc + 3] = 0x9C  # -100
             mem[cpu.pc + 4] = 0x00
             mem[cpu.pc + 5] = 0x1E  # 30
-            mem[cpu.pc + 6] = 0x65
+            mem[cpu.pc + 6] = 0x70  # Store in global 112
 
             cpu.command()
 
-            result = get_global_var(cpu, 101)
+            result = get_global_var(cpu, 112)
             assert result == 0xFFF6  # -10
 
         def test_mod_by_zero(self, cpu_v3):
             """Test mod by zero - should exit."""
             cpu = cpu_v3
             mem = cpu.mem
-            mem[cpu.pc] = 0x24
+            mem[cpu.pc] = 0xD8  # mod
             mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 100
             mem[cpu.pc + 4] = 0x00
             mem[cpu.pc + 5] = 0x00  # 0
-            mem[cpu.pc + 6] = 0x65
+            mem[cpu.pc + 6] = 0x70  # Store in global 112
 
             with pytest.raises(SystemExit):
                 cpu.command()
@@ -666,17 +666,17 @@ class Test2OPOpcodes:
             """Test and: 0xFF & 0xFF = 0xFF."""
             cpu = cpu_v3
             mem = cpu.mem
-            mem[cpu.pc] = 0x9
+            mem[cpu.pc] = 0xC9  # 2OP:9 and (variable format: 0xC0 | 9)
             mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 0xFF
             mem[cpu.pc + 4] = 0x00
             mem[cpu.pc + 5] = 0xFF
-            mem[cpu.pc + 6] = 0x65
+            mem[cpu.pc + 6] = 0x70  # Store in global 112
 
             cpu.command()
 
-            result = get_global_var(cpu, 101)
+            result = get_global_var(cpu, 112)
             assert result == 0xFF
 
     class TestOr:
@@ -692,11 +692,11 @@ class Test2OPOpcodes:
             mem[cpu.pc + 3] = 0xAA
             mem[cpu.pc + 4] = 0x00
             mem[cpu.pc + 5] = 0x55
-            mem[cpu.pc + 6] = 0x65
+            mem[cpu.pc + 6] = 0x70  # Store in global 112
 
             cpu.command()
 
-            result = get_global_var(cpu, 101)
+            result = get_global_var(cpu, 112)
             assert result == 0xFF
 
         def test_or_zero(self, cpu_v3):
