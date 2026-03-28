@@ -728,7 +728,7 @@ class Test2OPOpcodes:
             cpu = cpu_v3
             mem = cpu.mem
             mem[cpu.pc] = 0x1  # je
-            mem[cpu.pc + 1] = 0b11100000  # 3 large constants + branch
+            mem[cpu.pc + 1] = 0x00  # 2 large constants  # 3 large constants + branch
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 100
             mem[cpu.pc + 4] = 0x00
@@ -747,7 +747,7 @@ class Test2OPOpcodes:
             cpu = cpu_v3
             mem = cpu.mem
             mem[cpu.pc] = 0x1
-            mem[cpu.pc + 1] = 0b11100000
+            mem[cpu.pc + 1] = 0x00  # 2 large constants
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 100
             mem[cpu.pc + 4] = 0x00
@@ -766,7 +766,7 @@ class Test2OPOpcodes:
             cpu = cpu_v3
             mem = cpu.mem
             mem[cpu.pc] = 0x1
-            mem[cpu.pc + 1] = 0b11110000  # 4 large constants
+            mem[cpu.pc + 1] = 0x00  # 3 large constants  # 4 large constants
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 50  # Compare value
             mem[cpu.pc + 4] = 0x00
@@ -1085,8 +1085,8 @@ class Test2OPOpcodes:
             cpu = cpu_v3
             mem = cpu.mem
             # store global100, 0x1234
-            mem[cpu.pc] = 0xD  # store
-            mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
+            mem[cpu.pc] = 0xCD  # store
+            mem[cpu.pc + 1] = 0x8F  # variable + large constant + 2 omitted
             mem[cpu.pc + 2] = 0x64  # Global var 100
             mem[cpu.pc + 3] = 0x12
             mem[cpu.pc + 4] = 0x34  # Value 0x1234
@@ -1103,7 +1103,7 @@ class Test2OPOpcodes:
             cpu.stack.push(0xDEAD)  # Push dummy value to be overwritten
             # store sp, 0xBEEF
             mem[cpu.pc] = 0xD
-            mem[cpu.pc + 1] = 0b00000000  # Variable (stack), constant
+            mem[cpu.pc + 1] = 0x00  # Large constant  # Variable (stack), constant
             mem[cpu.pc + 2] = 0x00  # Stack
             mem[cpu.pc + 3] = 0xBE
             mem[cpu.pc + 4] = 0xEF
@@ -1605,7 +1605,7 @@ class Test1OPOpcodes:
             mem[0x200] = 0x80  # End of string marker (just print empty)
             # print_addr 0x200
             mem[cpu.pc] = 0x87  # print_addr
-            mem[cpu.pc + 1] = 0b00000000
+            mem[cpu.pc + 1] = 0x00  # Large constant
             mem[cpu.pc + 2] = 0x02
             mem[cpu.pc + 3] = 0x00
 
@@ -1626,7 +1626,7 @@ class Test1OPOpcodes:
             mem[base + 18 + 4] = 2
             # remove_obj obj3
             mem[cpu.pc] = 0x89  # remove_obj
-            mem[cpu.pc + 1] = 0b00000000
+            mem[cpu.pc + 1] = 0x00  # Large constant
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 0x03
 
@@ -1649,7 +1649,7 @@ class Test1OPOpcodes:
             mem[0x60] = 0  # empty property table
             # print_obj obj1
             mem[cpu.pc] = 0x8A  # print_obj
-            mem[cpu.pc + 1] = 0b00000000
+            mem[cpu.pc + 1] = 0x00  # Large constant
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 0x01
 
@@ -1669,7 +1669,7 @@ class Test1OPOpcodes:
             mem[0x200] = 0x80  # End marker
             # print_paddr 0x100 (packed, becomes 0x200 unpacked in V3)
             mem[cpu.pc] = 0x8D  # print_paddr
-            mem[cpu.pc + 1] = 0b00000000
+            mem[cpu.pc + 1] = 0x00  # Large constant
             mem[cpu.pc + 2] = 0x01
             mem[cpu.pc + 3] = 0x00
 
@@ -2131,7 +2131,7 @@ class TestVAROpcodes:
             mem = cpu.mem
             # storew 0x1000, 0, 0xABCD
             mem[cpu.pc] = 0xE1  # storew
-            mem[cpu.pc + 1] = 0b11110000  # 3 large constants
+            mem[cpu.pc + 1] = 0x00  # 3 large constants
             mem[cpu.pc + 2] = 0x10
             mem[cpu.pc + 3] = 0x00  # Base
             mem[cpu.pc + 4] = 0x00
@@ -2153,7 +2153,7 @@ class TestVAROpcodes:
             mem = cpu.mem
             # storeb 0x1000, 0, 0x42
             mem[cpu.pc] = 0xE2  # storeb
-            mem[cpu.pc + 1] = 0b11110000
+            mem[cpu.pc + 1] = 0x00  # 3 large constants
             mem[cpu.pc + 2] = 0x10
             mem[cpu.pc + 3] = 0x00
             mem[cpu.pc + 4] = 0x00
@@ -2224,7 +2224,7 @@ class TestVAROpcodes:
             mem = cpu.mem
             # set_cursor 5, 10
             mem[cpu.pc] = 0xEF  # set_cursor
-            mem[cpu.pc + 1] = 0b11100000  # 2 large constants
+            mem[cpu.pc + 1] = 0x00  # 2 large constants
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 0x05  # Line
             mem[cpu.pc + 4] = 0x00
@@ -2295,7 +2295,7 @@ class TestVAROpcodes:
             mem = cpu.mem
             # sound_effect 1, 1, 0, 0
             mem[cpu.pc] = 0xF5  # sound_effect
-            mem[cpu.pc + 1] = 0b11110000
+            mem[cpu.pc + 1] = 0x00  # 3 large constants
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 0x01
             mem[cpu.pc + 4] = 0x00
@@ -2356,7 +2356,7 @@ class TestVAROpcodes:
             mem[0x1001] = 0xAD
             # copy_table 0x1000, 0, 2 (zero 2 bytes at 0x1000)
             mem[cpu.pc] = 0xFD  # copy_table
-            mem[cpu.pc + 1] = 0b11110000
+            mem[cpu.pc + 1] = 0x00  # 3 large constants
             mem[cpu.pc + 2] = 0x10
             mem[cpu.pc + 3] = 0x00
             mem[cpu.pc + 4] = 0x00
@@ -2380,7 +2380,7 @@ class TestVAROpcodes:
             mem[0x1003] = 0x00
             # copy_table 0x1000, 0x1002, 2
             mem[cpu.pc] = 0xFD
-            mem[cpu.pc + 1] = 0b11110000
+            mem[cpu.pc + 1] = 0x00  # 3 large constants
             mem[cpu.pc + 2] = 0x10
             mem[cpu.pc + 3] = 0x00
             mem[cpu.pc + 4] = 0x10
@@ -2433,7 +2433,7 @@ class TestVAROpcodes:
             mem[0x63] = 0x00  # Value low
             # put_prop obj1, 1, 0x1234
             mem[cpu.pc] = 0xE3  # put_prop
-            mem[cpu.pc + 1] = 0b11110000
+            mem[cpu.pc + 1] = 0x00  # 3 large constants
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 0x01
             mem[cpu.pc + 4] = 0x00
@@ -2455,7 +2455,7 @@ class TestVAROpcodes:
             mem = cpu.mem
             # sread buffer, parse
             mem[cpu.pc] = 0xE4  # sread
-            mem[cpu.pc + 1] = 0b11100000
+            mem[cpu.pc + 1] = 0x00  # 2 large constants
             mem[cpu.pc + 2] = 0x10
             mem[cpu.pc + 3] = 0x00
             mem[cpu.pc + 4] = 0x10
@@ -2545,7 +2545,7 @@ class TestVAROpcodes:
             mem = cpu.mem
             # tokenize text, parse, dict
             mem[cpu.pc] = 0xFB  # tokenize
-            mem[cpu.pc + 1] = 0b11110000
+            mem[cpu.pc + 1] = 0x00  # 3 large constants
             mem[cpu.pc + 2] = 0x10
             mem[cpu.pc + 3] = 0x00
             mem[cpu.pc + 4] = 0x10
@@ -2566,7 +2566,7 @@ class TestVAROpcodes:
             mem = cpu.mem
             # encode_text zscii, len, from, coded
             mem[cpu.pc] = 0xFC  # encode_text
-            mem[cpu.pc + 1] = 0b11110000
+            mem[cpu.pc + 1] = 0x00  # 3 large constants
             mem[cpu.pc + 2] = 0x10
             mem[cpu.pc + 3] = 0x00
             mem[cpu.pc + 4] = 0x00
@@ -2662,7 +2662,7 @@ class TestEXTOpcodes:
             cpu = cpu_v5
             mem = self._setup_ext(cpu, 2)
             # log_shift 0x0001, 3 -> 0x0008
-            mem[cpu.pc + 2] = 0b11000000
+            mem[cpu.pc + 2] = 0x00  # 2 large constants
             mem[cpu.pc + 3] = 0x00
             mem[cpu.pc + 4] = 0x01
             mem[cpu.pc + 5] = 0x00
@@ -2679,7 +2679,7 @@ class TestEXTOpcodes:
             cpu = cpu_v5
             mem = self._setup_ext(cpu, 2)
             # log_shift 0x0008, -2 -> 0x0002
-            mem[cpu.pc + 2] = 0b11000000
+            mem[cpu.pc + 2] = 0x00  # 2 large constants
             mem[cpu.pc + 3] = 0x00
             mem[cpu.pc + 4] = 0x08
             mem[cpu.pc + 5] = 0xFF
@@ -2699,7 +2699,7 @@ class TestEXTOpcodes:
             cpu = cpu_v5
             mem = self._setup_ext(cpu, 3)
             # art_shift 0x0001, 2 -> 0x0004
-            mem[cpu.pc + 2] = 0b11000000
+            mem[cpu.pc + 2] = 0x00  # 2 large constants
             mem[cpu.pc + 3] = 0x00
             mem[cpu.pc + 4] = 0x01
             mem[cpu.pc + 5] = 0x00
@@ -2716,7 +2716,7 @@ class TestEXTOpcodes:
             cpu = cpu_v5
             mem = self._setup_ext(cpu, 3)
             # art_shift -16, -2 -> -4 (sign preserved)
-            mem[cpu.pc + 2] = 0b11000000
+            mem[cpu.pc + 2] = 0x00  # 2 large constants
             mem[cpu.pc + 3] = 0xFF
             mem[cpu.pc + 4] = 0xF0  # -16
             mem[cpu.pc + 5] = 0xFF
@@ -2736,7 +2736,7 @@ class TestEXTOpcodes:
             cpu = cpu_v5
             mem = self._setup_ext(cpu, 4)
             # set_font 1
-            mem[cpu.pc + 2] = 0b11000000
+            mem[cpu.pc + 2] = 0x00  # 2 large constants
             mem[cpu.pc + 3] = 0x00
             mem[cpu.pc + 4] = 0x01
             mem[cpu.pc + 5] = 0x64
@@ -2754,7 +2754,7 @@ class TestEXTOpcodes:
             """Test save_undo: returns -1 (unavailable)."""
             cpu = cpu_v5
             mem = self._setup_ext(cpu, 9)
-            mem[cpu.pc + 2] = 0b11000000
+            mem[cpu.pc + 2] = 0x00  # 2 large constants
             mem[cpu.pc + 3] = 0x64
 
             cpu.command()
@@ -2771,7 +2771,7 @@ class TestEXTOpcodes:
             cpu = cpu_v5
             mem = self._setup_ext(cpu, 12)
             # check_unicode 65 ('A')
-            mem[cpu.pc + 2] = 0b11000000
+            mem[cpu.pc + 2] = 0x00  # 2 large constants
             mem[cpu.pc + 3] = 0x00
             mem[cpu.pc + 4] = 0x41
             mem[cpu.pc + 5] = 0x64
@@ -2787,7 +2787,7 @@ class TestEXTOpcodes:
             cpu = cpu_v5
             mem = self._setup_ext(cpu, 12)
             # check_unicode 0x10 (non-printable)
-            mem[cpu.pc + 2] = 0b11000000
+            mem[cpu.pc + 2] = 0x00  # 2 large constants
             mem[cpu.pc + 3] = 0x00
             mem[cpu.pc + 4] = 0x10
             mem[cpu.pc + 5] = 0x64
