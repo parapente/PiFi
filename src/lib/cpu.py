@@ -1479,27 +1479,16 @@ class ZCpu:
 
     def _verify(self):
         pc = self.pc
-        # Read file
+        # Read file from offset 0x40 to the end of the file length specified in header
         self.file.seek(0x40)
-        if self.zver < 4:
-            max_length = 128 * 1024
-        elif self.zver < 6:
-            max_length = 256 * 1024
-        elif self.zver == 6 or self.zver == 8:
-            max_length = 512 * 1024
-        else:
-            max_length = 320 * 1024
-        data = self.file.read(max_length)
+        file_length = self.header.length_of_file
+        data_length = file_length - 0x40
+        data = self.file.read(data_length)
 
-        # Calculate checksum
-        chksum = 0
-        i = 0
-        l = len(data)
-        while i < l:
-            chksum += data[i]
-        chksum %= 0x10000
+        # Calculate checksum: sum of all bytes modulo 0x10000
+        chksum = sum(data) % 0x10000
 
-        # Check offset
+        # Check if calculated checksum matches header checksum
         condition = chksum == self.header.checksum
         jif, offset = self.branch(condition)
         if self.plugin.level >= 2:
