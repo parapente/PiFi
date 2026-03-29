@@ -316,13 +316,13 @@ def cpu_v6():
 
 def get_global_var(cpu: ZCpu, var_num: int) -> int:
     """Get value of global variable."""
-    addr = cpu.header.global_variables_table + (var_num - 16) * 2
+    addr = cpu.header.global_variables_table + var_num * 2
     return (cpu.mem[addr] << 8) | cpu.mem[addr + 1]
 
 
 def set_global_var(cpu: ZCpu, var_num: int, value: int):
     """Set value of global variable."""
-    addr = cpu.header.global_variables_table + (var_num - 16) * 2
+    addr = cpu.header.global_variables_table + var_num * 2
     cpu.mem[addr] = (value >> 8) & 0xFF
     cpu.mem[addr + 1] = value & 0xFF
 
@@ -1436,24 +1436,60 @@ class Test1OPOpcodes:
             """Test inc: increment global variable."""
             cpu = cpu_v3
             mem = cpu.mem
-            # Note: Current implementation reads VALUE from global and uses it as var number
-            # This is a known limitation - tests work with local vars or stack
-            pytest.skip("Implementation bug: 1OP inc with global vars")
+            set_global_var(cpu, 112, 50)  # Pre-init global 112 with value 50
+            mem[cpu.pc] = 0x85  # inc (variable operand: bits 6-5=10)
+            mem[cpu.pc + 1] = 0
+            mem[cpu.pc + 2] = 0x80  # Global 112
+
+            cpu.command()
+
+            result = get_global_var(cpu, 112)
+            assert result == 51
 
         def test_inc_overflow(self, cpu_v3):
             """Test inc: 65535 + 1 = 0."""
-            pytest.skip("Implementation bug: 1OP inc with global vars")
+            cpu = cpu_v3
+            mem = cpu.mem
+            set_global_var(cpu, 112, 0xFFFF)
+            mem[cpu.pc] = 0x85  # inc
+            mem[cpu.pc + 1] = 0
+            mem[cpu.pc + 2] = 0x80  # Global 112
+
+            cpu.command()
+
+            result = get_global_var(cpu, 112)
+            assert result == 0
 
     class TestDec:
         """Tests for dec opcode (1OP:134)."""
 
         def test_dec_global(self, cpu_v3):
             """Test dec: decrement global variable."""
-            pytest.skip("Implementation bug: 1OP dec with global vars")
+            cpu = cpu_v3
+            mem = cpu.mem
+            set_global_var(cpu, 113, 50)
+            mem[cpu.pc] = 0x86  # dec
+            mem[cpu.pc + 1] = 0
+            mem[cpu.pc + 2] = 0x81  # Global 113
+
+            cpu.command()
+
+            result = get_global_var(cpu, 113)
+            assert result == 49
 
         def test_dec_underflow(self, cpu_v3):
             """Test dec: 0 - 1 = 65535."""
-            pytest.skip("Implementation bug: 1OP dec with global vars")
+            cpu = cpu_v3
+            mem = cpu.mem
+            set_global_var(cpu, 113, 0)
+            mem[cpu.pc] = 0x86
+            mem[cpu.pc + 1] = 0
+            mem[cpu.pc + 2] = 0x81  # Global 113
+
+            cpu.command()
+
+            result = get_global_var(cpu, 113)
+            assert result == 0xFFFF
 
     class TestNot:
         """Tests for not opcode (1OP:143 in V3/4)."""
@@ -1640,11 +1676,10 @@ class Test1OPOpcodes:
             mem = cpu.mem
             set_global_var(cpu, 112, 0x1234)
             # load global112 -> global113
-            # For load with variable operand, we need to pre-init global 112 with value 112
-            set_global_var(cpu, 112, 112)  # Pre-init for variable operand
             mem[cpu.pc] = 0x8E  # load
-            mem[cpu.pc + 1] = 0x70  # Global 112 (reads VALUE = 112)
-            mem[cpu.pc + 2] = 0x71  # Store in global 113
+            mem[cpu.pc + 1] = 0x00  # Large constant (bits 6-5=00)
+            mem[cpu.pc + 2] = 0x80  # Global 112
+            mem[cpu.pc + 3] = 0x81  # Store in global 113
 
             cpu.command()
 
@@ -1983,11 +2018,11 @@ class TestVAROpcodes:
             cpu = cpu_v3
             mem = cpu.mem
             cpu.stack.push(0xDEAD)
-            # pull global112 - need to pre-init global 112 with value 112
-            set_global_var(cpu, 112, 112)  # Pre-init: var 112 = 112
+            # pull global112 - need to pre-init global 112 with value 128
+            set_global_var(cpu, 112, 128)  # Pre-init: var 112 = 128
             mem[cpu.pc] = 0xE9  # pull
             mem[cpu.pc + 1] = 0x80  # 1 variable operand
-            mem[cpu.pc + 2] = 0x70  # Global 112 (reads VALUE = 112)
+            mem[cpu.pc + 2] = 0x80  # Global 112 (reads VALUE = 112)
 
             cpu.command()
 
