@@ -4,7 +4,7 @@ from lib.container import initialize_container
 from lib.container.container import Container
 from lib.header import ZHeader
 from lib.memory import ZMemory
-from src.lib.ztext import decode_text, encode_text
+from src.lib.ztext import decode_text, encode_text, encode_to_zscii
 
 
 @pytest.fixture
@@ -95,3 +95,68 @@ def test_ztext_encode_text(encode_text_data):
         else:
             assert decoded_string == text[:9].lower()
     Container.destroy()
+
+
+@pytest.fixture
+def encode_to_zscii_data():
+    return [
+        # Basic ASCII text
+        ("Hello", [72, 101, 108, 108, 111]),
+        ("Test!", [84, 101, 115, 116, 33]),
+        ("hello world", [104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100]),
+        # Control characters
+        ("\n", [13]),
+        ("\t", [9]),
+        (" ", [32]),
+        # Mixed text with control characters
+        ("Hello\nWorld", [72, 101, 108, 108, 111, 13, 87, 111, 114, 108, 100]),
+        # Numbers and punctuation
+        ("Test 123!", [84, 101, 115, 116, 32, 49, 50, 51, 33]),
+        ("Hello, World!", [72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33]),
+        # Extended Latin characters
+        ("café", [99, 97, 102, 170]),
+        ("naïve", [110, 97, 165, 118, 101]),
+        ("über", [157, 98, 101, 114]),
+        ("señor", [115, 101, 206, 111, 114]),
+        # German umlauts
+        ("Äpfel", [158, 112, 102, 101, 108]),
+        ("Öl", [159, 108]),
+        ("Übung", [160, 98, 117, 110, 103]),
+        # French accents
+        ("été", [170, 116, 170]),
+        ("à la carte", [181, 32, 108, 97, 32, 99, 97, 114, 116, 101]),
+        # Nordic characters
+        ("åre", [201, 114, 101]),
+        ("ÆØÅ", [211, 204, 202]),
+        # British/特殊 characters
+        ("£5", [218, 53]),
+        ("thþ", [116, 104, 214]),
+        # Empty string
+        ("", []),
+    ]
+
+
+def test_encode_to_zscii(encode_to_zscii_data):
+    """Test encoding of strings to ZSCII character codes."""
+    for text, expected_codes in encode_to_zscii_data:
+        result = encode_to_zscii(text)
+        assert result == expected_codes, f"Failed for '{text}': expected {expected_codes}, got {result}"
+
+
+def test_encode_to_zscii_unsupported_characters():
+    """Test that unsupported characters raise ValueError."""
+    # Emojis are not supported in ZSCII
+    with pytest.raises(ValueError, match="cannot be encoded to ZSCII"):
+        encode_to_zscii("Hello 😀")
+
+    # Cyrillic characters are not supported
+    with pytest.raises(ValueError, match="cannot be encoded to ZSCII"):
+        encode_to_zscii("Привет")
+
+    # Chinese characters are not supported
+    with pytest.raises(ValueError, match="cannot be encoded to ZSCII"):
+        encode_to_zscii("你好")
+
+    # Greek characters are not supported
+    with pytest.raises(ValueError, match="cannot be encoded to ZSCII"):
+        encode_to_zscii("Γειά")
