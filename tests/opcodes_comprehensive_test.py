@@ -195,19 +195,19 @@ def create_minimal_memory(zver: int = 3, **overrides) -> bytearray:
         # V3: Property defaults (31 * 2 = 62 bytes) come first, then objects (9 bytes each)
         obj_table_start = 0x40
         prop_defaults_end = obj_table_start + (31 * 2)  # 0x40 + 62 = 0x7E
-        
+
         # Property defaults: 31 * 2 bytes (all zeros)
         for i in range(31 * 2):
             mem[obj_table_start + i] = 0
-        
+
         # Objects start after property defaults
         # V3 object structure (9 bytes):
         # [0-3]: attributes (4 bytes)
         # [4]: parent object
-        # [5]: sibling object  
+        # [5]: sibling object
         # [6]: child object
         # [7-8]: property table address (2 bytes)
-        
+
         # Object 1 (at 0x7E)
         obj1_addr = prop_defaults_end
         for i in range(9):
@@ -216,7 +216,7 @@ def create_minimal_memory(zver: int = 3, **overrides) -> bytearray:
         mem[0x90] = 0  # empty property table (length = 0)
         mem[obj1_addr + 7] = 0x00  # prop table high
         mem[obj1_addr + 8] = 0x90  # prop table low
-        
+
         # Object 2 (at 0x7E + 9 = 0x87)
         obj2_addr = obj1_addr + 9
         for i in range(9):
@@ -224,7 +224,7 @@ def create_minimal_memory(zver: int = 3, **overrides) -> bytearray:
         mem[0x91] = 0  # empty property table
         mem[obj2_addr + 7] = 0x00
         mem[obj2_addr + 8] = 0x91
-        
+
         # Object 3 (at 0x87 + 9 = 0x90)
         obj3_addr = obj2_addr + 9
         for i in range(9):
@@ -232,14 +232,14 @@ def create_minimal_memory(zver: int = 3, **overrides) -> bytearray:
         mem[0x92] = 0  # empty property table
         mem[obj3_addr + 7] = 0x00
         mem[obj3_addr + 8] = 0x92
-        
+
         # Set up object tree: obj1 is root, obj2 is child of obj1, obj3 is sibling of obj2
         mem[obj1_addr + 6] = 2  # obj1's child = obj2
         mem[obj2_addr + 4] = 1  # obj2's parent = obj1
         mem[obj2_addr + 5] = 3  # obj2's sibling = obj3
         mem[obj3_addr + 4] = 1  # obj3's parent = obj1
         mem[obj3_addr + 5] = 0  # obj3 has no sibling
-        
+
         # NOTE: The CPU's _find_object reads obj_details from first object's prop addr bytes
         # We need to set obj_details to be beyond the last object
         # obj3 ends at obj3_addr + 9 = 0x90 + 9 = 0x99
@@ -254,11 +254,11 @@ def create_minimal_memory(zver: int = 3, **overrides) -> bytearray:
         # V4+: Property defaults (63 * 2 = 126 bytes) come first, then objects (14 bytes each)
         obj_table_start = 0x60
         prop_defaults_end = obj_table_start + (63 * 2)  # 0x60 + 126 = 0xDE
-        
+
         # Property defaults: 63 * 2 bytes (all zeros)
         for i in range(63 * 2):
             mem[obj_table_start + i] = 0
-        
+
         # Objects start after property defaults
         # V4+ object structure (14 bytes):
         # [0-5]: attributes (6 bytes)
@@ -266,7 +266,7 @@ def create_minimal_memory(zver: int = 3, **overrides) -> bytearray:
         # [8-9]: sibling object (2 bytes)
         # [10-11]: child object (2 bytes)
         # [12-13]: property table address (2 bytes)
-        
+
         # Object 1
         obj1_addr = prop_defaults_end
         for i in range(14):
@@ -274,7 +274,7 @@ def create_minimal_memory(zver: int = 3, **overrides) -> bytearray:
         mem[0xF0] = 0  # empty property table
         mem[obj1_addr + 12] = 0x00
         mem[obj1_addr + 13] = 0xF0
-        
+
         # Object 2
         obj2_addr = obj1_addr + 14
         for i in range(14):
@@ -282,7 +282,7 @@ def create_minimal_memory(zver: int = 3, **overrides) -> bytearray:
         mem[0xF1] = 0
         mem[obj2_addr + 12] = 0x00
         mem[obj2_addr + 13] = 0xF1
-        
+
         # Object 3
         obj3_addr = obj2_addr + 14
         for i in range(14):
@@ -290,7 +290,7 @@ def create_minimal_memory(zver: int = 3, **overrides) -> bytearray:
         mem[0xF2] = 0
         mem[obj3_addr + 12] = 0x00
         mem[obj3_addr + 13] = 0xF2
-        
+
         # Set up object tree
         mem[obj1_addr + 10] = 0x00
         mem[obj1_addr + 11] = 2  # obj1's child = obj2
@@ -302,7 +302,7 @@ def create_minimal_memory(zver: int = 3, **overrides) -> bytearray:
         mem[obj3_addr + 7] = 1  # obj3's parent = obj1
         mem[obj3_addr + 8] = 0x00
         mem[obj3_addr + 9] = 0  # obj3 has no sibling
-        
+
         # Set obj_details (same issue as V3 - uses first object's prop addr)
         end_of_objects = obj3_addr + 14
         mem[obj1_addr + 12] = (end_of_objects >> 8) & 0xFF  # High byte
@@ -2828,10 +2828,10 @@ class TestVAROpcodes:
             cpu = cpu_v3
             mem = cpu.mem
             # Setup text table at 0x1000: "ABC"
-            mem[0x1000] = ord('A')
-            mem[0x1001] = ord('B')
-            mem[0x1002] = ord('C')
-            
+            mem[0x1000] = ord("A")
+            mem[0x1001] = ord("B")
+            mem[0x1002] = ord("C")
+
             # print_table 0x1000, 3 (width=3, height=1 default, skip=0 default)
             mem[cpu.pc] = 0xFE  # print_table
             mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
@@ -2839,25 +2839,25 @@ class TestVAROpcodes:
             mem[cpu.pc + 3] = 0x00  # text_addr = 0x1000
             mem[cpu.pc + 4] = 0x00
             mem[cpu.pc + 5] = 0x03  # width = 3
-            
+
             cpu.command()
-            
+
             # Check that characters were printed to output buffer
             assert len(cpu.plugin.output_buffer) > 0
             # The output should contain "ABC"
-            output = ''.join(cpu.plugin.output_buffer)
-            assert 'A' in output or 'B' in output or 'C' in output
+            output = "".join(cpu.plugin.output_buffer)
+            assert "A" in output or "B" in output or "C" in output
 
         def test_print_table_rectangle(self, cpu_v3):
             """Test print_table: print 2x2 rectangle of text."""
             cpu = cpu_v3
             mem = cpu.mem
             # Setup text table at 0x1000: "ABCD"
-            mem[0x1000] = ord('A')
-            mem[0x1001] = ord('B')
-            mem[0x1002] = ord('C')
-            mem[0x1003] = ord('D')
-            
+            mem[0x1000] = ord("A")
+            mem[0x1001] = ord("B")
+            mem[0x1002] = ord("C")
+            mem[0x1003] = ord("D")
+
             # print_table 0x1000, 2, 2 (width=2, height=2)
             mem[cpu.pc] = 0xFE  # print_table
             mem[cpu.pc + 1] = 0x00  # 3 large constants
@@ -2867,26 +2867,26 @@ class TestVAROpcodes:
             mem[cpu.pc + 5] = 0x02  # width = 2
             mem[cpu.pc + 6] = 0x00
             mem[cpu.pc + 7] = 0x02  # height = 2
-            
+
             cpu.command()
-            
+
             # Check that characters were printed
             assert len(cpu.plugin.output_buffer) > 0
-            output = ''.join(cpu.plugin.output_buffer)
-            assert 'A' in output and 'B' in output and 'C' in output and 'D' in output
+            output = "".join(cpu.plugin.output_buffer)
+            assert "A" in output and "B" in output and "C" in output and "D" in output
 
         def test_print_table_with_skip(self, cpu_v3):
             """Test print_table: print with skip between lines."""
             cpu = cpu_v3
             mem = cpu.mem
             # Setup text table at 0x1000: "ABxxCD" (skip 2 chars between lines)
-            mem[0x1000] = ord('A')
-            mem[0x1001] = ord('B')
-            mem[0x1002] = ord('x')  # skip
-            mem[0x1003] = ord('x')  # skip
-            mem[0x1004] = ord('C')
-            mem[0x1005] = ord('D')
-            
+            mem[0x1000] = ord("A")
+            mem[0x1001] = ord("B")
+            mem[0x1002] = ord("x")  # skip
+            mem[0x1003] = ord("x")  # skip
+            mem[0x1004] = ord("C")
+            mem[0x1005] = ord("D")
+
             # print_table 0x1000, 2, 2, 2 (width=2, height=2, skip=2)
             mem[cpu.pc] = 0xFE  # print_table
             mem[cpu.pc + 1] = 0x00  # 4 large constants
@@ -2898,14 +2898,14 @@ class TestVAROpcodes:
             mem[cpu.pc + 7] = 0x02  # height = 2
             mem[cpu.pc + 8] = 0x00
             mem[cpu.pc + 9] = 0x02  # skip = 2
-            
+
             cpu.command()
-            
+
             # Check that correct characters were printed (A, B, C, D - not x)
-            output = ''.join(cpu.plugin.output_buffer)
-            assert 'A' in output and 'B' in output and 'C' in output and 'D' in output
+            output = "".join(cpu.plugin.output_buffer)
+            assert "A" in output and "B" in output and "C" in output and "D" in output
             # The skip characters should not be in output
-            assert output.count('x') == 0
+            assert output.count("x") == 0
 
     class TestEraseLine:
         """Tests for erase_line opcode (VAR:238)."""
@@ -2962,7 +2962,7 @@ class TestVAROpcodes:
             mem[0x1005] = 0x1E  # 30
             mem[0x1006] = 0x00
             mem[0x1007] = 0x28  # 40
-            
+
             # scan_table 20, 0x1000, 4 (search for 20 in 4-word table)
             # form = 0x82 (word search, 2-byte entries)
             mem[cpu.pc] = 0xF7  # scan_table
@@ -2976,9 +2976,9 @@ class TestVAROpcodes:
             mem[cpu.pc + 8] = 0x00
             mem[cpu.pc + 9] = 0x82  # form = 0x82 (word search)
             mem[cpu.pc + 10] = global_var_ref(100)  # store result
-            
+
             cpu.command()
-            
+
             # Should return address 0x1002 (where 20 is stored)
             result = get_global_var(cpu, 100)
             assert result == 0x1002
@@ -2998,7 +2998,7 @@ class TestVAROpcodes:
             mem[0x1005] = 0x1E  # 30
             mem[0x1006] = 0x00
             mem[0x1007] = 0x28  # 40
-            
+
             # scan_table 99, 0x1000, 4 (search for 99 in 4-word table)
             mem[cpu.pc] = 0xF7  # scan_table
             mem[cpu.pc + 1] = 0x00  # 4 large constants
@@ -3012,10 +3012,10 @@ class TestVAROpcodes:
             mem[cpu.pc + 9] = 0x82  # form = 0x82 (word search)
             mem[cpu.pc + 10] = global_var_ref(100)  # store result
             mem[cpu.pc + 11] = 0x00  # branch: not taken (1 byte offset = 0)
-            
+
             old_pc = cpu.pc
             cpu.command()
-            
+
             # Should return 0 (not found)
             result = get_global_var(cpu, 100)
             assert result == 0
@@ -3031,7 +3031,7 @@ class TestVAROpcodes:
             mem[0x1001] = 0x0A
             mem[0x1002] = 0x0F
             mem[0x1003] = 0x14
-            
+
             # scan_table 15, 0x1000, 4, 0x01 (byte search, 1-byte entries)
             mem[cpu.pc] = 0xF7  # scan_table
             mem[cpu.pc + 1] = 0x00  # 4 large constants
@@ -3044,9 +3044,9 @@ class TestVAROpcodes:
             mem[cpu.pc + 8] = 0x00
             mem[cpu.pc + 9] = 0x01  # form = 0x01 (byte search)
             mem[cpu.pc + 10] = global_var_ref(100)  # store result
-            
+
             cpu.command()
-            
+
             # Should return address 0x1002 (where 15 is stored)
             result = get_global_var(cpu, 100)
             assert result == 0x1002
@@ -3064,7 +3064,7 @@ class TestVAROpcodes:
             mem[0x1005] = 0x14  # 20 (second occurrence)
             mem[0x1006] = 0x00
             mem[0x1007] = 0x1E  # 30
-            
+
             # scan_table 20, 0x1000, 4 (search for 20)
             mem[cpu.pc] = 0xF7  # scan_table
             mem[cpu.pc + 1] = 0x00  # 4 large constants
@@ -3077,9 +3077,9 @@ class TestVAROpcodes:
             mem[cpu.pc + 8] = 0x00
             mem[cpu.pc + 9] = 0x82  # form = 0x82 (word search)
             mem[cpu.pc + 10] = global_var_ref(100)  # store result
-            
+
             cpu.command()
-            
+
             # Should return address of first occurrence: 0x1002
             result = get_global_var(cpu, 100)
             assert result == 0x1002
@@ -3318,57 +3318,3 @@ class TestEXTOpcodes:
 
             with pytest.raises(SystemExit):
                 cpu.command()
-
-
-# ============================================================================
-# Bug Report Summary
-# ============================================================================
-"""
-BUGS FOUND IN cpu.py:
-
-1. _load() function (line ~1168): Uses undefined variable 'where' instead of 'ops[0]'
-   - Line: data = self.mem[self.header.global_variables_table + (where - 16) * 2] << 8
-   - Should be: data = self.mem[self.header.global_variables_table + (ops[0] - 16) * 2] << 8
-
-2. _div() and _mod() functions: Exit code 20 for division by zero may not be standard-compliant
-   - The Z-machine spec says "halt on division by zero" but doesn't specify exit code
-
-3. _throw() function: Not implemented (exits with "Not implemented yet!")
-   - Should implement stack unwinding to specified frame
-
-4. _erase_line() function: Not implemented
-   - Should erase from cursor to end of line
-
-5. _get_cursor() function: Not implemented
-   - Should return cursor position to array
-
-6. _input_stream() function: Not implemented
-   - Should select input stream
-
-7. _encode_text() function: Not fully tested/exits with "Not tested yet!"
-   - Implementation exists but untested
-
-8. EXT opcodes (save_ext, restore_ext, draw_picture, picture_data, erase_picture,
-    set_margins, restore_undo, print_unicode, move_window, window_size, window_style,
-    get_wind_prop, scroll_window, pop_stack, read_mouse, mouse_window, push_stack,
-    put_wind_prop, print_form, make_menu, picture_table): Not implemented
-    - All exit with "Not implemented yet!"
-
-9. _pull() function: V6 user stacks not implemented
-   - Exits with "pull: User stacks not implemented for V6!"
-
-10. _call_2s(), _call_2n(), _call_1s(), _call_1n(), _call(), _call_vs2(), _call_vn(), _call_vn2():
-    - Complex routine calling - tests may reveal issues with argument passing or return values
-
-11. _not() opcode: Version handling may be incorrect
-    - In V3/4 it's 1OP:143, in V5+ it should be VAR:248 (not_var)
-    - Current code checks zver >= 5 and calls _call_1n which seems wrong
-
-12. _save() and _restore(): Version-dependent behavior may not be fully correct
-    - V3/4: branch on success/failure
-    - V5+: store result code
-    - Current implementation uses interrupts for all versions
-
-13. _catch() function: Calls exit() instead of properly returning stack frame
-    - Should store stack frame identifier in result variable
-"""
