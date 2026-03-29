@@ -1081,8 +1081,9 @@ class Test2OPOpcodes:
         def test_store_global(self, cpu_v3):
             """Test store: store value in global variable."""
             cpu = cpu_v3
+            set_global_var(cpu, 100, global_var_ref(101))
             mem = cpu.mem
-            # store global100, 0x1234
+            # store [global100], 0x1234
             mem[cpu.pc] = 0xCD  # store
             mem[cpu.pc + 1] = 0x8F  # variable + large constant + 2 omitted
             mem[cpu.pc + 2] = global_var_ref(100)  # Global var 100
@@ -1091,25 +1092,24 @@ class Test2OPOpcodes:
 
             cpu.command()
 
-            result = get_global_var(cpu, 100)
+            result = get_global_var(cpu, 101)
             assert result == 0x1234
 
         def test_store_stack(self, cpu_v3):
             """Test store: store value on stack (var 0)."""
             cpu = cpu_v3
             mem = cpu.mem
-            cpu.stack.push(0xDEAD)  # Push dummy value to be overwritten
-            # store sp, 0xBEEF
+            cpu.stack.push(0xDE)  # Push dummy value to be overwritten
+            # store sp, 0xBE
             mem[cpu.pc] = 0xD
-            mem[cpu.pc + 1] = 0x00  # Large constant  # Variable (stack), constant
-            mem[cpu.pc + 2] = 0x00  # Stack
-            mem[cpu.pc + 3] = 0xBE
-            mem[cpu.pc + 4] = 0xEF
+            mem[cpu.pc + 1] = 0  # Small constant
+            mem[cpu.pc + 2] = 0xBE
 
             cpu.command()
 
             result = cpu.stack.pop()
-            assert result == 0xBEEF
+            assert result == 0xBE
+            assert cpu.stack.queuepos == 0  # Stack should be back to original position
 
     class TestLoadw:
         """Tests for loadw opcode (2OP:15)."""
@@ -2264,7 +2264,7 @@ class TestVAROpcodes:
 
             cpu.command()
 
-            assert cpu.output.plugin.buffering == 0
+            assert cpu.output.buffering == 0
 
     class TestOutputStream:
         """Tests for output_stream opcode (VAR:243)."""
