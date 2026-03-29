@@ -1019,20 +1019,24 @@ class ZCpu:
         pc = self.pc
         self._read_operands_short_1op()
         ops = self.ops
-        ops[0] = ops[0] - 1
-        if self.zver < 4:
-            prop_num = self.mem[ops[0]] % 32
-            nob = ((self.mem[ops[0]] - prop_num) // 32) + 1
+        if ops[0] == 0:
+            print("get_prop_len: Can't get property of nothing!")
+            self._zstore(0, self.mem[self.pc])
         else:
-            if (self.mem[ops[0]] & 128) == 128:
-                nob = self.mem[ops[0]] & 63
-                if nob == 0:
-                    nob = 64
-            elif (self.mem[ops[0]] & 64) == 64:
-                nob = 2
+            ops[0] = ops[0] - 1
+            if self.zver < 4:
+                prop_num = self.mem[ops[0]] % 32
+                nob = ((self.mem[ops[0]] - prop_num) // 32) + 1
             else:
-                nob = 1
-        self._zstore(nob, self.mem[self.pc])
+                if (self.mem[ops[0]] & 128) == 128:
+                    nob = self.mem[ops[0]] & 63
+                    if nob == 0:
+                        nob = 64
+                elif (self.mem[ops[0]] & 64) == 64:
+                    nob = 2
+                else:
+                    nob = 1
+            self._zstore(nob, self.mem[self.pc])
         self.pc += 1
         if self.plugin.level >= 2:
             self.plugin.debug_print(
