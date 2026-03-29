@@ -1062,16 +1062,13 @@ class ZCpu:
         else:
             b1 = self.mem[self.header.global_variables_table + (var - 16) * 2]
             b2 = self.mem[self.header.global_variables_table + (var - 16) * 2 + 1]
-            # print "Before:", (b1 << 8) + b2
             tmp = (b1 << 8) + b2 + 1
             if tmp == 0x10000:
                 tmp = 0
-            # print "After:", tmp
             self.mem[self.header.global_variables_table + (var - 16) * 2] = tmp >> 8
             self.mem[self.header.global_variables_table + (var - 16) * 2 + 1] = (
                 tmp & 0xFF
             )
-            # print "Global var", var - 15, "has now value", tmp
             return tmp
 
     def _dec(self):
@@ -1318,7 +1315,7 @@ class ZCpu:
             data += self.mem[self.header.global_variables_table + (ops[0] - 16) * 2 + 1]
         else:
             exit("No such variable!!!")
-        self._zstore(data, self.pc)
+        self._zstore(data, self.mem[self.pc])
         self.pc += 1
         if self.plugin.level >= 2:
             self.plugin.debug_print(
@@ -1697,6 +1694,8 @@ class ZCpu:
         ops = self.ops
         if self.zver != 6:
             n = self.stack.pop()
+            print("Pull --", n)
+            print("Pull --", ops[0 : self.numops])
             self._zstore(n, ops[0])
             if self.plugin.level >= 2:
                 self.plugin.debug_print(
@@ -2166,13 +2165,10 @@ class ZCpu:
         else:
             self.pc += 1
             if self.mem[self.pc] == 0:
-                # print "Got stack!"
                 self.ops[0] = self.stack.pop()
             elif self.mem[self.pc] < 0x10:
-                # print "Got local variable", self.mem[self.pc]
                 self.ops[0] = self.stack.local_vars[self.mem[self.pc] - 1]
             else:
-                # print "Got global var", (self.mem[self.pc] - 15)
                 addr = self.header.global_variables_table + (self.mem[self.pc] - 16) * 2
                 b1 = self.mem[addr]
                 b2 = self.mem[addr + 1]
@@ -2199,6 +2195,7 @@ class ZCpu:
                 self.pc = self.pc + 1
             elif optype == 2:  # Variable (1 byte)
                 if self.mem[self.pc] == 0:
+                    self.indirect = True
                     self.ops[num] = self.stack.pop()
                     num += 1
                 elif self.mem[self.pc] < 0x10:
