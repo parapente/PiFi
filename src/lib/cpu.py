@@ -1507,7 +1507,8 @@ class ZCpu:
 
     def _piracy(self):
         pc = self.pc
-        jif, offset = self.branch(False)
+        self.pc += 1
+        jif, offset = self.branch(True)
         if self.plugin.level >= 2:
             self.plugin.debug_print(f"{format(pc, 'X')}: piracy {jif}, {offset}", 2)
 
