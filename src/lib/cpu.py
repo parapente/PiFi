@@ -1479,6 +1479,7 @@ class ZCpu:
 
     def _verify(self):
         pc = self.pc
+        self.pc += 1
         # Read file from offset 0x40 to the end of the file length specified in header
         self.file.seek(0x40)
         file_length = self.header.length_of_file
