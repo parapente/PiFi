@@ -5,7 +5,7 @@ from lib.memory import ZMemory
 from lib.output import ZOutput
 from lib.stack import ZStack
 from lib.zrandom import ZRandom
-from lib.ztext import decode_text, encode_text, convert_from_zscii
+from lib.ztext import decode_text, encode_text, convert_from_zscii, encode_to_zscii
 from plugins.plugskel import PluginSkeleton
 from sys import exit
 
@@ -696,7 +696,9 @@ class ZCpu:
             self._read_operands_long_2op()
         ops = self.ops
         if ops[0] == 0:
-            self.output.print_string("** get_prop_addr got 0 as object! **\n")
+            self.output.print_string(
+                "** get_prop_addr got 0 as object! **\n", ops[0 : self.numops]
+            )
             prop = 0
             # exit("Can't get property of nothing!")
         else:
@@ -1124,7 +1126,7 @@ class ZCpu:
             buf.append(self.mem[uaddr + i + 1])
             i += 2
         text = decode_text(buf)
-        self.output.print_string(text)
+        self.output.print_string(text, ops[0 : self.numops])
         # print text
         if self.plugin.level >= 2:
             self.plugin.debug_print(
@@ -1224,7 +1226,7 @@ class ZCpu:
             i += 2
         # print buf
         text = decode_text(buf)
-        self.output.print_string(text)
+        self.output.print_string(text, ops[0 : self.numops])
         if self.plugin.level >= 2:
             self.plugin.debug_print(
                 f"{format(pc, 'X')}: print_obj {ops[0 : self.numops]}", 2
@@ -1294,7 +1296,7 @@ class ZCpu:
             buf.extend([mem[uaddr + i], mem[uaddr + i + 1]])
             i += 2
         text = decode_text(buf)
-        self.output.print_string(text)
+        self.output.print_string(text, encode_to_zscii(text))
         # print text
         if self.plugin.level >= 2:
             self.plugin.debug_print(
@@ -1380,7 +1382,7 @@ class ZCpu:
             self.print_dict[uaddr] = [i, text]
         self.pc += i + 1
         # print text
-        self.output.print_string(text)
+        self.output.print_string(text, [])
         if self.plugin.level >= 2:
             self.plugin.debug_print(f'{format(pc, "X")}: print "{text}"', 2)
 
@@ -1398,7 +1400,7 @@ class ZCpu:
             i += 2
         # print buf
         text = decode_text(buf)
-        self.output.print_string(text + "\n")
+        self.output.print_string(text + "\n", [])
         # print text
         self.pc += i + 1
         self._return(1)
@@ -1460,7 +1462,7 @@ class ZCpu:
         pc = self.pc
         if self.plugin.level >= 2:
             self.plugin.debug_print(f"{format(pc, 'X')}: quit", 2)
-        self.output.print_string("[Press any key to quit]")
+        self.output.print_string("[Press any key to quit]", [])
         self.intr = 69
 
     def _new_line(self):
@@ -1627,7 +1629,7 @@ class ZCpu:
         except KeyError:
             text = convert_from_zscii(ops[0], 0)
             self.print_char_dict[ops[0]] = text
-        self.output.print_string(text)
+        self.output.print_string(text, ops[0 : self.numops])
         # print text
         if self.plugin.level >= 2:
             self.plugin.debug_print(
@@ -1639,10 +1641,12 @@ class ZCpu:
         self._read_operands_var_2op()
         ops = self.ops
         if ops[0] > 0x7FFF:
-            self.output.print_string(f"{ops[0] - 65536}")
+            self.output.print_string(
+                f"{ops[0] - 65536}", [ord(c) for c in f"{ops[0] - 65536}"]
+            )
             # print (ops[0] - 65536)
         else:
-            self.output.print_string(f"{ops[0]}")
+            self.output.print_string(f"{ops[0]}", [ord(c) for c in f"{ops[0]}"])
             # print ops[0]
         if self.plugin.level >= 2:
             self.plugin.debug_print(
@@ -1919,12 +1923,7 @@ class ZCpu:
         ops = self.ops
         addr, offset, length = ops[0], ops[2], ops[1]
         z_text = [x for x in self.mem[addr + offset : addr + offset + length]]
-        encode_text(
-            z_text,
-            self.version,
-            self.header.alphabet_table,
-            self.header.unicode_table,
-        )
+        encode_text(z_text)
         self.plugin.debug_print(": encode_text", 0)
         self.plugin.debug_print(
             f"{format(pc, 'X')}: tokenize {ops[0 : self.numops]}", 2

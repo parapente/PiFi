@@ -217,7 +217,7 @@ def encode_text(text: list) -> bytearray:
                 a2_is_used = True
                 code = a2[item]
             else:
-                raise ValueError("Unexpected character in text '" + text[i] + "'")
+                raise ValueError(f"Unexpected character in text '{text[i]}'")
         if a2_is_used:
             if version < 3:
                 shift_char = 3
@@ -316,3 +316,140 @@ def prepare_dicts(
             # fmt: on
                 a2[ord(x)] = 6 + i
                 i += 1
+
+
+def encode_to_zscii(text: str) -> list[int]:
+    """
+    Encode a normal string into a list of ZSCII character codes.
+
+    ZSCII (Zork Standard Code for Information Interchange) uses values 0-255,
+    where:
+    - 0-31: Control codes (0=null, 9=tab, 11=sentence space, 13=newline)
+    - 32-126: Standard ASCII
+    - 155-251: Extra characters (accented Latin, etc.)
+
+    This function converts a Python string to its ZSCII representation,
+    handling both basic ASCII and extended characters.
+
+    Args:
+        text: The input string to encode
+
+    Returns:
+        A list of integers representing ZSCII character codes
+
+    Examples:
+        >>> encode_to_zscii("Hello")
+        [72, 101, 108, 108, 111]
+        >>> encode_to_zscii("Test!")
+        [84, 101, 115, 116, 33]
+        >>> encode_to_zscii("\\n")
+        [13]
+    """
+    zscii_codes: list[int] = []
+
+    # Mapping for common extended characters to ZSCII codes (155-223)
+    # Based on the standard Unicode translation table in convert_from_zscii
+    ext_char_map: dict[str, int] = {
+        "ä": 155,
+        "ö": 156,
+        "ü": 157,
+        "Ä": 158,
+        "Ö": 159,
+        "Ü": 160,
+        "ß": 161,
+        "»": 162,
+        "«": 163,
+        "ë": 164,
+        "ï": 165,
+        "ÿ": 166,
+        "Ë": 167,
+        "Ï": 168,
+        "á": 169,
+        "é": 170,
+        "í": 171,
+        "ó": 172,
+        "ú": 173,
+        "ý": 174,
+        "Á": 175,
+        "É": 176,
+        "Í": 177,
+        "Ó": 178,
+        "Ú": 179,
+        "Ý": 180,
+        "à": 181,
+        "è": 182,
+        "ì": 183,
+        "ò": 184,
+        "ù": 185,
+        "À": 186,
+        "È": 187,
+        "Ì": 188,
+        "Ò": 189,
+        "Ù": 190,
+        "â": 191,
+        "ê": 192,
+        "î": 193,
+        "ô": 194,
+        "û": 195,
+        "Â": 196,
+        "Ê": 197,
+        "Î": 198,
+        "Ô": 199,
+        "Û": 200,
+        "å": 201,
+        "Å": 202,
+        "ø": 203,
+        "Ø": 204,
+        "õ": 205,
+        "ñ": 206,
+        "õ": 207,
+        "Ñ": 208,
+        "Õ": 209,
+        "æ": 210,
+        "Æ": 211,
+        "ç": 212,
+        "Ç": 213,
+        "þ": 214,
+        "ð": 215,
+        "Þ": 216,
+        "Ð": 217,
+        "£": 218,
+        "œ": 219,
+        "Œ": 220,
+        "¡": 221,
+        "¿": 222,
+    }
+
+    for char in text:
+        code = ord(char)
+
+        if code == 9:
+            # Tab character
+            zscii_codes.append(9)
+        elif code == 13 or char == "\n":
+            # Newline
+            zscii_codes.append(13)
+        elif code == 32:
+            # Space
+            zscii_codes.append(32)
+        elif 32 < code <= 126:
+            # Standard ASCII printable characters
+            zscii_codes.append(code)
+        elif char in ext_char_map:
+            # Extended character with defined ZSCII code
+            zscii_codes.append(ext_char_map[char])
+        elif code > 126 and code < 256:
+            # Other extended characters - map to 155+ range if possible
+            # For characters not in the standard table, use their code directly
+            # This assumes a custom unicode table in the story file
+            zscii_codes.append(code)
+        else:
+            # Unicode character beyond ZSCII range
+            # For full Unicode support, you'd need to use the unicode_table
+            # in the story file. For now, we raise an error for unsupported chars.
+            raise ValueError(
+                f"Character '{char}' (U+{code:04X}) cannot be encoded to ZSCII. "
+                "ZSCII supports ASCII (32-126) and Latin-1 extended characters (155-251)."
+            )
+
+    return zscii_codes

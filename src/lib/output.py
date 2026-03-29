@@ -54,7 +54,7 @@ class ZOutput:
         if self.version > 3:  # In V1-3 buffering is always on
             self.buffering = c
 
-    def print_string(self, s: str) -> None:
+    def print_string(self, s: str, ops: list) -> None:
         # TODO: Buffering
         # print "Output streams:", self.plugin.selected_output_streams()
         if 3 in self.plugin.selected_output_streams():
@@ -69,10 +69,11 @@ class ZOutput:
             mem = self.mem
             # print 'Printing in memory {',addr,'} -- "', s,'"'
             x = addr
-            for i in map(ord, s):
+            for i in ops:
                 if i == 10:
                     mem[x] = 13
                 else:
+                    # print(f"char: {i} -- {chr(i)}")
                     mem[x] = i
                 x += 1
         else:
