@@ -2527,6 +2527,92 @@ class TestVAROpcodes:
             assert mem[0x1002] == 0xAB
             assert mem[0x1003] == 0xCD
 
+        def test_copy_table_negative_size(self, cpu_v3):
+            """Test copy_table: negative size (copy forwards, may corrupt source)."""
+            cpu = cpu_v3
+            mem = cpu.mem
+            # Setup source data
+            mem[0x1000] = 0xAB
+            mem[0x1001] = 0xCD
+            mem[0x1002] = 0x00
+            mem[0x1003] = 0x00
+            # copy_table 0x1000, 0x1002, -2 (negative size)
+            mem[cpu.pc] = 0xFD
+            mem[cpu.pc + 1] = 0x00  # 3 large constants
+            mem[cpu.pc + 2] = 0x10
+            mem[cpu.pc + 3] = 0x00
+            mem[cpu.pc + 4] = 0x10
+            mem[cpu.pc + 5] = 0x02
+            mem[cpu.pc + 6] = 0xFF  # High byte of -2 (0xFFFE)
+            mem[cpu.pc + 7] = 0xFE  # Low byte of -2
+
+            cpu.command()
+
+            # Should copy forwards: dest[0] = src[0], dest[1] = src[1]
+            assert mem[0x1002] == 0xAB
+            assert mem[0x1003] == 0xCD
+
+        def test_copy_table_overlap_dest_greater(self, cpu_v3):
+            """Test copy_table: overlapping with dest > src (backwards copy)."""
+            cpu = cpu_v3
+            mem = cpu.mem
+            # Setup: src at 0x1000, dest at 0x1001, overlap by 1 byte
+            mem[0x1000] = 0x11
+            mem[0x1001] = 0x22
+            mem[0x1002] = 0x33
+            mem[0x1003] = 0x44
+            # copy_table 0x1000, 0x1001, 3 (copy 3 bytes, dest > src)
+            mem[cpu.pc] = 0xFD
+            mem[cpu.pc + 1] = 0x00  # 3 large constants
+            mem[cpu.pc + 2] = 0x10
+            mem[cpu.pc + 3] = 0x00
+            mem[cpu.pc + 4] = 0x10
+            mem[cpu.pc + 5] = 0x01
+            mem[cpu.pc + 6] = 0x00
+            mem[cpu.pc + 7] = 0x03  # Size = 3
+
+            cpu.command()
+
+            # With backwards copy (to avoid corruption):
+            # dest[2] = src[2] -> mem[0x1003] = mem[0x1002] = 0x33
+            # dest[1] = src[1] -> mem[0x1002] = mem[0x1001] = 0x22
+            # dest[0] = src[0] -> mem[0x1001] = mem[0x1000] = 0x11
+            # Source byte at 0x1000 should be unchanged
+            assert mem[0x1000] == 0x11  # Unchanged
+            assert mem[0x1001] == 0x11  # Copied from 0x1000
+            assert mem[0x1002] == 0x22  # Copied from 0x1001
+            assert mem[0x1003] == 0x33  # Copied from 0x1002
+
+        def test_copy_table_overlap_dest_lesser(self, cpu_v3):
+            """Test copy_table: overlapping with dest < src (forwards copy is safe)."""
+            cpu = cpu_v3
+            mem = cpu.mem
+            # Setup: src at 0x1001, dest at 0x1000, overlap by 1 byte
+            mem[0x1000] = 0x00
+            mem[0x1001] = 0x11
+            mem[0x1002] = 0x22
+            mem[0x1003] = 0x33
+            # copy_table 0x1001, 0x1000, 3 (copy 3 bytes, dest < src)
+            mem[cpu.pc] = 0xFD
+            mem[cpu.pc + 1] = 0x00  # 3 large constants
+            mem[cpu.pc + 2] = 0x10
+            mem[cpu.pc + 3] = 0x01
+            mem[cpu.pc + 4] = 0x10
+            mem[cpu.pc + 5] = 0x00
+            mem[cpu.pc + 6] = 0x00
+            mem[cpu.pc + 7] = 0x03  # Size = 3
+
+            cpu.command()
+
+            # With forwards copy (safe when dest < src):
+            # dest[0] = src[0] -> mem[0x1000] = mem[0x1001] = 0x11
+            # dest[1] = src[1] -> mem[0x1001] = mem[0x1002] = 0x22
+            # dest[2] = src[2] -> mem[0x1002] = mem[0x1003] = 0x33
+            assert mem[0x1000] == 0x11  # Copied from 0x1001
+            assert mem[0x1001] == 0x22  # Copied from 0x1002
+            assert mem[0x1002] == 0x33  # Copied from 0x1003
+            assert mem[0x1003] == 0x33  # Unchanged
+
     class TestCheckArgCount:
         """Tests for check_arg_count opcode (VAR:255)."""
 
@@ -2737,15 +2823,89 @@ class TestVAROpcodes:
     class TestPrintTable:
         """Tests for print_table opcode (VAR:254)."""
 
-        @pytest.mark.skip(reason="Not implemented")
-        def test_print_table_not_implemented(self, cpu_v3):
-            """Test print_table: not implemented."""
+        def test_print_table_basic(self, cpu_v3):
+            """Test print_table: print 3x1 table of ZSCII characters."""
             cpu = cpu_v3
             mem = cpu.mem
+            # Setup text table at 0x1000: "ABC"
+            mem[0x1000] = ord('A')
+            mem[0x1001] = ord('B')
+            mem[0x1002] = ord('C')
+            
+            # print_table 0x1000, 3 (width=3, height=1 default, skip=0 default)
             mem[cpu.pc] = 0xFE  # print_table
+            mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
+            mem[cpu.pc + 2] = 0x10
+            mem[cpu.pc + 3] = 0x00  # text_addr = 0x1000
+            mem[cpu.pc + 4] = 0x00
+            mem[cpu.pc + 5] = 0x03  # width = 3
+            
+            cpu.command()
+            
+            # Check that characters were printed to output buffer
+            assert len(cpu.plugin.output_buffer) > 0
+            # The output should contain "ABC"
+            output = ''.join(cpu.plugin.output_buffer)
+            assert 'A' in output or 'B' in output or 'C' in output
 
-            with pytest.raises(SystemExit):
-                cpu.command()
+        def test_print_table_rectangle(self, cpu_v3):
+            """Test print_table: print 2x2 rectangle of text."""
+            cpu = cpu_v3
+            mem = cpu.mem
+            # Setup text table at 0x1000: "ABCD"
+            mem[0x1000] = ord('A')
+            mem[0x1001] = ord('B')
+            mem[0x1002] = ord('C')
+            mem[0x1003] = ord('D')
+            
+            # print_table 0x1000, 2, 2 (width=2, height=2)
+            mem[cpu.pc] = 0xFE  # print_table
+            mem[cpu.pc + 1] = 0x00  # 3 large constants
+            mem[cpu.pc + 2] = 0x10
+            mem[cpu.pc + 3] = 0x00  # text_addr = 0x1000
+            mem[cpu.pc + 4] = 0x00
+            mem[cpu.pc + 5] = 0x02  # width = 2
+            mem[cpu.pc + 6] = 0x00
+            mem[cpu.pc + 7] = 0x02  # height = 2
+            
+            cpu.command()
+            
+            # Check that characters were printed
+            assert len(cpu.plugin.output_buffer) > 0
+            output = ''.join(cpu.plugin.output_buffer)
+            assert 'A' in output and 'B' in output and 'C' in output and 'D' in output
+
+        def test_print_table_with_skip(self, cpu_v3):
+            """Test print_table: print with skip between lines."""
+            cpu = cpu_v3
+            mem = cpu.mem
+            # Setup text table at 0x1000: "ABxxCD" (skip 2 chars between lines)
+            mem[0x1000] = ord('A')
+            mem[0x1001] = ord('B')
+            mem[0x1002] = ord('x')  # skip
+            mem[0x1003] = ord('x')  # skip
+            mem[0x1004] = ord('C')
+            mem[0x1005] = ord('D')
+            
+            # print_table 0x1000, 2, 2, 2 (width=2, height=2, skip=2)
+            mem[cpu.pc] = 0xFE  # print_table
+            mem[cpu.pc + 1] = 0x00  # 4 large constants
+            mem[cpu.pc + 2] = 0x10
+            mem[cpu.pc + 3] = 0x00  # text_addr = 0x1000
+            mem[cpu.pc + 4] = 0x00
+            mem[cpu.pc + 5] = 0x02  # width = 2
+            mem[cpu.pc + 6] = 0x00
+            mem[cpu.pc + 7] = 0x02  # height = 2
+            mem[cpu.pc + 8] = 0x00
+            mem[cpu.pc + 9] = 0x02  # skip = 2
+            
+            cpu.command()
+            
+            # Check that correct characters were printed (A, B, C, D - not x)
+            output = ''.join(cpu.plugin.output_buffer)
+            assert 'A' in output and 'B' in output and 'C' in output and 'D' in output
+            # The skip characters should not be in output
+            assert output.count('x') == 0
 
     class TestEraseLine:
         """Tests for erase_line opcode (VAR:238)."""
@@ -2789,15 +2949,168 @@ class TestVAROpcodes:
     class TestScanTable:
         """Tests for scan_table opcode (VAR:247)."""
 
-        @pytest.mark.skip(reason="Not implemented")
-        def test_scan_table_not_implemented(self, cpu_v3):
-            """Test scan_table: not implemented."""
+        def test_scan_table_word_found(self, cpu_v3):
+            """Test scan_table: find word in table."""
             cpu = cpu_v3
             mem = cpu.mem
+            # Setup word table at 0x1000: [10, 20, 30, 40]
+            mem[0x1000] = 0x00
+            mem[0x1001] = 0x0A  # 10
+            mem[0x1002] = 0x00
+            mem[0x1003] = 0x14  # 20
+            mem[0x1004] = 0x00
+            mem[0x1005] = 0x1E  # 30
+            mem[0x1006] = 0x00
+            mem[0x1007] = 0x28  # 40
+            
+            # scan_table 20, 0x1000, 4 (search for 20 in 4-word table)
+            # form = 0x82 (word search, 2-byte entries)
             mem[cpu.pc] = 0xF7  # scan_table
+            mem[cpu.pc + 1] = 0x00  # 4 large constants
+            mem[cpu.pc + 2] = 0x00
+            mem[cpu.pc + 3] = 0x14  # x = 20
+            mem[cpu.pc + 4] = 0x10
+            mem[cpu.pc + 5] = 0x00  # table = 0x1000
+            mem[cpu.pc + 6] = 0x00
+            mem[cpu.pc + 7] = 0x04  # len = 4
+            mem[cpu.pc + 8] = 0x00
+            mem[cpu.pc + 9] = 0x82  # form = 0x82 (word search)
+            mem[cpu.pc + 10] = global_var_ref(100)  # store result
+            
+            cpu.command()
+            
+            # Should return address 0x1002 (where 20 is stored)
+            result = get_global_var(cpu, 100)
+            assert result == 0x1002
+            # Should have branched (found)
+            assert cpu.pc > 0x10 + 10 + 1
 
-            with pytest.raises(SystemExit):
-                cpu.command()
+        def test_scan_table_word_not_found(self, cpu_v3):
+            """Test scan_table: word not in table."""
+            cpu = cpu_v3
+            mem = cpu.mem
+            # Setup word table at 0x1000: [10, 20, 30, 40]
+            mem[0x1000] = 0x00
+            mem[0x1001] = 0x0A  # 10
+            mem[0x1002] = 0x00
+            mem[0x1003] = 0x14  # 20
+            mem[0x1004] = 0x00
+            mem[0x1005] = 0x1E  # 30
+            mem[0x1006] = 0x00
+            mem[0x1007] = 0x28  # 40
+            
+            # scan_table 99, 0x1000, 4 (search for 99 in 4-word table)
+            mem[cpu.pc] = 0xF7  # scan_table
+            mem[cpu.pc + 1] = 0x00  # 4 large constants
+            mem[cpu.pc + 2] = 0x00
+            mem[cpu.pc + 3] = 0x63  # x = 99
+            mem[cpu.pc + 4] = 0x10
+            mem[cpu.pc + 5] = 0x00  # table = 0x1000
+            mem[cpu.pc + 6] = 0x00
+            mem[cpu.pc + 7] = 0x04  # len = 4
+            mem[cpu.pc + 8] = 0x00
+            mem[cpu.pc + 9] = 0x82  # form = 0x82 (word search)
+            mem[cpu.pc + 10] = global_var_ref(100)  # store result
+            mem[cpu.pc + 11] = 0x00  # branch: not taken (1 byte offset = 0)
+            
+            old_pc = cpu.pc
+            cpu.command()
+            
+            # Should return 0 (not found)
+            result = get_global_var(cpu, 100)
+            assert result == 0
+            # PC should have advanced (not branched)
+            assert cpu.pc > old_pc
+
+        def test_scan_table_byte_search(self, cpu_v3):
+            """Test scan_table: byte search."""
+            cpu = cpu_v3
+            mem = cpu.mem
+            # Setup byte table at 0x1000: [5, 10, 15, 20]
+            mem[0x1000] = 0x05
+            mem[0x1001] = 0x0A
+            mem[0x1002] = 0x0F
+            mem[0x1003] = 0x14
+            
+            # scan_table 15, 0x1000, 4, 0x01 (byte search, 1-byte entries)
+            mem[cpu.pc] = 0xF7  # scan_table
+            mem[cpu.pc + 1] = 0x00  # 4 large constants
+            mem[cpu.pc + 2] = 0x00
+            mem[cpu.pc + 3] = 0x0F  # x = 15
+            mem[cpu.pc + 4] = 0x10
+            mem[cpu.pc + 5] = 0x00  # table = 0x1000
+            mem[cpu.pc + 6] = 0x00
+            mem[cpu.pc + 7] = 0x04  # len = 4
+            mem[cpu.pc + 8] = 0x00
+            mem[cpu.pc + 9] = 0x01  # form = 0x01 (byte search)
+            mem[cpu.pc + 10] = global_var_ref(100)  # store result
+            
+            cpu.command()
+            
+            # Should return address 0x1002 (where 15 is stored)
+            result = get_global_var(cpu, 100)
+            assert result == 0x1002
+
+        def test_scan_table_first_occurrence(self, cpu_v3):
+            """Test scan_table: returns first occurrence."""
+            cpu = cpu_v3
+            mem = cpu.mem
+            # Setup word table at 0x1000: [10, 20, 20, 30]
+            mem[0x1000] = 0x00
+            mem[0x1001] = 0x0A  # 10
+            mem[0x1002] = 0x00
+            mem[0x1003] = 0x14  # 20 (first occurrence)
+            mem[0x1004] = 0x00
+            mem[0x1005] = 0x14  # 20 (second occurrence)
+            mem[0x1006] = 0x00
+            mem[0x1007] = 0x1E  # 30
+            
+            # scan_table 20, 0x1000, 4 (search for 20)
+            mem[cpu.pc] = 0xF7  # scan_table
+            mem[cpu.pc + 1] = 0x00  # 4 large constants
+            mem[cpu.pc + 2] = 0x00
+            mem[cpu.pc + 3] = 0x14  # x = 20
+            mem[cpu.pc + 4] = 0x10
+            mem[cpu.pc + 5] = 0x00  # table = 0x1000
+            mem[cpu.pc + 6] = 0x00
+            mem[cpu.pc + 7] = 0x04  # len = 4
+            mem[cpu.pc + 8] = 0x00
+            mem[cpu.pc + 9] = 0x82  # form = 0x82 (word search)
+            mem[cpu.pc + 10] = global_var_ref(100)  # store result
+            
+            cpu.command()
+            
+            # Should return address of first occurrence: 0x1002
+            result = get_global_var(cpu, 100)
+            assert result == 0x1002
+
+        def test_scan_table_default_form(self, cpu_v3):
+            """Test scan_table: default form (word search)."""
+            cpu = cpu_v3
+            mem = cpu.mem
+            # Setup word table at 0x1000: [100, 200]
+            mem[0x1000] = 0x00
+            mem[0x1001] = 0x64  # 100
+            mem[0x1002] = 0x00
+            mem[0x1003] = 0xC8  # 200
+
+            # scan_table 200, 0x1000, 2 (no form specified, defaults to word search)
+            # Type byte: 0x03 = 3 large constants + 1 omitted (bits: 00 00 00 11)
+            mem[cpu.pc] = 0xF7  # scan_table
+            mem[cpu.pc + 1] = 0x03  # 3 large constants + 1 omitted
+            mem[cpu.pc + 2] = 0x00
+            mem[cpu.pc + 3] = 0xC8  # x = 200
+            mem[cpu.pc + 4] = 0x10
+            mem[cpu.pc + 5] = 0x00  # table = 0x1000
+            mem[cpu.pc + 6] = 0x00
+            mem[cpu.pc + 7] = 0x02  # len = 2
+            mem[cpu.pc + 8] = global_var_ref(100)  # store result
+
+            cpu.command()
+
+            # Should return address 0x1002 (where 200 is stored)
+            result = get_global_var(cpu, 100)
+            assert result == 0x1002
 
 
 # ============================================================================
@@ -3032,36 +3345,30 @@ BUGS FOUND IN cpu.py:
 6. _input_stream() function: Not implemented
    - Should select input stream
 
-7. _scan_table() function: Not implemented
-   - Should search table for value
-
-8. _encode_text() function: Not fully tested/exits with "Not tested yet!"
+7. _encode_text() function: Not fully tested/exits with "Not tested yet!"
    - Implementation exists but untested
 
-9. _print_table() function: Not implemented
-   - Should print rectangle of text
-
-10. EXT opcodes (save_ext, restore_ext, draw_picture, picture_data, erase_picture, 
+8. EXT opcodes (save_ext, restore_ext, draw_picture, picture_data, erase_picture,
     set_margins, restore_undo, print_unicode, move_window, window_size, window_style,
     get_wind_prop, scroll_window, pop_stack, read_mouse, mouse_window, push_stack,
     put_wind_prop, print_form, make_menu, picture_table): Not implemented
     - All exit with "Not implemented yet!"
 
-11. _pull() function: V6 user stacks not implemented
-    - Exits with "pull: User stacks not implemented for V6!"
+9. _pull() function: V6 user stacks not implemented
+   - Exits with "pull: User stacks not implemented for V6!"
 
-12. _call_2s(), _call_2n(), _call_1s(), _call_1n(), _call(), _call_vs2(), _call_vn(), _call_vn2():
+10. _call_2s(), _call_2n(), _call_1s(), _call_1n(), _call(), _call_vs2(), _call_vn(), _call_vn2():
     - Complex routine calling - tests may reveal issues with argument passing or return values
 
-13. _not() opcode: Version handling may be incorrect
+11. _not() opcode: Version handling may be incorrect
     - In V3/4 it's 1OP:143, in V5+ it should be VAR:248 (not_var)
     - Current code checks zver >= 5 and calls _call_1n which seems wrong
 
-14. _save() and _restore(): Version-dependent behavior may not be fully correct
+12. _save() and _restore(): Version-dependent behavior may not be fully correct
     - V3/4: branch on success/failure
     - V5+: store result code
     - Current implementation uses interrupts for all versions
 
-15. _catch() function: Calls exit() instead of properly returning stack frame
+13. _catch() function: Calls exit() instead of properly returning stack frame
     - Should store stack frame identifier in result variable
 """

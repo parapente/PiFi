@@ -1456,11 +1456,12 @@ class ZCpu:
             self._catch()
 
     def _catch(self):
-        self.stack.push_local_vars()
-        self.stack.push_frame(self.pc)
-        self.stack.push_frame(self.mem[self.pc])
+        # self.stack.push_local_vars()
+        # self.stack.push_frame(self.pc)
+        # self.stack.push_frame(self.mem[self.pc])
         print("catch!")
-        exit()
+        self.pc += 2
+        raise "Not implemented yet!"
 
     def _quit(self):
         pc = self.pc
@@ -1864,8 +1865,55 @@ class ZCpu:
         self.intr = 2
 
     def _scan_table(self):
-        self.plugin.debug_print(": scan_table", 0)
-        exit("Not implemented yet!")
+        pc = self.pc
+        self._read_operands_var_2op()
+        ops = self.ops
+        if self.plugin.level >= 2:
+            self.plugin.debug_print(
+                f"{format(pc, 'X')}: scan_table {ops[0 : self.numops]}", 2
+            )
+
+        # scan_table x table len form -> (result)
+        # form is optional (default $82 = word search, 2-byte entries)
+        x = ops[0]
+        table_addr = ops[1]
+        length = ops[2]
+        form = ops[3] if self.numops > 3 else 0x82  # Default: word search
+
+        # Bit 7 of form: 1 = words, 0 = bytes
+        # Lower 7 bits: field length (number of bytes per entry)
+        is_word_search = (form & 0x80) != 0
+        entry_size = form & 0x7F
+        if entry_size == 0:
+            entry_size = 2 if is_word_search else 1
+
+        result = 0
+        found = False
+
+        # Search through the table
+        for i in range(length):
+            entry_addr = table_addr + i * entry_size
+
+            if is_word_search:
+                # Compare as 16-bit words
+                table_value = (self.mem[entry_addr] << 8) | self.mem[entry_addr + 1]
+            else:
+                # Compare as bytes
+                table_value = self.mem[entry_addr]
+
+            if table_value == x:
+                result = entry_addr
+                found = True
+                break
+
+        # Store result and branch
+        self._zstore(result, self.mem[self.pc])
+        self.pc += 1
+        jif, offset = self.branch(found)
+        if self.plugin.level >= 2:
+            self.plugin.debug_print(
+                f"{format(pc, 'X')}: scan_table -> {result} [{jif}] {offset}", 2
+            )
 
     def _not_var(self):
         pc = self.pc
@@ -1942,25 +1990,59 @@ class ZCpu:
             self.plugin.debug_print(
                 f"{format(pc, 'X')}: copy_table {ops[0 : self.numops]}", 2
             )
-        if ops[1] == 0:  # Copy zeros to the first variable
-            for i in range(abs(ops[2])):
-                self.mem[ops[0] + i] = 0
-        else:  # Copy first to second
-            tmplist = []
-            if ops[2] > 0:  # Make sure that the first isn't destroyed
-                for i in range(ops[2]):
-                    tmplist.append(self.mem[ops[0] + i])
-                for i in range(ops[2]):
-                    self.mem[ops[1] + i] = tmplist[i]
-                for i in range(ops[2]):
-                    self.mem[ops[0] + i] = tmplist[i]
+
+        first = ops[0]
+        second = ops[1]
+        size = self._s2i(ops[2])  # Convert to signed
+
+        if second == 0:
+            # Zero abs(size) bytes starting at first
+            for i in range(abs(size)):
+                self.mem[first + i] = 0
+        elif size > 0:
+            # Positive size: copy forwards, but avoid corrupting source during overlap
+            # If dest > src, copy backwards to avoid overwriting unread source bytes
+            if second > first:
+                # Copy backwards
+                for i in range(size - 1, -1, -1):
+                    self.mem[second + i] = self.mem[first + i]
             else:
-                for i in range(abs(ops[2])):
-                    self.mem[ops[1] + i] = self.mem[ops[0] + i]
+                # Copy forwards (safe when dest <= src)
+                for i in range(size):
+                    self.mem[second + i] = self.mem[first + i]
+        else:
+            # Negative size: copy forwards (may corrupt source)
+            abs_size = abs(size)
+            for i in range(abs_size):
+                self.mem[second + i] = self.mem[first + i]
 
     def _print_table(self):
-        self.plugin.debug_print(": print_table", 0)
-        exit("Not implemented yet!")
+        pc = self.pc
+        self._read_operands_var_2op()
+        ops = self.ops
+        if self.plugin.level >= 2:
+            self.plugin.debug_print(
+                f"{format(pc, 'X')}: print_table {ops[0 : self.numops]}", 2
+            )
+
+        # print_table zscii-text width height skip
+        # height and skip are optional (default to 1 and 0)
+        text_addr = ops[0]
+        width = ops[1]
+        height = ops[2] if self.numops > 2 else 1
+        skip = ops[3] if self.numops > 3 else 0
+
+        # Print a rectangle of ZSCII text from the table
+        # starting at current cursor position, spreading right and down
+        for row in range(height):
+            line_start = text_addr + row * (width + skip)
+            for col in range(width):
+                char_addr = line_start + col
+                char_code = self.mem[char_addr]
+                # Decode and print the ZSCII character
+                self.output.print_string(chr(char_code), [char_code])
+            if row < height - 1:
+                self.output.new_line()
 
     def _check_arg_count(self):
         pc = self.pc
