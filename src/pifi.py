@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """Python Interactive Fiction Interpreter"""
 
+import faulthandler
 from typing import cast
 from lib.container import initialize_container
 from lib.machine import ZMachine
@@ -40,6 +41,7 @@ class ListPluginsAction(argparse.Action):
 
 def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)  # Break on control-c
+    faulthandler.register(signal.SIGUSR1)
 
     # @type f file
     # @type parser argparse.ArgumentParser
