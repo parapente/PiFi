@@ -609,7 +609,7 @@ class ZCpu:
         ops = self.ops
         return_var = self.mem[self.pc]
         self.pc += 1
-        addr = ops[0] + 2 * ops[1]
+        addr = (ops[0] + 2 * ops[1]) % 65536
         data = (self.mem[addr] << 8) + self.mem[addr + 1]
         self._zstore(data, return_var)
         if self.plugin.level >= 2:
@@ -627,7 +627,7 @@ class ZCpu:
         ops = self.ops
         return_var = mem[self.pc]
         self.pc += 1
-        addr = ops[0] + ops[1]
+        addr = (ops[0] + ops[1]) % 65536
         data = mem[addr]
         self._zstore(data, return_var)
         if self.plugin.level >= 2:
@@ -1532,7 +1532,7 @@ class ZCpu:
         pc = self.pc
         self._read_operands_var_2op()
         ops = self.ops
-        addr = ops[0] + (2 * ops[1])
+        addr = (ops[0] + (2 * ops[1])) % 65536
         self.mem[addr] = ops[2] >> 8
         self.mem[addr + 1] = ops[2] & 0xFF
         if self.plugin.level >= 2:
@@ -1544,7 +1544,7 @@ class ZCpu:
         pc = self.pc
         self._read_operands_var_2op()
         ops = self.ops
-        addr = ops[0] + ops[1]
+        addr = (ops[0] + ops[1]) % 65536
         self.mem[addr] = ops[2] & 255
         if self.plugin.level >= 2:
             self.plugin.debug_print(
