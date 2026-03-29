@@ -1694,8 +1694,8 @@ class ZCpu:
         ops = self.ops
         if self.zver != 6:
             n = self.stack.pop()
-            print("Pull --", n)
-            print("Pull --", ops[0 : self.numops])
+            if ops[0] == 0:
+                self.stack.pop()  # We don't need the top value of stack
             self._zstore(n, ops[0])
             if self.plugin.level >= 2:
                 self.plugin.debug_print(
@@ -2195,7 +2195,6 @@ class ZCpu:
                 self.pc = self.pc + 1
             elif optype == 2:  # Variable (1 byte)
                 if self.mem[self.pc] == 0:
-                    self.indirect = True
                     self.ops[num] = self.stack.pop()
                     num += 1
                 elif self.mem[self.pc] < 0x10:
