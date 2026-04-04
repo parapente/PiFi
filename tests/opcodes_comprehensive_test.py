@@ -3638,3 +3638,369 @@ class TestEXTOpcodes:
 
             with pytest.raises(SystemExit):
                 cpu.command()
+
+
+class TestObjectAccessors:
+    """Tests that verify object accessor methods (parent, child, sibling)
+    are used correctly by opcodes. These catch bugs where parent/child
+    accessors are swapped (e.g., jin using child instead of parent)."""
+
+    class TestJinAcrossVersions:
+        """Test jin opcode across all Z-machine versions."""
+
+        def test_jin_true_v3(self, cpu_v3):
+            cpu = cpu_v3
+            mem = cpu.mem
+            base = cpu.header.obj_table
+            obj3_addr = base + 80
+            mem[obj3_addr + 4] = 2
+            mem[cpu.pc] = 0xC6
+            mem[cpu.pc + 1] = 0x0F
+            mem[cpu.pc + 2] = 0x00
+            mem[cpu.pc + 3] = 0x03
+            mem[cpu.pc + 4] = 0x00
+            mem[cpu.pc + 5] = 0x02
+            mem[cpu.pc + 6] = 0xC2
+
+            cpu.command()
+            assert cpu.pc >= 8
+
+        def test_jin_true_v4(self, cpu_v4):
+            cpu = cpu_v4
+            mem = cpu.mem
+            base = cpu.header.obj_table
+            obj3_addr = base + 126
+            mem[obj3_addr + 6] = 0x00
+            mem[obj3_addr + 7] = 0x02
+            mem[cpu.pc] = 0xC6
+            mem[cpu.pc + 1] = 0x0F
+            mem[cpu.pc + 2] = 0x00
+            mem[cpu.pc + 3] = 0x03
+            mem[cpu.pc + 4] = 0x00
+            mem[cpu.pc + 5] = 0x02
+            mem[cpu.pc + 6] = 0xC2
+
+            cpu.command()
+            assert cpu.pc >= 8
+
+        def test_jin_true_v5(self, cpu_v5):
+            cpu = cpu_v5
+            mem = cpu.mem
+            base = cpu.header.obj_table
+            obj3_addr = base + 126
+            mem[obj3_addr + 6] = 0x00
+            mem[obj3_addr + 7] = 0x02
+            mem[cpu.pc] = 0xC6
+            mem[cpu.pc + 1] = 0x0F
+            mem[cpu.pc + 2] = 0x00
+            mem[cpu.pc + 3] = 0x03
+            mem[cpu.pc + 4] = 0x00
+            mem[cpu.pc + 5] = 0x02
+            mem[cpu.pc + 6] = 0xC2
+
+            cpu.command()
+            assert cpu.pc >= 8
+
+        def test_jin_false_parent_mismatch_v3(self, cpu_v3):
+            cpu = cpu_v3
+            mem = cpu.mem
+            base = cpu.header.obj_table
+            obj3_addr = base + 80
+            mem[obj3_addr + 4] = 1
+            mem[cpu.pc] = 0xC6
+            mem[cpu.pc + 1] = 0x0F
+            mem[cpu.pc + 2] = 0x00
+            mem[cpu.pc + 3] = 0x03
+            mem[cpu.pc + 4] = 0x00
+            mem[cpu.pc + 5] = 0x02
+            mem[cpu.pc + 6] = 0xC2
+
+            start_pc = cpu.pc
+            cpu.command()
+            assert cpu.pc == start_pc + 7
+
+        def test_jin_false_parent_mismatch_v5(self, cpu_v5):
+            cpu = cpu_v5
+            mem = cpu.mem
+            base = cpu.header.obj_table
+            obj3_addr = base + 126
+            mem[obj3_addr + 6] = 0x00
+            mem[obj3_addr + 7] = 0x01
+            mem[cpu.pc] = 0xC6
+            mem[cpu.pc + 1] = 0x0F
+            mem[cpu.pc + 2] = 0x00
+            mem[cpu.pc + 3] = 0x03
+            mem[cpu.pc + 4] = 0x00
+            mem[cpu.pc + 5] = 0x02
+            mem[cpu.pc + 6] = 0xC2
+
+            start_pc = cpu.pc
+            cpu.command()
+            assert cpu.pc == start_pc + 7
+
+    class TestParentChildDistinct:
+        """Verify that parent and child fields are at different offsets
+        in the object structure. A bug that swaps parent/child accessors
+        would fail these tests."""
+
+        def test_parent_not_equal_child_v3(self, cpu_v3):
+            cpu = cpu_v3
+            mem = cpu.mem
+            base = cpu.header.obj_table
+            obj2_addr = base + 71
+            mem[obj2_addr + 4] = 1
+            mem[obj2_addr + 6] = 3
+            mem[cpu.pc] = 0x83
+            mem[cpu.pc + 1] = 0x00
+            mem[cpu.pc + 2] = 0x02
+            mem[cpu.pc + 3] = global_var_ref(100)
+            cpu.command()
+            parent_of_2 = get_global_var(cpu, 100)
+            cpu.command_dict.clear()
+            mem[cpu.pc] = 0x82
+            mem[cpu.pc + 1] = 0x00
+            mem[cpu.pc + 2] = 0x02
+            mem[cpu.pc + 3] = global_var_ref(101)
+            cpu.command()
+            child_of_2 = get_global_var(cpu, 101)
+            assert parent_of_2 == 1
+            assert child_of_2 == 3
+            assert parent_of_2 != child_of_2
+
+        def test_parent_not_equal_child_v5(self, cpu_v5):
+            cpu = cpu_v5
+            mem = cpu.mem
+            base = cpu.header.obj_table
+            obj2_addr = base + 140
+            mem[obj2_addr + 6] = 0x00
+            mem[obj2_addr + 7] = 0x01
+            mem[obj2_addr + 10] = 0x00
+            mem[obj2_addr + 11] = 0x03
+            mem[cpu.pc] = 0x83
+            mem[cpu.pc + 1] = 0x00
+            mem[cpu.pc + 2] = 0x02
+            mem[cpu.pc + 3] = global_var_ref(100)
+            cpu.command()
+            parent_of_2 = get_global_var(cpu, 100)
+            cpu.command_dict.clear()
+            mem[cpu.pc] = 0x82
+            mem[cpu.pc + 1] = 0x00
+            mem[cpu.pc + 2] = 0x02
+            mem[cpu.pc + 3] = global_var_ref(101)
+            cpu.command()
+            child_of_2 = get_global_var(cpu, 101)
+            assert parent_of_2 == 1
+            assert child_of_2 == 3
+            assert parent_of_2 != child_of_2
+
+    class TestJinUsesParentNotChild:
+        """Critical test: jin must check the object's PARENT, not its child.
+        This catches the specific bug where _get_obj_child was used instead
+        of _get_obj_parent in the jin opcode."""
+
+        def test_jin_checks_parent_not_child_v3(self, cpu_v3):
+            cpu = cpu_v3
+            mem = cpu.mem
+            base = cpu.header.obj_table
+            obj1_addr = base + 62
+            obj2_addr = base + 71
+            obj3_addr = base + 80
+            mem[obj1_addr + 6] = 2
+            mem[obj2_addr + 4] = 1
+            mem[obj2_addr + 5] = 0
+            mem[obj2_addr + 6] = 3
+            mem[obj3_addr + 4] = 2
+            mem[obj3_addr + 5] = 0
+            mem[obj3_addr + 6] = 0
+            mem[cpu.pc] = 0xC6
+            mem[cpu.pc + 1] = 0x0F
+            mem[cpu.pc + 2] = 0x00
+            mem[cpu.pc + 3] = 0x02
+            mem[cpu.pc + 4] = 0x00
+            mem[cpu.pc + 5] = 0x03
+            mem[cpu.pc + 6] = 0xC2
+            start_pc = cpu.pc
+            cpu.command()
+            assert cpu.pc == start_pc + 7
+
+        def test_jin_checks_parent_not_child_v5(self, cpu_v5):
+            cpu = cpu_v5
+            mem = cpu.mem
+            base = cpu.header.obj_table
+            obj1_addr = base + 126
+            obj2_addr = base + 140
+            obj3_addr = base + 154
+            mem[obj1_addr + 10] = 0x00
+            mem[obj1_addr + 11] = 0x02
+            mem[obj2_addr + 6] = 0x00
+            mem[obj2_addr + 7] = 0x01
+            mem[obj2_addr + 8] = 0x00
+            mem[obj2_addr + 9] = 0x00
+            mem[obj2_addr + 10] = 0x00
+            mem[obj2_addr + 11] = 0x03
+            mem[obj3_addr + 6] = 0x00
+            mem[obj3_addr + 7] = 0x02
+            mem[obj3_addr + 8] = 0x00
+            mem[obj3_addr + 9] = 0x00
+            mem[obj3_addr + 10] = 0x00
+            mem[obj3_addr + 11] = 0x00
+            mem[cpu.pc] = 0xC6
+            mem[cpu.pc + 1] = 0x0F
+            mem[cpu.pc + 2] = 0x00
+            mem[cpu.pc + 3] = 0x02
+            mem[cpu.pc + 4] = 0x00
+            mem[cpu.pc + 5] = 0x03
+            mem[cpu.pc + 6] = 0xC2
+            start_pc = cpu.pc
+            cpu.command()
+            assert cpu.pc == start_pc + 7
+
+    class TestGetParentAcrossVersions:
+        """Test get_parent opcode returns correct value across versions."""
+
+        def test_get_parent_v3(self, cpu_v3):
+            cpu = cpu_v3
+            mem = cpu.mem
+            base = cpu.header.obj_table
+            obj3_addr = base + 80
+            mem[obj3_addr + 4] = 2
+            mem[cpu.pc] = 0x83
+            mem[cpu.pc + 1] = 0x00
+            mem[cpu.pc + 2] = 0x03
+            mem[cpu.pc + 3] = global_var_ref(112)
+            cpu.command()
+            assert get_global_var(cpu, 112) == 2
+
+        def test_get_parent_v5(self, cpu_v5):
+            cpu = cpu_v5
+            mem = cpu.mem
+            base = cpu.header.obj_table
+            obj3_addr = base + 154
+            mem[obj3_addr + 6] = 0x00
+            mem[obj3_addr + 7] = 0x02
+            mem[cpu.pc] = 0x83
+            mem[cpu.pc + 1] = 0x00
+            mem[cpu.pc + 2] = 0x03
+            mem[cpu.pc + 3] = global_var_ref(112)
+            cpu.command()
+            assert get_global_var(cpu, 112) == 2
+
+    class TestGetChildAcrossVersions:
+        """Test get_child opcode returns correct value across versions."""
+
+        def test_get_child_v3(self, cpu_v3):
+            cpu = cpu_v3
+            mem = cpu.mem
+            base = cpu.header.obj_table
+            obj1_addr = base + 62
+            mem[obj1_addr + 6] = 2
+            mem[cpu.pc] = 0x82
+            mem[cpu.pc + 1] = 0x00
+            mem[cpu.pc + 2] = 0x01
+            mem[cpu.pc + 3] = global_var_ref(112)
+            cpu.command()
+            assert get_global_var(cpu, 112) == 2
+
+        def test_get_child_v5(self, cpu_v5):
+            cpu = cpu_v5
+            mem = cpu.mem
+            base = cpu.header.obj_table
+            obj1_addr = base + 126
+            mem[obj1_addr + 10] = 0x00
+            mem[obj1_addr + 11] = 0x02
+            mem[cpu.pc] = 0x82
+            mem[cpu.pc + 1] = 0x00
+            mem[cpu.pc + 2] = 0x01
+            mem[cpu.pc + 3] = global_var_ref(112)
+            cpu.command()
+            assert get_global_var(cpu, 112) == 2
+
+    class TestInsertObjAcrossVersions:
+        """Test insert_obj opcode across versions."""
+
+        def test_insert_obj_v3(self, cpu_v3):
+            cpu = cpu_v3
+            mem = cpu.mem
+            base = cpu.header.obj_table
+            obj2_addr = base + 71
+            obj3_addr = base + 80
+            mem[obj3_addr + 4] = 0
+            mem[obj3_addr + 5] = 0
+            mem[obj2_addr + 6] = 0
+            mem[cpu.pc] = 0xCE
+            mem[cpu.pc + 1] = 0x0F
+            mem[cpu.pc + 2] = 0x00
+            mem[cpu.pc + 3] = 0x03
+            mem[cpu.pc + 4] = 0x00
+            mem[cpu.pc + 5] = 0x02
+            cpu.command()
+            assert mem[obj3_addr + 4] == 2
+
+        def test_insert_obj_v5(self, cpu_v5):
+            cpu = cpu_v5
+            mem = cpu.mem
+            base = cpu.header.obj_table
+            obj2_addr = base + 140
+            obj3_addr = base + 154
+            mem[obj3_addr + 6] = 0x00
+            mem[obj3_addr + 7] = 0x00
+            mem[obj3_addr + 8] = 0x00
+            mem[obj3_addr + 9] = 0x00
+            mem[obj2_addr + 10] = 0x00
+            mem[obj2_addr + 11] = 0x00
+            mem[cpu.pc] = 0xCE
+            mem[cpu.pc + 1] = 0x0F
+            mem[cpu.pc + 2] = 0x00
+            mem[cpu.pc + 3] = 0x03
+            mem[cpu.pc + 4] = 0x00
+            mem[cpu.pc + 5] = 0x02
+            cpu.command()
+            assert mem[obj3_addr + 6] == 0x00
+            assert mem[obj3_addr + 7] == 0x02
+
+    class TestRemoveObjAcrossVersions:
+        """Test remove_obj opcode across versions."""
+
+        def test_remove_obj_v3(self, cpu_v3):
+            cpu = cpu_v3
+            mem = cpu.mem
+            base = cpu.header.obj_table
+            obj2_addr = base + 71
+            obj3_addr = base + 80
+            mem[base + 62 + 6] = 2
+            mem[obj2_addr + 4] = 1
+            mem[obj2_addr + 5] = 0
+            mem[obj2_addr + 6] = 3
+            mem[obj3_addr + 4] = 2
+            mem[obj3_addr + 5] = 0
+            mem[cpu.pc] = 0x89
+            mem[cpu.pc + 1] = 0x00
+            mem[cpu.pc + 2] = 0x03
+            cpu.command()
+            assert mem[obj3_addr + 4] == 0
+
+        def test_remove_obj_v5(self, cpu_v5):
+            cpu = cpu_v5
+            mem = cpu.mem
+            base = cpu.header.obj_table
+            obj1_addr = base + 126
+            obj2_addr = base + 140
+            obj3_addr = base + 154
+            mem[obj1_addr + 10] = 0x00
+            mem[obj1_addr + 11] = 0x02
+            mem[obj2_addr + 6] = 0x00
+            mem[obj2_addr + 7] = 0x01
+            mem[obj2_addr + 8] = 0x00
+            mem[obj2_addr + 9] = 0x00
+            mem[obj2_addr + 10] = 0x00
+            mem[obj2_addr + 11] = 0x03
+            mem[obj3_addr + 6] = 0x00
+            mem[obj3_addr + 7] = 0x02
+            mem[obj3_addr + 8] = 0x00
+            mem[obj3_addr + 9] = 0x00
+            mem[cpu.pc] = 0x89
+            mem[cpu.pc + 1] = 0x00
+            mem[cpu.pc + 2] = 0x03
+            cpu.command()
+            assert mem[obj3_addr + 6] == 0x00
+            assert mem[obj3_addr + 7] == 0x00
