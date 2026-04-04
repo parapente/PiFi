@@ -944,7 +944,38 @@ class ZCpu:
             self.plugin.debug_print(
                 f"{format(pc, 'X')}: throw {ops[0 : self.numops]}", 2
             )
-        exit("Not implemented yet!")
+
+        # throw value stack-frame
+        value = ops[0]
+        stack_frame = ops[1]
+
+        # Unwind the stack to the specified frame
+        # The stack_frame value is the framespos that was returned by catch
+        stack = self.stack
+
+        # Validate stack_frame - must be at least 2 (catch pushes 2 items)
+        # and must not exceed current framespos
+        if stack_frame < 2 or stack_frame > stack.framespos:
+            # Invalid stack frame - this can happen in recursive throw patterns
+            # where the thrown value is used as the next frame argument.
+            # In this case, just return the value normally (like a regular return).
+            if self.plugin.level >= 2:
+                self.plugin.debug_print(
+                    f"throw: invalid stack_frame {stack_frame}, doing normal return", 2
+                )
+            # Do a normal return with the value
+            self._return(value)
+            return
+
+        # Restore framespos to the caught position
+        stack.framespos = stack_frame
+
+        # Pop in reverse order of what catch pushed: local_vars, eval_stack
+        stack.pop_local_vars()
+        stack.pop_eval_stack()
+
+        # Return the value (as if from the routine which executed the catch)
+        self._return(value)
 
     def _jz(self):
         pc = self.pc
@@ -1450,18 +1481,39 @@ class ZCpu:
             if self.plugin.level >= 2:
                 self.plugin.debug_print(f"{format(pc, 'X')}: pop", 2)
         else:
-            # print "actually catch is used!"
-            if self.plugin.level >= 2:
-                self.plugin.debug_print(f"{format(pc, 'X')}: catch", 2)
+            # In V5+, pop is actually a catch without the stack frame setup
+            # - it just returns the current stack frame identifier
             self._catch()
 
     def _catch(self):
-        # self.stack.push_local_vars()
-        # self.stack.push_frame(self.pc)
-        # self.stack.push_frame(self.mem[self.pc])
-        print("catch!")
+        pc = self.pc
+
+        # catch: return current stack frame identifier (V5+ only)
+        # In V5+, 0OP opcodes have a result byte after the opcode
+        # Format: [opcode 0xB9] [result variable]
+        stack = self.stack
+
+        # Get the return variable from the byte after the opcode
+        return_var = self.mem[self.pc + 1]
+
+        # Save the current eval stack
+        stack.push_eval_stack()
+
+        # Save local variables
+        stack.push_local_vars()
+
+        # Return the current framespos as the stack frame identifier
+        # This is the position AFTER we pushed all the frame data
+        stack_frame_id = stack.framespos
+
+        # Store the result
+        self._zstore(stack_frame_id, return_var)
+
+        # Advance PC past opcode and result byte
         self.pc += 2
-        raise "Not implemented yet!"
+
+        if self.plugin.level >= 2:
+            self.plugin.debug_print(f"{format(pc, 'X')}: catch", 2)
 
     def _quit(self):
         pc = self.pc

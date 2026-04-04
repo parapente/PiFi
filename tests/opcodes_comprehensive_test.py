@@ -1330,20 +1330,253 @@ class Test2OPOpcodes:
     class TestThrow:
         """Tests for throw opcode (2OP:28)."""
 
-        def test_throw_not_implemented(self, cpu_v5):
-            """Test throw: not implemented in current CPU."""
+        def test_throw_returns_value_to_caller(self, cpu_v5):
+            """Throw should return value to the caller of the routine that executed catch."""
             cpu = cpu_v5
             mem = cpu.mem
-            mem[cpu.pc] = 0xDC  # throw
-            mem[cpu.pc + 1] = 0x0F  # 2 large constants + 2 omitted
+            stack = cpu.stack
+
+            return_pc = 0x100
+            return_var = global_var_ref(100)
+
+            stack.push_local_vars()
+            stack.push_eval_stack()
+            stack.push_frame([return_pc, return_var, 0, []])
+            stack.push_frame(0)
+            stack.local_vars = [0] * 2
+            stack.queuepos = 0
+
+            mem[cpu.pc] = 0xB9
+            mem[cpu.pc + 1] = global_var_ref(50)
+            cpu.command()
+
+            frame_id = get_global_var(cpu, 50)
+            assert frame_id > 0
+
+            mem[cpu.pc] = 0xDC
+            mem[cpu.pc + 1] = 0x0F
+            mem[cpu.pc + 2] = 0x00
+            mem[cpu.pc + 3] = 0x2A
+            mem[cpu.pc + 4] = (frame_id >> 8) & 0xFF
+            mem[cpu.pc + 5] = frame_id & 0xFF
+
+            cpu.command()
+
+            assert get_global_var(cpu, 100) == 42
+            assert cpu.pc == return_pc
+
+        def test_throw_unwinds_nested_calls(self, cpu_v5):
+            """Throw should unwind through nested calls."""
+            cpu = cpu_v5
+            mem = cpu.mem
+            stack = cpu.stack
+
+            outer_return_pc = 0x100
+            outer_return_var = global_var_ref(100)
+
+            stack.push_local_vars()
+            stack.push_eval_stack()
+            stack.push_frame([outer_return_pc, outer_return_var, 0, []])
+            stack.push_frame(0)
+            stack.local_vars = [0] * 2
+            stack.queuepos = 0
+
+            mem[cpu.pc] = 0xB9
+            mem[cpu.pc + 1] = global_var_ref(50)
+            cpu.command()
+
+            frame_id = get_global_var(cpu, 50)
+
+            inner_return_pc = 0x200
+            inner_return_var = global_var_ref(101)
+
+            stack.push_local_vars()
+            stack.push_eval_stack()
+            stack.push_frame([inner_return_pc, inner_return_var, 0, []])
+            stack.push_frame(0)
+            stack.local_vars = [0]
+            stack.queuepos = 0
+
+            mem[cpu.pc] = 0xDC
+            mem[cpu.pc + 1] = 0x0F
+            mem[cpu.pc + 2] = 0x00
+            mem[cpu.pc + 3] = 0x63
+            mem[cpu.pc + 4] = (frame_id >> 8) & 0xFF
+            mem[cpu.pc + 5] = frame_id & 0xFF
+
+            cpu.command()
+
+            assert get_global_var(cpu, 100) == 99
+            assert cpu.pc == outer_return_pc
+
+        def test_throw_restores_eval_stack(self, cpu_v5):
+            """Throw should restore the eval stack to the state at catch."""
+            cpu = cpu_v5
+            mem = cpu.mem
+            stack = cpu.stack
+
+            stack.push(42)
+            assert stack.queuepos == 1
+            assert stack.queue[0] == 42
+
+            stack.push_local_vars()
+            stack.push_eval_stack()
+            stack.push_frame([0x100, global_var_ref(100), 0, []])
+            stack.push_frame(0)
+            stack.local_vars = [0]
+            stack.queuepos = 0
+
+            mem[cpu.pc] = 0xB9
+            mem[cpu.pc + 1] = global_var_ref(50)
+            cpu.command()
+
+            frame_id = get_global_var(cpu, 50)
+
+            stack.push(99)
+            assert stack.queue[0] == 99
+
+            mem[cpu.pc] = 0xDC
+            mem[cpu.pc + 1] = 0x0F
             mem[cpu.pc + 2] = 0x00
             mem[cpu.pc + 3] = 0x01
-            mem[cpu.pc + 4] = 0x00
-            mem[cpu.pc + 5] = 0x00
+            mem[cpu.pc + 4] = (frame_id >> 8) & 0xFF
+            mem[cpu.pc + 5] = frame_id & 0xFF
 
-            with pytest.raises(SystemExit) as excinfo:
-                cpu.command()
-            # Should exit with "Not implemented yet!"
+            cpu.command()
+
+            assert stack.queuepos == 1
+            assert stack.queue[0] == 42
+
+        def test_throw_restores_local_vars(self, cpu_v5):
+            """Throw should restore local vars to the caller's local vars."""
+            cpu = cpu_v5
+            mem = cpu.mem
+            stack = cpu.stack
+
+            original_local_vars = [1, 2, 3]
+            stack.local_vars = original_local_vars[:]
+
+            stack.push_local_vars()
+            stack.push_eval_stack()
+            stack.push_frame([0x100, global_var_ref(100), 0, []])
+            stack.push_frame(0)
+            stack.local_vars = [10, 20, 30]
+            stack.queuepos = 0
+
+            mem[cpu.pc] = 0xB9
+            mem[cpu.pc + 1] = global_var_ref(50)
+            cpu.command()
+
+            frame_id = get_global_var(cpu, 50)
+
+            stack.local_vars = [100, 200, 300]
+
+            mem[cpu.pc] = 0xDC
+            mem[cpu.pc + 1] = 0x0F
+            mem[cpu.pc + 2] = 0x00
+            mem[cpu.pc + 3] = 0x01
+            mem[cpu.pc + 4] = (frame_id >> 8) & 0xFF
+            mem[cpu.pc + 5] = frame_id & 0xFF
+
+            cpu.command()
+
+            assert stack.local_vars == original_local_vars
+
+        def test_throw_invalid_frame_does_normal_return(self, cpu_v5):
+            """Throw with invalid frame should do normal return."""
+            cpu = cpu_v5
+            mem = cpu.mem
+            stack = cpu.stack
+
+            return_pc = 0x100
+            return_var = global_var_ref(100)
+
+            stack.push_local_vars()
+            stack.push_eval_stack()
+            stack.push_frame([return_pc, return_var, 0, []])
+            stack.push_frame(0)
+            stack.local_vars = [0]
+            stack.queuepos = 0
+
+            mem[cpu.pc] = 0xDC
+            mem[cpu.pc + 1] = 0x0F
+            mem[cpu.pc + 2] = 0x00
+            mem[cpu.pc + 3] = 0x2A
+            mem[cpu.pc + 4] = 0xFF
+            mem[cpu.pc + 5] = 0xFF
+
+            cpu.command()
+
+            assert get_global_var(cpu, 100) == 42
+            assert cpu.pc == return_pc
+
+        def test_throw_value_zero(self, cpu_v5):
+            """Throw with value 0 should work."""
+            cpu = cpu_v5
+            mem = cpu.mem
+            stack = cpu.stack
+
+            return_pc = 0x100
+            return_var = global_var_ref(100)
+
+            stack.push_local_vars()
+            stack.push_eval_stack()
+            stack.push_frame([return_pc, return_var, 0, []])
+            stack.push_frame(0)
+            stack.local_vars = [0]
+            stack.queuepos = 0
+
+            mem[cpu.pc] = 0xB9
+            mem[cpu.pc + 1] = global_var_ref(50)
+            cpu.command()
+
+            frame_id = get_global_var(cpu, 50)
+
+            mem[cpu.pc] = 0xDC
+            mem[cpu.pc + 1] = 0x0F
+            mem[cpu.pc + 2] = 0x00
+            mem[cpu.pc + 3] = 0x00
+            mem[cpu.pc + 4] = (frame_id >> 8) & 0xFF
+            mem[cpu.pc + 5] = frame_id & 0xFF
+
+            cpu.command()
+
+            assert get_global_var(cpu, 100) == 0
+            assert cpu.pc == return_pc
+
+        def test_throw_negative_value(self, cpu_v5):
+            """Throw with negative value (signed) should work."""
+            cpu = cpu_v5
+            mem = cpu.mem
+            stack = cpu.stack
+
+            return_pc = 0x100
+            return_var = global_var_ref(100)
+
+            stack.push_local_vars()
+            stack.push_eval_stack()
+            stack.push_frame([return_pc, return_var, 0, []])
+            stack.push_frame(0)
+            stack.local_vars = [0]
+            stack.queuepos = 0
+
+            mem[cpu.pc] = 0xB9
+            mem[cpu.pc + 1] = global_var_ref(50)
+            cpu.command()
+
+            frame_id = get_global_var(cpu, 50)
+
+            mem[cpu.pc] = 0xDC
+            mem[cpu.pc + 1] = 0x0F
+            mem[cpu.pc + 2] = 0xFF
+            mem[cpu.pc + 3] = 0xFF
+            mem[cpu.pc + 4] = (frame_id >> 8) & 0xFF
+            mem[cpu.pc + 5] = frame_id & 0xFF
+
+            cpu.command()
+
+            assert get_global_var(cpu, 100) == 0xFFFF
+            assert cpu.pc == return_pc
 
     class TestJin:
         """Tests for jin opcode (2OP:6)."""
@@ -2016,21 +2249,108 @@ class Test0OPOpcodes:
     class TestCatch:
         """Tests for catch opcode (0OP:185 in V5/6)."""
 
-        def test_catch_v5(self, cpu_v5):
-            """Test catch: return current stack frame (V5+)."""
+        def test_catch_returns_frame_id(self, cpu_v5):
+            """Catch should return a valid stack frame identifier."""
             cpu = cpu_v5
             mem = cpu.mem
-            # Setup stack frame
-            cpu.stack.push_frame([0x100, 0x64, 0, []])
-            cpu.stack.push_frame(0)
-            cpu.stack.local_vars = []
-            mem[cpu.pc] = 0xB9  # catch (in V5+)
 
-            # This is complex, just verify it doesn't crash
-            try:
-                cpu.command()
-            except SystemExit:
-                pass  # catch calls exit() in current impl
+            mem[cpu.pc] = 0xB9
+            mem[cpu.pc + 1] = global_var_ref(100)
+            cpu.command()
+
+            frame_id = get_global_var(cpu, 100)
+            assert frame_id > 0
+
+        def test_catch_saves_eval_stack(self, cpu_v5):
+            """Catch should save the eval stack."""
+            cpu = cpu_v5
+            mem = cpu.mem
+            stack = cpu.stack
+
+            stack.push(42)
+            stack.push(99)
+            assert stack.queuepos == 2
+
+            mem[cpu.pc] = 0xB9
+            mem[cpu.pc + 1] = global_var_ref(100)
+            cpu.command()
+
+            assert stack.queuepos == 0
+
+        def test_catch_saves_local_vars(self, cpu_v5):
+            """Catch should save local vars."""
+            cpu = cpu_v5
+            mem = cpu.mem
+            stack = cpu.stack
+
+            stack.local_vars = [1, 2, 3]
+            stack.local_vars_num = 3
+
+            mem[cpu.pc] = 0xB9
+            mem[cpu.pc + 1] = global_var_ref(100)
+            cpu.command()
+
+            assert stack.queuepos == 0
+
+        def test_catch_frame_id_increases(self, cpu_v5):
+            """Multiple catches should return increasing frame IDs."""
+            cpu = cpu_v5
+            mem = cpu.mem
+
+            mem[cpu.pc] = 0xB9
+            mem[cpu.pc + 1] = global_var_ref(100)
+            cpu.command()
+            frame1 = get_global_var(cpu, 100)
+
+            mem[cpu.pc] = 0xB9
+            mem[cpu.pc + 1] = global_var_ref(101)
+            cpu.command()
+            frame2 = get_global_var(cpu, 101)
+
+            mem[cpu.pc] = 0xB9
+            mem[cpu.pc + 1] = global_var_ref(102)
+            cpu.command()
+            frame3 = get_global_var(cpu, 102)
+
+            assert frame1 < frame2 < frame3
+
+        def test_catch_advances_pc(self, cpu_v5):
+            """Catch should advance PC past opcode and result byte."""
+            cpu = cpu_v5
+            mem = cpu.mem
+            start_pc = cpu.pc
+
+            mem[cpu.pc] = 0xB9
+            mem[cpu.pc + 1] = global_var_ref(100)
+            cpu.command()
+
+            assert cpu.pc == start_pc + 2
+
+        def test_catch_v3_is_pop(self, cpu_v3):
+            """In V3, opcode 185 is pop, not catch."""
+            cpu = cpu_v3
+            mem = cpu.mem
+
+            mem[cpu.pc] = 0xE8
+            mem[cpu.pc + 1] = 0x0F
+            mem[cpu.pc + 2] = 0xDE
+            mem[cpu.pc + 3] = 0xAD
+            cpu.command()
+
+            mem[cpu.pc] = 0xB9
+            cpu.command()
+
+        def test_catch_v6(self, cpu_v6):
+            """Catch should work in V6."""
+            cpu = cpu_v6
+            mem = cpu.mem
+
+            mem[cpu.pc] = 0xB9
+            mem[cpu.pc + 1] = global_var_ref(100)
+            cpu.command()
+
+            frame_id = get_global_var(cpu, 100)
+            assert frame_id > 0
 
     class TestSave:
         """Tests for save opcode (0OP:181)."""
