@@ -1,19 +1,21 @@
 from plugins.qtztextwidget_v2 import ZTextWidget
-from PyQt5 import QtWidgets
-from PyQt5 import QtCore
+from PyQt6 import QtWidgets
+from PyQt6 import QtCore
 from plugins.plugskel import PluginSkeleton
 import traceback
 import sys
 
 
 class QtPluginV2(PluginSkeleton):
-    win = None
-    zver = None
-    read_line_enabled = False
-    def_bg = 2  # Black
-    def_fg = 9  # White
-    zfont = 1  # Normal z-font
-    current_window = 0
+    def __init__(self):
+        super().__init__()
+        self.win = None
+        self.zver = None
+        self.read_line_enabled = False
+        self.def_bg = 2
+        self.def_fg = 9
+        self.zfont = 1
+        self.current_window = 0
 
     def prepare_gui(self) -> None:
         print("This is an experimental plugin, not ready for use...")
@@ -24,9 +26,9 @@ class QtPluginV2(PluginSkeleton):
         hbl.addWidget(QtWidgets.QLabel())
         hbl.itemAt(0).widget().setVisible(False)
         hbl.itemAt(1).widget().setVisible(False)
-        hbl.itemAt(1).widget().setAlignment(QtCore.Qt.Alignment(QtCore.Qt.AlignRight))
+        hbl.itemAt(1).widget().setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
         hbl.itemAt(1).widget().setSizePolicy(
-            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred
+            QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Preferred
         )
         self.widget = ZTextWidget()
         vbl = QtWidgets.QVBoxLayout()
@@ -39,7 +41,7 @@ class QtPluginV2(PluginSkeleton):
         self.win.show()
 
     def exec_(self) -> None:
-        sys.exit(self.a.exec_())
+        sys.exit(self.a.exec())
 
     def print_status(self, room: str, status: str) -> None:
         vbl = self.win.centralWidget().layout()

@@ -1,17 +1,17 @@
-from PyQt5.QtWidgets import QWidget
-from PyQt5.QtGui import QPainter
-from PyQt5.QtGui import QBrush
-from PyQt5.QtGui import QFont
-from PyQt5.QtGui import QFontMetrics
-from PyQt5.QtGui import QFontInfo
-from PyQt5.QtWidgets import QSizePolicy
-from PyQt5.QtCore import QObject
-from PyQt5.QtCore import Qt
-from PyQt5.QtCore import QSize
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtCore import QRectF
-from PyQt5.QtCore import QTimer
-from PyQt5.QtGui import QImage
+from PyQt6.QtWidgets import QWidget
+from PyQt6.QtGui import QPainter
+from PyQt6.QtGui import QBrush
+from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QFontMetrics
+from PyQt6.QtGui import QFontInfo
+from PyQt6.QtWidgets import QSizePolicy
+from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QSize
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import QRectF
+from PyQt6.QtCore import QRect
+from PyQt6.QtCore import QTimer
+from PyQt6.QtGui import QImage
 from lib.window import ZWindow
 from lib.stream import ZStream
 import traceback
@@ -19,63 +19,61 @@ import sys
 
 
 class ZTextWidget(QWidget):
-    width = 80
-    height = 24
-    cur_fg = 10
-    cur_bg = 2
-    cur_style = 0
-    max_char = 0
-    start_pos = 0
-    # cursor_char = 0x258f
-    # cursor_char = 0x005f
-    cursor_char = chr(0x2017)
-    # cursor_char = 0x2582
-    input_buf = []
-    just_scrolled = False
-    reading_line = False
-    reverse_video = False
-    _cursor_visible = False
-    _output_stream = None
-    _input_buffer_printing = False
-    _input_cursor_pos = 0
-    returnPressed = pyqtSignal(["QString"])
+    returnPressed = pyqtSignal(str)
     keyPressed = pyqtSignal(int)
-    pbuffer = [None] * 8
-    pbuffer_painter = [None] * 8
-    game_area = QImage(640, 480, QImage.Format_RGB32)
-    game_area_painter = QPainter(game_area)
-    chartimer = None
-    linetimer = None
-    brush = QBrush(Qt.SolidPattern)
     ztoq_color = dict(
         {
-            2: Qt.black,
-            3: Qt.red,
-            4: Qt.green,
-            5: Qt.yellow,
-            6: Qt.blue,
-            7: Qt.magenta,
-            8: Qt.cyan,
-            9: Qt.white,
-            10: Qt.lightGray,
-            11: Qt.gray,
-            12: Qt.darkGray,
+            2: Qt.GlobalColor.black,
+            3: Qt.GlobalColor.red,
+            4: Qt.GlobalColor.green,
+            5: Qt.GlobalColor.yellow,
+            6: Qt.GlobalColor.blue,
+            7: Qt.GlobalColor.magenta,
+            8: Qt.GlobalColor.cyan,
+            9: Qt.GlobalColor.white,
+            10: Qt.GlobalColor.lightGray,
+            11: Qt.GlobalColor.gray,
+            12: Qt.GlobalColor.darkGray,
         }
     )
 
-    def __init__(self, parent=None, flags=Qt.Widget):
+    def __init__(self, parent=None, flags=Qt.WindowType.Widget):
+        super(ZTextWidget, self).__init__(parent, flags)
+        self.width = 80
+        self.height = 24
+        self.cur_fg = 10
+        self.cur_bg = 2
+        self.cur_style = 0
+        self.max_char = 0
+        self.start_pos = 0
+        self.cursor_char = chr(0x2017)
+        self.input_buf = []
+        self.just_scrolled = False
+        self.reading_line = False
+        self.reverse_video = False
+        self._cursor_visible = False
+        self._output_stream = None
+        self._input_buffer_printing = False
+        self._input_cursor_pos = 0
+        self.pbuffer = [None] * 8
+        self.pbuffer_painter = [None] * 8
+        self.game_area = QImage(640, 480, QImage.Format.Format_RGB32)
+        self.game_area_painter = QPainter(self.game_area)
+        self.chartimer = None
+        self.linetimer = None
+        self.brush = QBrush(Qt.GlobalColor.black, Qt.BrushStyle.SolidPattern)
         super(ZTextWidget, self).__init__(parent, flags)
         sp = QSizePolicy()
-        sp.setHorizontalPolicy(QSizePolicy.Fixed)
-        sp.setVerticalPolicy(QSizePolicy.Fixed)
+        sp.setHorizontalPolicy(QSizePolicy.Policy.Fixed)
+        sp.setVerticalPolicy(QSizePolicy.Policy.Fixed)
         self.setSizePolicy(sp)
-        self.setFocusPolicy(Qt.StrongFocus)
-        self.pbuffer[0] = QImage(640, 480, QImage.Format_RGB32)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.pbuffer[0] = QImage(640, 480, QImage.Format.Format_RGB32)
         self.pbuffer[0].fill(0)
         font = self.font()
         self.normal_font = font
         self.fixed_font = QFont(font)
-        self.fixed_font.setStyleHint(QFont.Monospace)
+        self.fixed_font.setStyleHint(QFont.StyleHint.Monospace)
         self.fixed_font.setFamily(self.fixed_font.defaultFamily())
         self.fixed_font.setPointSize(9)
         print(self.fixed_font.family())
@@ -153,7 +151,7 @@ class ZTextWidget(QWidget):
         # self.draw_cursor(window,False)
 
     def keyPressEvent(self, e):
-        if e.key() == Qt.Key_Left:
+        if e.key() == Qt.Key.Key_Left:
             if self._input_cursor_pos > 0:
                 c = self.input_buf.pop(self._input_cursor_pos)
                 self._input_cursor_pos -= 1
@@ -162,7 +160,7 @@ class ZTextWidget(QWidget):
                 self.draw_input_buffer()
             e.accept()
             self.keyPressed.emit(131)
-        elif e.key() == Qt.Key_Right:
+        elif e.key() == Qt.Key.Key_Right:
             if self._input_cursor_pos < (len(self.input_buf) - 1):
                 c = self.input_buf.pop(self._input_cursor_pos)
                 self._input_cursor_pos += 1
@@ -171,17 +169,17 @@ class ZTextWidget(QWidget):
                 self.draw_input_buffer()
             e.accept()
             self.keyPressed.emit(132)
-        elif e.key() == Qt.Key_Up:
+        elif e.key() == Qt.Key.Key_Up:
             # TODO: Up in history
             e.accept()
             self.keyPressed.emit(129)
             pass
-        elif e.key() == Qt.Key_Down:
+        elif e.key() == Qt.Key.Key_Down:
             # TODO: Down in history
             e.accept()
             self.keyPressed.emit(130)
             pass
-        elif e.key() == Qt.Key_Backspace:
+        elif e.key() == Qt.Key.Key_Backspace:
             if len(self.input_buf) > 1:  # If there IS something to delete
                 self.clean_input_buffer_from_screen()
                 del self.input_buf[self._input_cursor_pos - 1]
@@ -189,14 +187,14 @@ class ZTextWidget(QWidget):
                 self.draw_input_buffer()
             # self.keyPressed.emit() # No keycode available for zscii
             e.accept()
-        elif e.key() == Qt.Key_Delete:
+        elif e.key() == Qt.Key.Key_Delete:
             if self._input_cursor_pos < (len(self.input_buf) - 1):
                 self.clean_input_buffer_from_screen()
                 del self.input_buf[self._input_cursor_pos + 1]
                 self.draw_input_buffer()
             e.accept()
             self.keyPressed.emit(8)
-        elif (e.key() == Qt.Key_Return) or (e.key() == Qt.Key_Enter):
+        elif (e.key() == Qt.Key.Key_Return) or (e.key() == Qt.Key.Key_Enter):
             self.clean_input_buffer_from_screen()
             if self._cursor_visible == True:
                 self.hide_cursor(self.lastwindow)
@@ -212,10 +210,10 @@ class ZTextWidget(QWidget):
             self.input_buf = []
             self.returnPressed.emit(text)
             e.accept()
-        elif (e.key() >= Qt.Key_F1) and (e.key() <= Qt.Key_F12):
+        elif (e.key() >= Qt.Key.Key_F1) and (e.key() <= Qt.Key.Key_F12):
             e.accept()
-            self.keyPressed.emit(133 + e.key() - Qt.Key_F1)
-        elif e.key() == Qt.Key_Escape:
+            self.keyPressed.emit(133 + e.key() - Qt.Key.Key_F1)
+        elif e.key() == Qt.Key.Key_Escape:
             e.accept()
             self.keyPressed.emit(27)
         elif e.text():
@@ -403,7 +401,7 @@ class ZTextWidget(QWidget):
 
     def draw_text(self, txt, txtlen, window):
         if self.pbuffer[window.id] is None:
-            self.pbuffer[window.id] = QImage(640, 480, QImage.Format_RGB32)
+            self.pbuffer[window.id] = QImage(640, 480, QImage.Format.Format_RGB32)
             self.pbuffer[window.id].fill(0)
         # If there IS something to print
         if (txtlen > 0) and not (
@@ -448,11 +446,6 @@ class ZTextWidget(QWidget):
                 )
 
                 painter.setFont(self.font())
-                # painter.setRenderHint(QPainter.TextAntialiasing)
-                if self._input_buffer_printing == False:
-                    painter.setBackgroundMode(Qt.OpaqueMode)
-                else:
-                    painter.setBackgroundMode(Qt.TransparentMode)
                 bounding_rect = painter.boundingRect(rect, txt)
                 if rect.contains(bounding_rect):
                     # print rect.x(), rect.y(), rect.width(),rect.height(), txt, bounding_rect
@@ -502,6 +495,7 @@ class ZTextWidget(QWidget):
             rect.setY(window.cursor_real_pos[1])
             rect.setWidth(window.width - window.cursor_real_pos[0])
             rect.setHeight(self.linesize)
+            painter = self.pbuffer_painter[window.id]
             bounding_rect = painter.boundingRect(rect, txt)
             if rect.contains(bounding_rect):  # string fits in this line
                 return txt
@@ -521,11 +515,11 @@ class ZTextWidget(QWidget):
             self.pbuffer_painter[0] = QPainter(self.pbuffer[0])
         bounding_rect = self.pbuffer_painter[0].boundingRect(rect, txtbuffer)
         if rect.contains(bounding_rect):  # string fits in this line
-            self.pbuffer_painter[0].eraseRect(bounding_rect)
+            self.pbuffer_painter[0].fillRect(bounding_rect, self.brush)
             # self.pbuffer_painter.drawRect(bounding_rect)
             # print 'Erasing rect', bounding_rect
         else:
-            self.pbuffer_painter[0].eraseRect(rect)
+            self.pbuffer_painter[0].fillRect(rect, self.brush)
             # print 'Erasing rect', rect
             # FIXME: clear next lines
 
@@ -553,16 +547,17 @@ class ZTextWidget(QWidget):
                 self.pbuffer_painter[w.id].setPen(self.ztoq_color[self.cur_bg])
                 self.brush.setColor(self.ztoq_color[self.cur_fg])
             self.pbuffer_painter[w.id].setBackground(self.brush)
-            self.pbuffer_painter[w.id].setBackgroundMode(Qt.OpaqueMode)
             if w.line_count > 0:
-                self.pbuffer_painter[w.id].eraseRect(
+                self.pbuffer_painter[w.id].fillRect(
                     QRectF(
                         0, 0, self.pbuffer[w.id].width(), w.line_count * self.linesize
-                    )
+                    ),
+                    self.brush
                 )
             else:
-                self.pbuffer_painter[w.id].eraseRect(
-                    QRectF(0, 0, self.pbuffer[w.id].width(), 24 * self.linesize)
+                self.pbuffer_painter[w.id].fillRect(
+                    QRectF(0, 0, self.pbuffer[w.id].width(), 24 * self.linesize),
+                    self.brush
                 )  # TODO: Fix hardcoded linecount
             # print 2, 0, self.pbuffer[w.id].width()-2, w.line_count*self.linesize
         else:
@@ -593,7 +588,7 @@ class ZTextWidget(QWidget):
                 # del tmp
             else:  # New window
                 self.pbuffer[1] = QImage(
-                    self.pbuffer[0].width(), lines * self.linesize, QImage.Format_RGB32
+                    self.pbuffer[0].width(), lines * self.linesize, QImage.Format.Format_RGB32
                 )
                 self.pbuffer[1].fill(0)
             if ver == 3:
@@ -608,5 +603,5 @@ class ZTextWidget(QWidget):
             self.chartimer.stop()
 
     def init0(self):
-        self.pbuffer[0] = QImage(640, 480, QImage.Format_RGB32)
+        self.pbuffer[0] = QImage(640, 480, QImage.Format.Format_RGB32)
         self.pbuffer[0].fill(0)

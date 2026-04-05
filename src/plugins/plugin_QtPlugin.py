@@ -9,13 +9,15 @@ from plugins.plugskel import PluginSkeleton
 
 
 class QtPlugin(PluginSkeleton):
-    widget = None
-    win = None
-    zver = None
-    read_line_enabled = False
-    def_bg = 2  # Black
-    def_fg = 9  # White
-    zfont = 1  # Normal z-font
+    def __init__(self):
+        super().__init__()
+        self.widget = None
+        self.win = None
+        self.zver = None
+        self.read_line_enabled = False
+        self.def_bg = 2
+        self.def_fg = 9
+        self.zfont = 1
 
     def prepare_gui(self) -> None:
         self.a = QtWidgets.QApplication([])
@@ -46,9 +48,10 @@ class QtPlugin(PluginSkeleton):
         self.win.show()
 
     def exec_(self) -> None:
-        self.a.exec_()
+        self.a.exec()
 
     def set_zversion(self, zver: int) -> None:
+        super().set_zversion(zver)
         self.zver = zver
 
     def show_cursor(self) -> None:
@@ -127,11 +130,11 @@ class QtPlugin(PluginSkeleton):
     def selected_output_streams(self) -> list[int]:
         return self.widget.selected_output_streams()
 
-    def width(self) -> int:
-        return self.widget.width
+    def zwidth(self) -> int:
+        return self.widget.zwidth
 
-    def height(self) -> int:
-        return self.widget.height
+    def zheight(self) -> int:
+        return self.widget.zheight
 
     def new_line(self) -> None:
         self.widget.new_line()
