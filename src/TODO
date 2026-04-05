@@ -7,10 +7,6 @@ o Testing
   * v5- alphabet table
   * unicode table
 o Ops:
-  -- 2op --
-  * throw
-  * catch
-
   -- 0op --
   * restore
 
@@ -20,10 +16,8 @@ o Ops:
   * input_stream
   * sound_effect (ignored for now)
   * read_char (timed input)
-  * scan_table
   * tokenise (custom dict, flags)
   * encode_text
-  * print_table
   * pull(6 user stack)
 
   -- ext --
