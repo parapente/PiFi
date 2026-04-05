@@ -23,8 +23,8 @@ import sys
 
 
 class ZTextWidget(QTextEdit):
-    width = 80
-    height = 24
+    zwidth = 80
+    zheight = 24
     cur_fg = 10
     cur_bg = 2
     cur_style = 0

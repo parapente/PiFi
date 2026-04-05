@@ -127,11 +127,11 @@ class PluginSkeleton(object):
             else:
                 widget.set_text_background_colour(bg, win)
 
-    def width(self) -> int:
-        return self.widget.width
+    def zwidth(self) -> int:
+        return self.widget.zwidth
 
-    def height(self) -> int:
-        return self.widget.height
+    def zheight(self) -> int:
+        return self.widget.zheight
 
     def new_line(self) -> None:
         self.widget.new_line()
@@ -165,8 +165,8 @@ class PluginSkeleton(object):
         self._output_stream[n - 1].selected = False
 
     def update_screen_size(self) -> None:
-        self.screen_size_callback(self.width(), self.height())
-        print(self.width(), self.height())
+        self.screen_size_callback(self.zwidth(), self.zheight())
+        print(self.zwidth(), self.zheight())
 
     def erase_window(self, window: int) -> None:
         self.widget.erase_window(self.window[window])
